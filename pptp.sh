@@ -21,12 +21,10 @@ cur_dir=`pwd`
 clear
 echo ""
 echo "#############################################################"
-echo "# Auto Install PPTP for CentOS 6"
-echo "# System Required: CentOS 6(32bit/64bit)"
-echo "# Intro: http://teddysun.com/134.html"
-echo ""
-echo "# Author: Teddysun <i@teddysun.com>"
-echo ""
+echo "# Auto Install PPTP for CentOS 6                            #"
+echo "# System Required: CentOS 6(32bit/64bit)                    #"
+echo "# Intro: http://teddysun.com/134.html                       #"
+echo "# Author: Teddysun <i@teddysun.com>                         #"
 echo "#############################################################"
 echo ""
 

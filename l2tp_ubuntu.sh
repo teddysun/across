@@ -23,9 +23,7 @@ echo "#############################################################"
 echo "# Auto install L2TP for Ubuntu                              #"
 echo "# System Required: Ubuntu(32bit/64bit)                      #"
 echo "# Intro: http://teddysun.com/135.html                       #"
-echo "#                                                           #"
 echo "# Author: Teddysun <i@teddysun.com>                         #"
-echo "#                                                           #"
 echo "#############################################################"
 echo ""
 
@@ -241,9 +239,7 @@ printf "
 # Auto install L2TP for Ubuntu                              #
 # System Required: Ubuntu(32bit/64bit)                      #
 # Intro: http://teddysun.com/135.html                       #
-#                                                           #
 # Author: Teddysun <i@teddysun.com>                         #
-#                                                           #
 #############################################################
 if there are no [FAILED] above, then you can connect to your 
 L2TP VPN Server with the default user/password below:
