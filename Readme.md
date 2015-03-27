@@ -1,5 +1,4 @@
-## Across the Great Wall
-## We can reach every corner in the world
+## Across as you know
 
 pptp.sh
 ------
