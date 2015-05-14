@@ -72,6 +72,7 @@ char=`get_char`
 clear
 
 # Install some necessary tools
+apt-get -y update
 apt-get install -y ppp iptables make gcc gmp-devel libgmp3-dev bison flex libpcap-devel lsof vim
 #
 cur_dir=`pwd`
