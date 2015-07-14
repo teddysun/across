@@ -1,19 +1,19 @@
 #!/bin/bash
 PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
 export PATH
-#===============================================================================================
+#===================================================================
 #   SYSTEM REQUIRED:  CentOS 6 (32bit/64bit)
 #   DESCRIPTION:  Auto install L2TP for CentOS 6
 #   Author: Teddysun <i@teddysun.com>
-#===============================================================================================
+#===================================================================
 
-if [[ "$USER" != 'root' ]]; then
-    echo "Sorry, you need to run this as root"
+if [[ $EUID -ne 0 ]]; then
+    echo "Error:This script must be run as root!"
     exit 1
 fi
 
 if [[ ! -e /dev/net/tun ]]; then
-    echo "TUN/TAP is not available"
+    echo "TUN/TAP is not available!"
     exit 1
 fi
 
@@ -27,9 +27,9 @@ echo "# Author: Teddysun <i@teddysun.com>                         #"
 echo "#############################################################"
 echo ""
 
-tmpip=`ifconfig |grep 'inet' | grep -Evi '(inet6|127.0.0.1)' | awk '{print $2}' | cut -d: -f2 | tail -1`
+tmpip=`ip addr | egrep -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | egrep -v "^192\.168|^172\.1[6-9]\.|^172\.2[0-9]\.|^172\.3[0-2]\.|^10\.|^127\.|^255\." | head -n 1`
 if [[ "$tmpip" = "" ]]; then
-    tmpip=$(curl -4 icanhazip.com)
+    tmpip=`curl -s -4 icanhazip.com`
 fi
 
 echo "Please input IP-Range:"

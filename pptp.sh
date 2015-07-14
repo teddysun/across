@@ -7,13 +7,13 @@ export PATH
 #   Author: Teddysun <i@teddysun.com>
 #===================================================================
 
-if [[ "$USER" != 'root' ]]; then
-    echo "Sorry, you need to run this as root"
+if [[ $EUID -ne 0 ]]; then
+    echo "Error:This script must be run as root!"
     exit 1
 fi
 
 if [[ ! -e /dev/net/tun ]]; then
-    echo "TUN/TAP is not available"
+    echo "TUN/TAP is not available!"
     exit 1
 fi
 
@@ -35,6 +35,7 @@ iptables --flush FORWARD
 rm -f /etc/pptpd.conf
 rm -rf /etc/ppp
 arch=`uname -m`
+IP=`ip addr | egrep -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | egrep -v "^192\.168|^172\.1[6-9]\.|^172\.2[0-9]\.|^172\.3[0-2]\.|^10\.|^127\.|^255\." | head -n 1`
 
 # Download pptpd
 if [ -s pptpd-1.3.4-2.el6.$arch.rpm ]; then
@@ -42,7 +43,7 @@ if [ -s pptpd-1.3.4-2.el6.$arch.rpm ]; then
 else
   echo "pptpd-1.3.4-2.el6.$arch.rpm not found!!!download now......"
   if ! wget http://lamp.teddysun.com/files/pptpd-1.3.4-2.el6.$arch.rpm;then
-    echo "Failed to download pptpd-1.3.4-2.el6.$arch.rpm,please download it to $cur_dir directory manually and rerun the install script."
+    echo "Failed to download pptpd-1.3.4-2.el6.$arch.rpm,please download it to $cur_dir directory manually and retry."
     exit 1
   fi
 fi
@@ -68,7 +69,7 @@ fi
 
 echo "vpn pptpd ${pass} *" >> /etc/ppp/chap-secrets
 
-iptables -t nat -A POSTROUTING -s 192.168.8.0/24 -j SNAT --to-source `ifconfig  | grep 'inet addr:'| grep -v '127.0.0.1' | cut -d: -f2 | awk 'NR==1 { print $1}'`
+iptables -t nat -A POSTROUTING -s 192.168.8.0/24 -j SNAT --to-source ${IP}
 iptables -A FORWARD -p tcp --syn -s 192.168.8.0/24 -j TCPMSS --set-mss 1356
 service iptables save
 chkconfig --add pptpd
@@ -77,8 +78,11 @@ service iptables restart
 service pptpd start
 
 echo ""
-echo "VPN service is installed, your VPN username is vpn, VPN password is ${pass}"
-echo "Welcome to visit: http://teddysun.com"
+echo "PPTP VPN service is installed."
+echo "ServerIP:${IP}"
+echo "Username:vpn"
+echo "Password:${pass}"
+echo "Welcome to visit: http://teddysun.com/134.html"
 echo ""
 
 exit 0
