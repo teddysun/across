@@ -19,8 +19,8 @@ next() {
 
 speed_test() {
     speedtest=$(wget -4O /dev/null $1 2>&1 | awk '/\/dev\/null/ {speed=$3 $4} END {gsub(/\(|\)/,"",speed); print speed}')
-    ipcheck=$(curl -4v -r 0-128 -o /dev/null $1 2>&1| awk -F'[()]' '/Connected/{print$2}')
-    echo -e "Download speed from \e[33m$2\e[0m(IP:\e[32m$ipcheck\e[0m): \e[31m$speedtest\e[0m"
+    ipaddress=$(curl -4v -r 0-128 -o /dev/null $1 2>&1 | awk -F'[()]' '/Connected/{print$2}')
+    echo -e "Download speed from \e[33m$2\e[0m(IP:\e[32m$ipaddress\e[0m): \e[31m$speedtest\e[0m"
 }
 
 speed() {
