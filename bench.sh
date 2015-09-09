@@ -19,7 +19,7 @@ next() {
 
 speed_test() {
     speedtest=$(wget -4O /dev/null $1 2>&1 | awk '/\/dev\/null/ {speed=$3 $4} END {gsub(/\(|\)/,"",speed); print speed}')
-    ipaddress=$(curl -4v -r 0-128 -o /dev/null $1 2>&1 | awk -F'[()]' '/Connected/{print$2}')
+    ipaddress=$(ping -c1 `awk -F'/' '{print $3}' <<< $1` | awk -F'[()]' '{print $2;exit}')
     echo -e "Download speed from \e[33m$2\e[0m(IP:\e[32m$ipaddress\e[0m): \e[31m$speedtest\e[0m"
 }
 
@@ -51,7 +51,13 @@ echo "Total amount of swap : $swap MB"
 echo "System uptime        : $up"
 next
 
-speed && next
+if  [ -e '/usr/bin/wget' ]; then
+    speed && next
+else
+    echo "Error: wget command not found. You must be install wget command at first."
+    exit 1
+fi
+
 
 io=$((dd if=/dev/zero of=test_$$ bs=64k count=16k conv=fdatasync && /bin/rm -f test_$$) 2>&1 | awk 'END{print}')
 echo "I/O speed : $io"
