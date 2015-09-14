@@ -7,14 +7,14 @@
 
 # Check System
 [[ $EUID -ne 0 ]] && echo 'Error: This script must be run as root!' && exit 1
-egrep -i "centos" /etc/issue && os='centos'
-egrep -i "debian" /etc/issue && os='debian'
-egrep -i "ubuntu" /etc/issue && os='ubuntu'
-[ "$os" == '' ] && echo 'Error: Your system is not supported to run it!' && exit 1
+[[ -f /etc/redhat-release ]] && os='centos'
+[[ ! -z "`egrep -i debian /etc/issue`" ]] && os='debian'
+[[ ! -z "`egrep -i ubuntu /etc/issue`" ]] && os='ubuntu'
+[[ "$os" == '' ]] && echo 'Error: Your system is not supported to run it!' && exit 1
 
 # Install necessary libaries
 if [ "$os" == 'centos' ]; then
-    yum -y install make automake gcc gcc-c autoconf gcc-c++ time perl-Time-HiRes
+    yum -y install make automake gcc autoconf gcc-c++ time perl-Time-HiRes
 else
     apt-get -y update
     apt-get -y install make automake gcc autoconf time perl
