@@ -12,7 +12,6 @@ freq=$( awk -F: '/cpu MHz/ {freq=$2} END {print freq}' /proc/cpuinfo )
 tram=$( free -m | awk 'NR==2 {print $2}' )
 swap=$( free -m | awk 'NR==4 {print $2}' )
 up=$( awk '{a=$1/86400;b=($1%86400)/3600;c=($1%3600)/60;d=$1%60} {printf("%ddays, %d:%d:%d\n",a,b,c,d)}' /proc/uptime )
-ipv6=$( curl -s -6 icanhazip.com )
 
 next() {
     printf "%-70s\n" "-" | sed 's/\s/-/g'
@@ -94,9 +93,16 @@ next
 if  [ -e '/usr/bin/wget' ]; then
     echo -e "Node Name\t\t\tIPv4 address\t\tDownload Speed"
     speed && next
-    if [[ "$ipv6" != "" ]]; then
-        echo -e "Node Name\t\t\tIPv6 address\t\tDownload Speed"
-        speed_v6 && next
+    if  [ -e '/usr/bin/curl' ]; then
+        ipv6=$(curl -s -6 icanhazip.com)
+        if [[ "$ipv6" = "" ]]; then
+            echo "IPv6 address not found. IPv6 speed test is ignored."
+        else
+            echo -e "Node Name\t\t\tIPv6 address\t\tDownload Speed"
+            speed_v6 && next
+        fi
+    else
+        echo "curl command not found. IPv6 speed test is ignored."
     fi
 else
     echo "Error: wget command not found. You must be install wget command at first."
