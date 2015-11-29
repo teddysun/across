@@ -95,9 +95,7 @@ if  [ -e '/usr/bin/wget' ]; then
     speed && next
     if  [ -e '/usr/bin/curl' ]; then
         ipv6=$(curl -s -6 icanhazip.com)
-        if [[ "$ipv6" = "" ]]; then
-            echo "IPv6 address not found. IPv6 speed test is ignored."
-        else
+        if [[ "$ipv6" != "" ]]; then
             echo -e "Node Name\t\t\tIPv6 address\t\tDownload Speed"
             speed_v6 && next
         fi
