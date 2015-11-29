@@ -37,11 +37,13 @@ speed_test_v6() {
     speedtest=$(wget -6O /dev/null $1 2>&1 | awk '/\/dev\/null/ {speed=$3 $4} END {gsub(/\(|\)/,"",speed); print speed}')
     ipaddress=$(ping6 -c1 -n `awk -F'/' '{print $3}' <<< $1` | awk -F'[()]' '{print $2;exit}')
     nodeName=$2
-    if   [ "${#nodeName}" -lt "8" ]; then
+    if   [ "${#nodeName}" -lt "8" -a "${#ipaddress}" -eq "13" ]; then
         echo -e "\e[33m$2\e[0m\t\t\t\t\e[32m$ipaddress\e[0m\t\t\e[31m$speedtest\e[0m"
-    elif [ "${#nodeName}" -lt "13" ]; then
+    elif [ "${#nodeName}" -lt "13" -a "${#ipaddress}" -eq "13" ]; then
         echo -e "\e[33m$2\e[0m\t\t\t\e[32m$ipaddress\e[0m\t\t\e[31m$speedtest\e[0m"
-    elif [ "${#nodeName}" -lt "24" ]; then
+    elif [ "${#nodeName}" -lt "24" -a "${#ipaddress}" -eq "13" ]; then
+        echo -e "\e[33m$2\e[0m\t\t\e[32m$ipaddress\e[0m\t\t\e[31m$speedtest\e[0m"
+    elif [ "${#nodeName}" -lt "24" -a "${#ipaddress}" -gt "13" ]; then
         echo -e "\e[33m$2\e[0m\t\t\e[32m$ipaddress\e[0m\t\e[31m$speedtest\e[0m"
     elif [ "${#nodeName}" -ge "24" ]; then
         echo -e "\e[33m$2\e[0m\t\e[32m$ipaddress\e[0m\t\e[31m$speedtest\e[0m"
@@ -90,9 +92,10 @@ echo "System uptime        : $up"
 next
 
 if  [ -e '/usr/bin/wget' ]; then
-    echo -e "Node Name\t\t\tNode IP address\t\tDownload Speed"
+    echo -e "Node Name\t\t\tIPv4 address\t\tDownload Speed"
     speed && next
     if [[ "$ipv6" != "" ]]; then
+        echo -e "Node Name\t\t\tIPv6 address\t\tDownload Speed"
         speed_v6 && next
     fi
 else
