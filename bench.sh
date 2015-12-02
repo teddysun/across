@@ -114,9 +114,9 @@ fi
 io1=$((dd if=/dev/zero of=test_$$ bs=64k count=16k conv=fdatasync && /bin/rm -f test_$$) 2>&1 | awk 'END{print}')
 io2=$((dd if=/dev/zero of=test_$$ bs=64k count=16k conv=fdatasync && /bin/rm -f test_$$) 2>&1 | awk 'END{print}')
 io3=$((dd if=/dev/zero of=test_$$ bs=64k count=16k conv=fdatasync && /bin/rm -f test_$$) 2>&1 | awk 'END{print}')
-ioraw1=$( echo $io1 | awk 'NR==1 {print $1}' )
-ioraw2=$( echo $io2 | awk 'NR==1 {print $1}' )
-ioraw3=$( echo $io3 | awk 'NR==1 {print $1}' )
+ioraw1=$( echo $io1 | awk 'NR==1 {print $8}' )
+ioraw2=$( echo $io2 | awk 'NR==1 {print $8}' )
+ioraw3=$( echo $io3 | awk 'NR==1 {print $8}' )
 ioall=$( awk 'BEGIN{print '$ioraw1' + '$ioraw2' + '$ioraw3'}' )
 ioavg=$( awk 'BEGIN{print '$ioall'/3}' )
 echo "I/O speed(1st run) : $io1"
