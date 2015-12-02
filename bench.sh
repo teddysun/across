@@ -6,12 +6,19 @@
 #   Visit:  https://teddysun.com                               #
 #==============================================================#
 
-cname=$( awk -F: '/model name/ {name=$2} END {print name}' /proc/cpuinfo )
+cname=$( awk -F: '/model name/ {name=$2} END {print name}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
 cores=$( awk -F: '/model name/ {core++} END {print core}' /proc/cpuinfo )
-freq=$( awk -F: '/cpu MHz/ {freq=$2} END {print freq}' /proc/cpuinfo )
+freq=$( awk -F: '/cpu MHz/ {freq=$2} END {print freq}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
 tram=$( free -m | awk 'NR==2 {print $2}' )
 swap=$( free -m | awk 'NR==4 {print $2}' )
 up=$( awk '{a=$1/86400;b=($1%86400)/3600;c=($1%3600)/60;d=$1%60} {printf("%ddays, %d:%d:%d\n",a,b,c,d)}' /proc/uptime )
+opsy=$( cat /etc/issue.net | awk 'NR==1 {print}' )
+arch=$( uname -m )
+lbit=$( getconf LONG_BIT )
+host=$( hostname )
+kern=$( uname -r )
+ipv4=$( wget -qO- ipv4.icanhazip.com )
+ipv6=$( wget -qO- ipv6.icanhazip.com )
 
 next() {
     printf "%-70s\n" "-" | sed 's/\s/-/g'
@@ -82,31 +89,43 @@ speed_v6() {
 }
 
 clear
-echo "CPU model            :$cname"
+next
+echo "CPU model            : $cname"
 echo "Number of cores      : $cores"
-echo "CPU frequency        :$freq MHz"
+echo "CPU frequency        : $freq MHz"
 echo "Total amount of ram  : $tram MB"
 echo "Total amount of swap : $swap MB"
 echo "System uptime        : $up"
+echo "OS                   : $opsy"
+echo "Arch                 : $arch ($lbit Bit)"
+echo "Kernel               : $kern"
+echo "Hostname             : $host"
+echo "IPv4                 : $ipv4"
+[[ "$ipv6" != "" ]] && echo "IPv6                 : $ipv6"
 next
 
 if  [ -e '/usr/bin/wget' ]; then
     echo -e "Node Name\t\t\tIPv4 address\t\tDownload Speed"
     speed && next
-    if  [ -e '/usr/bin/curl' ]; then
-        ipv6=$(curl -s -6 icanhazip.com)
-        if [[ "$ipv6" != "" ]]; then
-            echo -e "Node Name\t\t\tIPv6 address\t\tDownload Speed"
-            speed_v6 && next
-        fi
-    else
-        echo "curl command not found. IPv6 speed test is ignored."
+    if [[ "$ipv6" != "" ]]; then
+        echo -e "Node Name\t\t\tIPv6 address\t\tDownload Speed"
+        speed_v6 && next
     fi
 else
     echo "Error: wget command not found. You must be install wget command at first."
     exit 1
 fi
 
-io=$((dd if=/dev/zero of=test_$$ bs=64k count=16k conv=fdatasync && /bin/rm -f test_$$) 2>&1 | awk 'END{print}')
-echo "I/O speed : $io"
+io1=$((dd if=/dev/zero of=test_$$ bs=64k count=16k conv=fdatasync && /bin/rm -f test_$$) 2>&1 | awk 'END{print}')
+io2=$((dd if=/dev/zero of=test_$$ bs=64k count=16k conv=fdatasync && /bin/rm -f test_$$) 2>&1 | awk 'END{print}')
+io3=$((dd if=/dev/zero of=test_$$ bs=64k count=16k conv=fdatasync && /bin/rm -f test_$$) 2>&1 | awk 'END{print}')
+ioraw1=$( echo $io1 | awk 'NR==1 {print $1}' )
+ioraw2=$( echo $io2 | awk 'NR==1 {print $1}' )
+ioraw3=$( echo $io3 | awk 'NR==1 {print $1}' )
+ioall=$( awk 'BEGIN{print '$ioraw1' + '$ioraw2' + '$ioraw3'}' )
+ioavg=$( awk 'BEGIN{print '$ioall'/3}' )
+echo "I/O speed(1st run) : $io1"
+echo "I/O speed(2nd run) : $io2"
+echo "I/O speed(3rd run) : $io3"
+echo "Average I/O: $ioavg MB/s"
 echo ""
