@@ -17,7 +17,7 @@ arch=$( uname -m )
 lbit=$( getconf LONG_BIT )
 host=$( hostname )
 kern=$( uname -r )
-ipv6=$( wget -qO- ipv6.icanhazip.com )
+ipv6=$( wget -qO- -t1 -T2 ipv6.icanhazip.com )
 
 next() {
     printf "%-70s\n" "-" | sed 's/\s/-/g'
