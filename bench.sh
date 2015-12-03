@@ -82,6 +82,10 @@ speed_v6() {
     speed_test_v6 'http://speedtest.tok02.softlayer.com/downloads/test100.zip' 'Softlayer, Tokyo, JP'
 }
 
+io_test() {
+    (dd if=/dev/zero of=test_$$ bs=64k count=16k conv=fdatasync && rm -f test_$$ ) 2>&1 | awk -F, '{io=$NF} END { print io}' | sed 's/^[ \t]*//;s/[ \t]*$//'
+}
+
 clear
 next
 echo "CPU model            : $cname"
@@ -107,9 +111,9 @@ else
     exit 1
 fi
 
-io1=$((dd if=/dev/zero of=test_$$ bs=64k count=16k conv=fdatasync && rm -f test_$$ ) 2>&1 | awk -F, '{io=$NF} END { print io}' | sed 's/^[ \t]*//;s/[ \t]*$//')
-io2=$((dd if=/dev/zero of=test_$$ bs=64k count=16k conv=fdatasync && rm -f test_$$ ) 2>&1 | awk -F, '{io=$NF} END { print io}' | sed 's/^[ \t]*//;s/[ \t]*$//')
-io3=$((dd if=/dev/zero of=test_$$ bs=64k count=16k conv=fdatasync && rm -f test_$$ ) 2>&1 | awk -F, '{io=$NF} END { print io}' | sed 's/^[ \t]*//;s/[ \t]*$//')
+io1=$( io_test )
+io2=$( io_test )
+io3=$( io_test )
 ioraw1=$( echo $io1 | awk 'NR==1 {print $1}' )
 ioraw2=$( echo $io2 | awk 'NR==1 {print $1}' )
 ioraw3=$( echo $io3 | awk 'NR==1 {print $1}' )
