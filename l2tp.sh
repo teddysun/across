@@ -1,135 +1,277 @@
 #!/bin/bash
 PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
 export PATH
-#===================================================================
-#   SYSTEM REQUIRED:  CentOS 6 (32bit/64bit)
-#   DESCRIPTION:  Auto install L2TP for CentOS 6
-#   Author: Teddysun <i@teddysun.com>
-#===================================================================
-
-if [[ $EUID -ne 0 ]]; then
-    echo "Error:This script must be run as root!"
-    exit 1
-fi
-
-if [[ ! -e /dev/net/tun ]]; then
-    echo "TUN/TAP is not available!"
-    exit 1
-fi
-
-clear
-echo ""
-echo "#############################################################"
-echo "# Auto install L2TP for CentOS 6                            #"
-echo "# System Required: CentOS 6(32bit/64bit)                    #"
-echo "# Intro: http://teddysun.com/135.html                       #"
-echo "# Author: Teddysun <i@teddysun.com>                         #"
-echo "#############################################################"
-echo ""
-
-tmpip=`ip addr | egrep -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | egrep -v "^192\.168|^172\.1[6-9]\.|^172\.2[0-9]\.|^172\.3[0-2]\.|^10\.|^127\.|^255\." | head -n 1`
-if [[ "$tmpip" = "" ]]; then
-    tmpip=`curl -s -4 icanhazip.com`
-fi
-
-echo "Please input IP-Range:"
-read -p "(Default Range: 10.1.2):" iprange
-if [ "$iprange" = "" ]; then
-    iprange="10.1.2"
-fi
-
-echo "Please input PSK:"
-read -p "(Default PSK: vpn):" mypsk
-if [ "$mypsk" = "" ]; then
-    mypsk="vpn"
-fi
-
-clear
-get_char(){
-SAVEDSTTY=`stty -g`
-stty -echo
-stty cbreak
-dd if=/dev/tty bs=1 count=1 2> /dev/null
-stty -raw
-stty echo
-stty $SAVEDSTTY
-}
-echo ""
-echo "ServerIP:"
-echo "$tmpip"
-echo ""
-echo "Server Local IP:"
-echo "$iprange.1"
-echo ""
-echo "Client Remote IP Range:"
-echo "$iprange.2-$iprange.254"
-echo ""
-echo "PSK:"
-echo "$mypsk"
-echo ""
-echo "Press any key to start...or Press Ctrl+c to cancel"
-char=`get_char`
-clear
-
-mknod /dev/random c 1 9
-# Install some necessary tools
-yum install -y ppp iptables make gcc gmp-devel xmlto bison flex libpcap-devel lsof vim-enhanced
-#
+#=======================================================================#
+#   System Required:  CentOS/RadHat 6+ / Debian 7+ / Ubuntu 12+         #
+#   Description:  Auto Install L2TP VPN                                 #
+#   Author: Teddysun <i@teddysun.com>                                   #
+#   Intro:  https://teddysun.com                                        #
+#=======================================================================#
 cur_dir=`pwd`
-mkdir -p $cur_dir/l2tp
-cd $cur_dir/l2tp
-# Download openswan-2.6.38.tar.gz
-if [ -s openswan-2.6.38.tar.gz ]; then
-  echo "openswan-2.6.38.tar.gz [found]"
-else
-  echo "openswan-2.6.38.tar.gz not found!!!download now......"
-  if ! wget http://lamp.teddysun.com/files/openswan-2.6.38.tar.gz;then
-    echo "Failed to download openswan-2.6.38.tar.gz, please download it to $cur_dir directory manually and retry."
-    exit 1
-  fi
-fi
-# Download rp-l2tp-0.4.tar.gz
-if [ -s rp-l2tp-0.4.tar.gz ]; then
-  echo "rp-l2tp-0.4.tar.gz [found]"
-else
-  echo "rp-l2tp-0.4.tar.gz not found!!!download now......"
-  if ! wget http://lamp.teddysun.com/files/rp-l2tp-0.4.tar.gz;then
-    echo "Failed to download rp-l2tp-0.4.tar.gz, please download it to $cur_dir directory manually and retry."
-    exit 1
-  fi
-fi
-# Download xl2tpd-1.2.4.tar.gz
-if [ -s xl2tpd-1.2.4.tar.gz ]; then
-  echo "xl2tpd-1.2.4.tar.gz [found]"
-else
-  echo "xl2tpd-1.2.4.tar.gz not found!!!download now......"
-  if ! wget http://lamp.teddysun.com/files/xl2tpd-1.2.4.tar.gz;then
-    echo "Failed to download xl2tpd-1.2.4.tar.gz, please download it to $cur_dir directory manually and retry."
-    exit 1
-  fi
-fi
 
-# untar all files
-rm -rf $cur_dir/l2tp/untar
-mkdir -p $cur_dir/l2tp/untar
-echo "======untar all files,please wait a moment====="
-tar -zxf openswan-2.6.38.tar.gz -C $cur_dir/l2tp/untar
-tar -zxf rp-l2tp-0.4.tar.gz -C $cur_dir/l2tp/untar
-tar -zxf xl2tpd-1.2.4.tar.gz -C $cur_dir/l2tp/untar
-echo "=====untar all files completed!====="
-# Install openswan-2.6.38
-cd $cur_dir/l2tp/untar/openswan-2.6.38
-make programs install
+libevent2_rpm_filename="libevent2-2.0.22-1.el6.x86_64.rpm"
+libevent2_devel_rpm_filename="libevent2-devel-2.0.22-1.el6.x86_64.rpm"
+libreswan_filename="libreswan-3.17"
 
-# Configuation ipsec
-rm -rf /etc/ipsec.conf
-touch /etc/ipsec.conf
-cat >>/etc/ipsec.conf<<EOF
+rootness(){
+    if [[ $EUID -ne 0 ]]; then
+       echo "Error:This script must be run as root!" 1>&2
+       exit 1
+    fi
+}
+
+tunavailable(){
+    if [[ ! -e /dev/net/tun ]]; then
+        echo "Error:TUN/TAP is not available!" 1>&2
+        exit 1
+    fi
+}
+
+disable_selinux(){
+if [ -s /etc/selinux/config ] && grep 'SELINUX=enforcing' /etc/selinux/config; then
+    sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
+    setenforce 0
+fi
+}
+
+get_opsy(){
+    [ -f /etc/os-release ] && awk -F'[= "]' '/PRETTY_NAME/{print $3,$4,$5}' /etc/os-release && return
+    [ -f /etc/lsb-release ] && awk -F'[="]+' '/DESCRIPTION/{print $2}' /etc/lsb-release && return
+    [ -f /etc/redhat-release ] && awk '{print ($1,$3~/^[0-9]/?$3:$4)}' /etc/redhat-release && return
+}
+
+get_os_info(){
+    IP=$( ip addr | egrep -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | egrep -v "^192\.168|^172\.1[6-9]\.|^172\.2[0-9]\.|^172\.3[0-2]\.|^10\.|^127\.|^255\.|^0\." | head -n 1 )
+    if [ -z ${IP} ]; then
+        IP=$( wget -qO- -t1 -T2 ipv4.icanhazip.com )
+    fi
+    local cname=$( awk -F: '/model name/ {name=$2} END {print name}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
+    local cores=$( awk -F: '/model name/ {core++} END {print core}' /proc/cpuinfo )
+    local freq=$( awk -F: '/cpu MHz/ {freq=$2} END {print freq}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
+    local tram=$( free -m | awk '/Mem/ {print $2}' )
+    local swap=$( free -m | awk '/Swap/ {print $2}' )
+    local up=$( awk '{a=$1/86400;b=($1%86400)/3600;c=($1%3600)/60;d=$1%60} {printf("%ddays, %d:%d:%d\n",a,b,c,d)}' /proc/uptime )
+    local opsy=$( get_opsy )
+    local arch=$( uname -m )
+    local lbit=$( getconf LONG_BIT )
+    local host=$( hostname )
+    local kern=$( uname -r )
+
+    echo "########## System Information ##########"
+    echo ""
+    echo "CPU model            : ${cname}"
+    echo "Number of cores      : ${cores}"
+    echo "CPU frequency        : ${freq} MHz"
+    echo "Total amount of ram  : ${tram} MB"
+    echo "Total amount of swap : ${swap} MB"
+    echo "System uptime        : ${up}"
+    echo "OS                   : ${opsy}"
+    echo "Arch                 : ${arch} (${lbit} Bit)"
+    echo "Kernel               : ${kern}"
+    echo "Hostname             : ${host}"
+    echo "IPv4 address         : ${IP}"
+    echo ""
+    echo "########################################"
+}
+
+check_sys(){
+    local checkType=$1
+    local value=$2
+
+    local release=''
+    local systemPackage=''
+
+    if [[ -f /etc/redhat-release ]];then
+        release="centos"
+        systemPackage="yum"
+    elif cat /etc/issue | grep -q -E -i "debian";then
+        release="debian"
+        systemPackage="apt"
+    elif cat /etc/issue | grep -q -E -i "ubuntu";then
+        release="ubuntu"
+        systemPackage="apt"
+    elif cat /etc/issue | grep -q -E -i "centos|red hat|redhat";then
+        release="centos"
+        systemPackage="yum"
+    elif cat /proc/version | grep -q -E -i "debian";then
+        release="debian"
+        systemPackage="apt"
+    elif cat /proc/version | grep -q -E -i "ubuntu";then
+        release="ubuntu"
+        systemPackage="apt"
+    elif cat /proc/version | grep -q -E -i "centos|red hat|redhat";then
+        release="centos"
+        systemPackage="yum"
+    fi
+
+    if [[ ${checkType} == "sysRelease" ]]; then
+        if [ "$value" == "$release" ];then
+            return 0
+        else
+            return 1
+        fi
+    elif [[ ${checkType} == "packageManager" ]]; then
+        if [ "$value" == "$systemPackage" ];then
+            return 0
+        else
+            return 1
+        fi
+    fi
+}
+
+rand() {
+    index=0
+    str=""
+    for i in {a..z}; do arr[index]=${i}; index=`expr ${index} + 1`; done
+    for i in {A..Z}; do arr[index]=${i}; index=`expr ${index} + 1`; done
+    for i in {0..9}; do arr[index]=${i}; index=`expr ${index} + 1`; done
+    for i in {1..10}; do str="$str${arr[$RANDOM%$index]}"; done
+    echo ${str}
+}
+
+download_file(){
+    local download_root_url="http://lamp.teddysun.com/files"
+
+    if [ -s ${1} ]; then
+        echo "$1 [found]"
+    else
+        echo "$1 not found!!!download now..."
+        if ! wget -c -t3 -T60 ${download_root_url}/${1};then
+            echo "Failed to download $1, please download it to ${cur_dir} directory manually and try again."
+            exit 1
+        fi
+    fi
+}
+
+versionget(){
+    if [[ -s /etc/redhat-release ]];then
+        grep -oE  "[0-9.]+" /etc/redhat-release
+    else
+        grep -oE  "[0-9.]+" /etc/issue
+    fi
+}
+
+centosversion(){
+    if check_sys sysRelease centos;then
+        local code=${1}
+        local version="`versionget`"
+        local main_ver=${version%%.*}
+        if [ ${main_ver} == ${code} ];then
+            return 0
+        else
+            return 1
+        fi
+    else
+        return 1
+    fi
+}
+
+version_check(){
+    if check_sys packageManager yum; then
+        if centosversion 5; then
+            echo "Error:Not support CentOS 5, Please change your OS and try again."
+            exit 1
+        fi
+    fi
+}
+
+preinstall_l2tp(){
+
+    echo
+    echo "Please input IP-Range:"
+    read -p "(Default Range: 192.168.18):" iprange
+    [ -z ${iprange} ] && iprange="192.168.18"
+
+    echo "Please input PSK:"
+    read -p "(Default PSK: teddysun.com):" mypsk
+    [ -z ${mypsk} ] && mypsk="teddysun.com"
+
+    echo "Please input Username:"
+    read -p "(Default Username: teddysun):" username
+    [ -z ${username} ] && username="teddysun"
+
+    password=`rand`
+    echo "Please input ${username}'s password:"
+    read -p "(Default Password: ${password}):" tmppassword
+    [ ! -z ${tmppassword} ] && password=${tmppassword}
+
+    get_char(){
+    SAVEDSTTY=`stty -g`
+    stty -echo
+    stty cbreak
+    dd if=/dev/tty bs=1 count=1 2> /dev/null
+    stty -raw
+    stty echo
+    stty $SAVEDSTTY
+    }
+    echo
+    echo "ServerIP:${IP}"
+    echo "Server Local IP:${iprange}.1"
+    echo "Client Remote IP Range:${iprange}.2-${iprange}.254"
+    echo "PSK:${mypsk}"
+    echo
+    echo "Press any key to start...or Press Ctrl+c to cancel"
+    char=`get_char`
+
+}
+
+install_l2tp(){
+
+    mknod /dev/random c 1 9
+
+    if check_sys packageManager apt;then
+        apt-get -y update
+        apt-get -y install gcc ppp flex bison make libnss3-dev libnspr4-dev pkg-config libpam0g-dev 
+        apt-get -y install libcap-ng-dev libcap-ng-utils libcurl4-nss-dev libunbound-dev libnss3-tools libevent-dev
+        apt-get -y --no-install-recommends install xmlto
+        apt-get -y install xl2tpd
+        compile_install
+    elif check_sys packageManager yum; then
+        if centosversion 7; then
+            yum -y install epel-release
+            yum -y install ppp libreswan xl2tpd
+            yum_install
+        elif centosversion 6; then
+            yum -y install epel-release
+            yum -y install gcc gcc-c++ ppp iptables make gmp-devel xmlto bison flex libpcap-devel lsof
+            yum -y install xl2tpd curl-devel nss-devel nspr-devel pkgconfig pam-devel unbound-devel libcap-ng-devel
+            compile_install
+        fi
+    fi
+
+}
+
+compile_install(){
+
+    [ ! -d ${cur_dir}/l2tp ] && mkdir -p ${cur_dir}/l2tp
+    cd ${cur_dir}/l2tp
+    download_file "${libreswan_filename}.tar.gz"
+    tar -zxf ${libreswan_filename}.tar.gz
+
+    if centosversion 6; then
+        download_file "${libevent2_rpm_filename}"
+        download_file "${libevent2_devel_rpm_filename}"
+        rpm -ivh --force ${libevent2_rpm_filename} ${libevent2_devel_rpm_filename}
+    fi
+
+    cd ${cur_dir}/l2tp/${libreswan_filename}
+    echo "WERROR_CFLAGS =" > Makefile.inc.local
+    make programs && make install
+
+    /usr/local/sbin/ipsec --version >/dev/null 2>&1
+    if [ $? -ne 0 ];then
+        echo "${libreswan_filename} install failed."
+        exit 1
+    fi
+
+    cat > /etc/ipsec.conf<<EOF
 config setup
     nat_traversal=yes
-    virtual_private=%v4:10.0.0.0/8,%v4:192.168.0.0/16,%v4:172.16.0.0/12
-    oe=off
     protostack=netkey
+    oe=off
+    interfaces="%defaultroute"
+    dumpdir=/var/run/pluto/
+    virtual_private=%v4:10.0.0.0/8,%v4:192.168.0.0/16,%v4:172.16.0.0/12,%v4:25.0.0.0/8,%v4:100.64.0.0/10,%v6:fd00::/8,%v6:fe80::/10
 
 conn L2TP-PSK-NAT
     rightsubnet=vhost:%priv
@@ -144,110 +286,376 @@ conn L2TP-PSK-noNAT
     ikelifetime=8h
     keylife=1h
     type=transport
-    left=$tmpip
-    leftid=$tmpip
+    left=${IP}
+    leftid=${IP}
     leftprotoport=17/1701
     right=%any
-    rightid=%any
     rightprotoport=17/%any
+    dpddelay=40
+    dpdtimeout=130
+    dpdaction=clear
 EOF
-cat >>/etc/ipsec.secrets<<EOF
-$tmpip %any: PSK "$mypsk"
-EOF
-sed -i 's/net.ipv4.ip_forward = 0/net.ipv4.ip_forward = 1/g' /etc/sysctl.conf
-sed -i 's/net.ipv4.conf.default.rp_filter = 1/net.ipv4.conf.default.rp_filter = 0/g' /etc/sysctl.conf
-sysctl -p
-iptables --table nat --append POSTROUTING --jump MASQUERADE
-for each in /proc/sys/net/ipv4/conf/*
-do
-echo 0 > $each/accept_redirects
-echo 0 > $each/send_redirects
-done
 
-# Install rp-l2tp-0.4
-cd $cur_dir/l2tp/untar/rp-l2tp-0.4
-./configure
-make
-cp handlers/l2tp-control /usr/local/sbin/
-mkdir -p /var/run/xl2tpd/
-ln -s /usr/local/sbin/l2tp-control /var/run/xl2tpd/l2tp-control
-# Install xl2tpd-1.2.4.tar.gz
-cd $cur_dir/l2tp/untar/xl2tpd-1.2.4
-make install
-mkdir -p /etc/xl2tpd
-rm -rf /etc/xl2tpd/xl2tpd.conf
-touch /etc/xl2tpd/xl2tpd.conf
-cat >>/etc/xl2tpd/xl2tpd.conf<<EOF
+    cat > /etc/ipsec.secrets<<EOF
+${IP} %any: PSK "${mypsk}"
+EOF
+
+    cat > /etc/xl2tpd/xl2tpd.conf<<EOF
 [global]
-ipsec saref = yes
+listen-addr = ${IP}
 [lns default]
-ip range = $iprange.2-$iprange.254
-local ip = $iprange.1
-refuse chap = yes
+ip range = ${iprange}.2-${iprange}.254
+local ip = ${iprange}.1
+require chap = yes
 refuse pap = yes
 require authentication = yes
+name = LinuxVPNserver
 ppp debug = yes
 pppoptfile = /etc/ppp/options.xl2tpd
 length bit = yes
 EOF
-rm -rf /etc/ppp/options.xl2tpd
-touch /etc/ppp/options.xl2tpd
-cat >>/etc/ppp/options.xl2tpd<<EOF
+
+    cat > /etc/ppp/options.xl2tpd<<EOF
+ipcp-accept-local
+ipcp-accept-remote
 require-mschap-v2
 ms-dns 8.8.8.8
 ms-dns 8.8.4.4
-asyncmap 0
+noccp
 auth
 crtscts
-lock
 hide-password
-modem
-debug
+idle 1800
+mtu 1410
+mru 1410
+nodefaultroute
 name l2tpd
+debug
+lock
 proxyarp
-lcp-echo-interval 30
-lcp-echo-failure 4
+connect-delay 5000
 EOF
 
-# Set default user & password
-pass=`openssl rand 6 -base64`
-if [ "$1" != "" ]; then
-    pass=$1
-fi
-echo "vpn l2tpd ${pass} *" >> /etc/ppp/chap-secrets
-
-touch /usr/bin/l2tpset
-echo "#/bin/bash" >>/usr/bin/l2tpset
-echo "for each in /proc/sys/net/ipv4/conf/*" >>/usr/bin/l2tpset
-echo "do" >>/usr/bin/l2tpset
-echo "echo 0 > \$each/accept_redirects" >>/usr/bin/l2tpset
-echo "echo 0 > \$each/send_redirects" >>/usr/bin/l2tpset
-echo "done" >>/usr/bin/l2tpset
-chmod +x /usr/bin/l2tpset
-iptables --table nat --append POSTROUTING --jump MASQUERADE
-l2tpset
-xl2tpd
-cat >>/etc/rc.local<<EOF
-iptables --table nat --append POSTROUTING --jump MASQUERADE
-/etc/init.d/ipsec restart
-/usr/bin/l2tpset
-/usr/local/sbin/xl2tpd
+    rm -f /etc/ppp/chap-secrets
+    cat > /etc/ppp/chap-secrets<<EOF
+# Secrets for authentication using CHAP
+# client    server    secret    IP addresses
+${username}    l2tpd    ${password}       *
 EOF
-clear
-ipsec verify
-printf "
-#############################################################
-# Auto install L2TP for CentOS 6                            #
-# System Required: CentOS 6(32bit/64bit)                    #
-# Intro: http://teddysun.com/135.html                       #
-# Author: Teddysun <i@teddysun.com>                         #
-#############################################################
-if there are no [FAILED] above, then you can connect to your 
-L2TP VPN Server with the default user/password below:
 
-ServerIP:$tmpip
-username:vpn
-password:${pass}
-PSK:$mypsk
-"
+    cp -pf /etc/sysctl.conf /etc/sysctl.conf.bak
+
+    sed -i 's/net.ipv4.ip_forward = 0/net.ipv4.ip_forward = 1/g' /etc/sysctl.conf
+
+    for each in `ls /proc/sys/net/ipv4/conf/`
+    do
+        echo "net.ipv4.conf.${each}.accept_source_route=0" >> /etc/sysctl.conf
+        echo "net.ipv4.conf.${each}.accept_redirects=0" >> /etc/sysctl.conf
+        echo "net.ipv4.conf.${each}.send_redirects=0" >> /etc/sysctl.conf
+        echo "net.ipv4.conf.${each}.rp_filter=0" >> /etc/sysctl.conf
+    done
+    sysctl -p
+
+    if centosversion 6; then
+        [ -f /etc/sysconfig/iptables ] && cp -pf /etc/sysconfig/iptables /etc/sysconfig/iptables.old.`date +%Y%m%d`
+
+        if [ "`/sbin/iptables-save | grep -c '^\-'`" = "0" ]; then
+            cat > /etc/sysconfig/iptables <<EOF
+# Added by L2TP VPN script
+*filter
+:INPUT ACCEPT [0:0]
+:FORWARD ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+-A INPUT -p icmp -j ACCEPT
+-A INPUT -i lo -j ACCEPT
+-A INPUT -p tcp --dport 22 -j ACCEPT
+-A INPUT -p udp -m multiport --dports 500,4500,1701 -j ACCEPT
+-A FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT
+-A FORWARD -s ${iprange}.0/24  -j ACCEPT
+COMMIT
+*nat
+:PREROUTING ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+:POSTROUTING ACCEPT [0:0]
+-A POSTROUTING -s ${iprange}.0/24 -j SNAT --to-source ${IP}
+COMMIT
+EOF
+        else
+            iptables -I INPUT -p udp -m multiport --dports 500,4500,1701 -j ACCEPT
+            iptables -I FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT
+            iptables -I FORWARD -s ${iprange}.0/24  -j ACCEPT
+            iptables -t nat -A POSTROUTING -s ${iprange}.0/24 -j SNAT --to-source ${IP}
+            /etc/init.d/iptables save
+        fi
+
+        if [ ! -f /etc/ipsec.d/cert9.db ]; then
+           echo > /var/tmp/libreswan-nss-pwd
+           certutil -N -f /var/tmp/libreswan-nss-pwd -d /etc/ipsec.d
+           rm -f /var/tmp/libreswan-nss-pwd
+        fi
+
+        chkconfig --add iptables
+        chkconfig iptables on
+        chkconfig --add ipsec
+        chkconfig ipsec on
+        chkconfig --add xl2tpd
+        chkconfig xl2tpd on
+
+        /etc/init.d/iptables restart
+        /etc/init.d/ipsec restart
+        /etc/init.d/xl2tpd start
+
+    else
+        [ -f /etc/iptables.rules ] && cp -pf /etc/iptables.rules /etc/iptables.rules.old.`date +%Y%m%d`
+
+        if [ "`/sbin/iptables-save | grep -c '^\-'`" = "0" ]; then
+            cat > /etc/iptables.rules <<EOF
+# Added by L2TP VPN script
+*filter
+:INPUT ACCEPT [0:0]
+:FORWARD ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+-A INPUT -p icmp -j ACCEPT
+-A INPUT -i lo -j ACCEPT
+-A INPUT -p tcp --dport 22 -j ACCEPT
+-A INPUT -p udp -m multiport --dports 500,4500,1701 -j ACCEPT
+-A FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT
+-A FORWARD -s ${iprange}.0/24  -j ACCEPT
+COMMIT
+*nat
+:PREROUTING ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+:POSTROUTING ACCEPT [0:0]
+-A POSTROUTING -s ${iprange}.0/24 -j SNAT --to-source ${IP}
+COMMIT
+EOF
+        else
+            iptables -I INPUT -p udp -m multiport --dports 500,4500,1701 -j ACCEPT
+            iptables -I FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT
+            iptables -I FORWARD -s ${iprange}.0/24  -j ACCEPT
+            iptables -t nat -A POSTROUTING -s ${iprange}.0/24 -j SNAT --to-source ${IP}
+            /sbin/iptables-save > /etc/iptables.rules
+        fi
+
+        cat > /etc/network/if-up.d/iptables <<EOF
+#!/bin/sh
+/sbin/iptables-restore < /etc/iptables.rules
+EOF
+        chmod +x /etc/network/if-up.d/iptables
+
+        if [ ! -f /etc/ipsec.d/cert9.db ]; then
+           echo > /var/tmp/libreswan-nss-pwd
+           certutil -N -f /var/tmp/libreswan-nss-pwd -d /etc/ipsec.d
+           rm -f /var/tmp/libreswan-nss-pwd
+        fi
+
+        update-rc.d xl2tpd defaults
+        cp -f /etc/rc.local /etc/rc.local.old.`date +%Y%m%d`
+        sed --follow-symlinks -i -e '/^exit 0/d' /etc/rc.local
+        cat >> /etc/rc.local <<EOF
+
+# Added by L2TP VPN script
+/usr/sbin/service ipsec start
+echo 1 > /proc/sys/net/ipv4/ip_forward
 exit 0
+EOF
+        echo 1 > /proc/sys/net/ipv4/ip_forward
+
+        /sbin/iptables-restore < /etc/iptables.rules
+        /usr/sbin/service ipsec restart
+        /usr/sbin/service xl2tpd restart
+
+    fi
+
+}
+
+yum_install(){
+
+    rm -f /etc/ipsec.conf
+    cat > /etc/ipsec.conf<<EOF
+config setup
+    nat_traversal=yes
+    protostack=netkey
+    oe=off
+    interfaces="%defaultroute"
+    dumpdir=/var/run/pluto/
+    virtual_private=%v4:10.0.0.0/8,%v4:192.168.0.0/16,%v4:172.16.0.0/12,%v4:25.0.0.0/8,%v4:100.64.0.0/10,%v6:fd00::/8,%v6:fe80::/10
+
+conn L2TP-PSK-NAT
+    rightsubnet=vhost:%priv
+    also=L2TP-PSK-noNAT
+
+conn L2TP-PSK-noNAT
+    authby=secret
+    pfs=no
+    auto=add
+    keyingtries=3
+    rekey=no
+    ikelifetime=8h
+    keylife=1h
+    type=transport
+    left=${IP}
+    leftid=${IP}
+    leftprotoport=17/1701
+    right=%any
+    rightprotoport=17/%any
+    dpddelay=40
+    dpdtimeout=130
+    dpdaction=clear
+EOF
+    rm -f /etc/ipsec.secrets
+    cat > /etc/ipsec.secrets<<EOF
+${IP} %any: PSK "${mypsk}"
+EOF
+    rm -f /etc/xl2tpd/xl2tpd.conf
+    cat > /etc/xl2tpd/xl2tpd.conf<<EOF
+[global]
+listen-addr = ${IP}
+[lns default]
+ip range = ${iprange}.2-${iprange}.254
+local ip = ${iprange}.1
+require chap = yes
+refuse pap = yes
+require authentication = yes
+name = LinuxVPNserver
+ppp debug = yes
+pppoptfile = /etc/ppp/options.xl2tpd
+length bit = yes
+EOF
+    rm -f /etc/ppp/options.xl2tpd
+    cat > /etc/ppp/options.xl2tpd<<EOF
+ipcp-accept-local
+ipcp-accept-remote
+require-mschap-v2
+ms-dns 8.8.8.8
+ms-dns 8.8.4.4
+noccp
+auth
+crtscts
+hide-password
+idle 1800
+mtu 1410
+mru 1410
+nodefaultroute
+name l2tpd
+debug
+lock
+proxyarp
+connect-delay 5000
+EOF
+    rm -f /etc/ppp/chap-secrets
+    cat > /etc/ppp/chap-secrets<<EOF
+# Secrets for authentication using CHAP
+# client    server    secret    IP addresses
+${username}    l2tpd    ${password}       *
+EOF
+
+    cp -pf /etc/sysctl.conf /etc/sysctl.conf.bak
+
+    echo "# Added by L2TP VPN" >> /etc/sysctl.conf
+    echo "net.ipv4.ip_forward=1" >> /etc/sysctl.conf
+    echo "net.ipv4.tcp_syncookies=1" >> /etc/sysctl.conf
+    echo "net.ipv4.icmp_echo_ignore_broadcasts=1" >> /etc/sysctl.conf
+    echo "net.ipv4.icmp_ignore_bogus_error_responses=1" >> /etc/sysctl.conf
+
+    for each in `ls /proc/sys/net/ipv4/conf/`
+    do
+        echo "net.ipv4.conf.${each}.accept_source_route=0" >> /etc/sysctl.conf
+        echo "net.ipv4.conf.${each}.accept_redirects=0" >> /etc/sysctl.conf
+        echo "net.ipv4.conf.${each}.send_redirects=0" >> /etc/sysctl.conf
+        echo "net.ipv4.conf.${each}.rp_filter=0" >> /etc/sysctl.conf
+    done
+    sysctl -p
+
+    cat > /usr/lib/firewalld/services/xl2tpd.xml<<EOF
+<?xml version="1.0" encoding="utf-8"?>
+<service>
+  <short>xl2tpd</short>
+  <description>L2TP IPSec</description>
+  <port protocol="udp" port="4500"/>
+  <port protocol="udp" port="1701"/>
+</service>
+EOF
+    systemctl status firewalld > /dev/null 2>&1
+    if [ $? -eq 0 ];then
+        firewall-cmd --permanent --add-service=ipsec
+        firewall-cmd --permanent --add-service=xl2tpd
+        firewall-cmd --permanent --add-masquerade
+        firewall-cmd --reload
+    else
+        echo "Firewalld looks like not running, try to start..."
+        systemctl start firewalld
+        if [ $? -eq 0 ];then
+            echo "Firewalld start success..."
+            firewall-cmd --permanent --add-service=ipsec
+            firewall-cmd --permanent --add-service=xl2tpd
+            firewall-cmd --permanent --add-masquerade
+            firewall-cmd --reload
+        else
+            echo "Try to start firewalld failed. please enable port 500 4500 manually if necessary."
+        fi
+    fi
+
+    systemctl enable ipsec
+    systemctl enable xl2tpd
+    systemctl restart ipsec
+    systemctl restart xl2tpd
+    echo "confirm ipsec status..."
+    systemctl -a | grep ipsec
+    echo "confirm xl2tpd status..."
+    systemctl -a | grep xl2tpd
+
+}
+
+finally(){
+
+    cd ${cur_dir}
+    rm -fr ${cur_dir}/l2tp
+
+    sleep 5
+    ipsec verify
+    echo
+    echo "###############################################################"
+    echo "# Auto Install L2TP VPN for your Server                       #"
+    echo "# System Required:  CentOS/RadHat 6+ / Debian 7+ / Ubuntu 12+ #"
+    echo "# Intro: https://teddysun.com                                 #"
+    echo "# Author: Teddysun <i@teddysun.com>                           #"
+    echo "###############################################################"
+    echo "if there are no [FAILED] above, then you can connect to your"
+    echo "L2TP VPN Server with the default Username/Password is below:"
+    echo
+    echo "ServerIP:${IP}"
+    echo "PSK:${mypsk}"
+    echo "Username:${username}"
+    echo "Password:${password}"
+    echo
+    echo "Welcome to visit https://teddysun.com"
+    echo "Enjoy it!"
+}
+
+
+l2tp(){
+    clear
+    echo
+    echo "###############################################################"
+    echo "# Auto Install L2TP VPN for your Server                       #"
+    echo "# System Required:  CentOS/RadHat 6+ / Debian 7+ / Ubuntu 12+ #"
+    echo "# Intro: https://teddysun.com                                 #"
+    echo "# Author: Teddysun <i@teddysun.com>                           #"
+    echo "###############################################################"
+    echo
+    rootness
+    tunavailable
+    disable_selinux
+    version_check
+    get_os_info
+    preinstall_l2tp
+    install_l2tp
+    finally
+}
+
+#Run it
+rm -f /root/l2tp.log
+l2tp 2>&1 | tee -a /root/l2tp.log
