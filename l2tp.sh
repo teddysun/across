@@ -5,7 +5,7 @@ export PATH
 #   System Required:  CentOS/RadHat 6+ / Debian 7+ / Ubuntu 12+         #
 #   Description:  Auto Install L2TP VPN                                 #
 #   Author: Teddysun <i@teddysun.com>                                   #
-#   Intro:  https://teddysun.com                                        #
+#   Intro:  https://teddysun.com/448.html                               #
 #=======================================================================#
 cur_dir=`pwd`
 
@@ -403,7 +403,7 @@ EOF
         chkconfig xl2tpd on
 
         /etc/init.d/iptables restart
-        /etc/init.d/ipsec restart
+        /etc/init.d/ipsec start
         /etc/init.d/xl2tpd start
 
     else
@@ -614,25 +614,29 @@ finally(){
     cd ${cur_dir}
     rm -fr ${cur_dir}/l2tp
 
+    echo "Please wait a moment..."
     sleep 5
     ipsec verify
     echo
     echo "###############################################################"
     echo "# Auto Install L2TP VPN for your Server                       #"
     echo "# System Required:  CentOS/RadHat 6+ / Debian 7+ / Ubuntu 12+ #"
-    echo "# Intro: https://teddysun.com                                 #"
+    echo "# Intro: https://teddysun.com/448.html                        #"
     echo "# Author: Teddysun <i@teddysun.com>                           #"
     echo "###############################################################"
-    echo "if there are no [FAILED] above, then you can connect to your"
+    echo "If there are no [FAILED] above, then you can connect to your"
     echo "L2TP VPN Server with the default Username/Password is below:"
     echo
-    echo "ServerIP:${IP}"
-    echo "PSK:${mypsk}"
-    echo "Username:${username}"
-    echo "Password:${password}"
+    echo "ServerIP:\033[41;37m${IP}\033[0m"
+    echo "PSK:\033[41;37m${mypsk}\033[0m"
+    echo "Username:\033[41;37m${username}\033[0m"
+    echo "Password:\033[41;37m${password}\033[0m"
     echo
-    echo "Welcome to visit https://teddysun.com"
+    echo "If you want to add users, please modify"
+    echo "/etc/ppp/chap-secrets and add it."
+    echo "Welcome to visit https://teddysun.com/448.html"
     echo "Enjoy it!"
+    echo
 }
 
 
@@ -642,7 +646,7 @@ l2tp(){
     echo "###############################################################"
     echo "# Auto Install L2TP VPN for your Server                       #"
     echo "# System Required:  CentOS/RadHat 6+ / Debian 7+ / Ubuntu 12+ #"
-    echo "# Intro: https://teddysun.com                                 #"
+    echo "# Intro: https://teddysun.com/448.html                        #"
     echo "# Author: Teddysun <i@teddysun.com>                           #"
     echo "###############################################################"
     echo
