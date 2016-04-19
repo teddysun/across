@@ -129,6 +129,14 @@ rand() {
     echo ${str}
 }
 
+is_64bit(){
+    if [ `getconf WORD_BIT` = '32' ] && [ `getconf LONG_BIT` = '64' ] ; then
+        return 0
+    else
+        return 1
+    fi
+}
+
 download_file(){
     local download_root_url="http://lamp.teddysun.com/files"
 
@@ -156,6 +164,21 @@ centosversion(){
         local code=${1}
         local version="`versionget`"
         local main_ver=${version%%.*}
+        if [ ${main_ver} == ${code} ];then
+            return 0
+        else
+            return 1
+        fi
+    else
+        return 1
+    fi
+}
+
+debianversion(){
+    if check_sys sysRelease debian;then
+        local version=$( get_opsy )
+        local code=${1}
+        local main_ver=$( echo ${version} | sed 's/[^0-9]//g')
         if [ ${main_ver} == ${code} ];then
             return 0
         else
@@ -221,7 +244,44 @@ install_l2tp(){
 
     if check_sys packageManager apt;then
         apt-get -y update
-        apt-get -y install gcc ppp flex bison make libnss3-dev libnspr4-dev pkg-config libpam0g-dev libcap-ng-dev libcap-ng-utils libunbound-dev libnss3-tools libevent-dev libcurl4-nss-dev
+
+        if debianversion 7;then
+            if is_64bit;then
+                local libnspr4_filename1="libnspr4_4.10.7-1_amd64.deb"
+                local libnspr4_filename2="libnspr4-0d_4.10.7-1_amd64.deb"
+                local libnspr4_filename3="libnspr4-dev_4.10.7-1_amd64.deb"
+                local libnspr4_filename4="libnspr4-dbg_4.10.7-1_amd64.deb"
+                local libnss3_filename1="libnss3_3.17.2-1.1_amd64.deb"
+                local libnss3_filename2="libnss3-1d_3.17.2-1.1_amd64.deb"
+                local libnss3_filename3="libnss3-tools_3.17.2-1.1_amd64.deb"
+                local libnss3_filename4="libnss3-dev_3.17.2-1.1_amd64.deb"
+                local libnss3_filename5="libnss3-dbg_3.17.2-1.1_amd64.deb"
+            else
+                local libnspr4_filename1="libnspr4_4.10.7-1_i386.deb"
+                local libnspr4_filename2="libnspr4-0d_4.10.7-1_i386.deb"
+                local libnspr4_filename3="libnspr4-dev_4.10.7-1_i386.deb"
+                local libnspr4_filename4="libnspr4-dbg_4.10.7-1_i386.deb"
+                local libnss3_filename1="libnss3_3.17.2-1.1_i386.deb"
+                local libnss3_filename2="libnss3-1d_3.17.2-1.1_i386.deb"
+                local libnss3_filename3="libnss3-tools_3.17.2-1.1_i386.deb"
+                local libnss3_filename4="libnss3-dev_3.17.2-1.1_i386.deb"
+                local libnss3_filename5="libnss3-dbg_3.17.2-1.1_i386.deb"
+            fi
+            download_file "${libnspr4_filename1}"
+            download_file "${libnspr4_filename2}"
+            download_file "${libnspr4_filename3}"
+            download_file "${libnspr4_filename4}"
+            download_file "${libnss3_filename1}"
+            download_file "${libnss3_filename2}"
+            download_file "${libnss3_filename3}"
+            download_file "${libnss3_filename4}"
+            download_file "${libnss3_filename5}"
+            dpkg -i ${libnspr4_filename1} ${libnspr4_filename2} ${libnspr4_filename3} ${libnspr4_filename4}
+            dpkg -i ${libnss3_filename1} ${libnss3_filename2} ${libnss3_filename3} ${libnss3_filename4} ${libnss3_filename5}
+            apt-get -y install gcc ppp flex bison make pkg-config libpam0g-dev libcap-ng-dev libcap-ng-utils libunbound-dev libevent-dev libcurl4-nss-dev
+        else
+            apt-get -y install gcc ppp flex bison make libnss3-dev libnspr4-dev pkg-config libpam0g-dev libcap-ng-dev libcap-ng-utils libunbound-dev libnss3-tools libevent-dev libcurl4-nss-dev
+        fi
         apt-get -y --no-install-recommends install xmlto
         apt-get -y install xl2tpd
         compile_install
@@ -463,7 +523,7 @@ EOF
         echo 1 > /proc/sys/net/ipv4/ip_forward
 
         /sbin/iptables-restore < /etc/iptables.rules
-        /usr/sbin/service ipsec restart
+        /usr/sbin/service ipsec start
         /usr/sbin/service xl2tpd restart
 
     fi
