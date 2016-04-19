@@ -221,8 +221,7 @@ install_l2tp(){
 
     if check_sys packageManager apt;then
         apt-get -y update
-        apt-get -y install gcc ppp flex bison make libnss3-dev libnspr4-dev pkg-config libpam0g-dev 
-        apt-get -y install libcap-ng-dev libcap-ng-utils libcurl4-nss-dev libunbound-dev libnss3-tools libevent-dev
+        apt-get -y install gcc ppp flex bison make libnss3-dev libnspr4-dev pkg-config libpam0g-dev libcap-ng-dev libcap-ng-utils libunbound-dev libnss3-tools libevent-dev libcurl4-nss-dev
         apt-get -y --no-install-recommends install xmlto
         apt-get -y install xl2tpd
         compile_install
