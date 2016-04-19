@@ -3,7 +3,7 @@
 l2tp.sh
 =======
 
-* Description: Auto install L2TP VPN for CentOS/Debian/Ubuntu
+* Description: Auto install L2TP VPN for CentOS6+/Debian7+/Ubuntu12+
 * Intro: https://teddysun.com/448.html
 
 bench.sh
