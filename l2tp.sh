@@ -626,10 +626,10 @@ finally(){
     echo "If there are no [FAILED] above, then you can connect to your"
     echo "L2TP VPN Server with the default Username/Password is below:"
     echo
-    echo "ServerIP:\033[41;37m${IP}\033[0m"
-    echo "PSK:\033[41;37m${mypsk}\033[0m"
-    echo "Username:\033[41;37m${username}\033[0m"
-    echo "Password:\033[41;37m${password}\033[0m"
+    echo "ServerIP:${IP}"
+    echo "PSK:${mypsk}"
+    echo "Username:${username}"
+    echo "Password:${password}"
     echo
     echo "If you want to add users, please modify"
     echo "/etc/ppp/chap-secrets and add it."
