@@ -267,6 +267,7 @@ install_l2tp(){
                 local libnss3_filename4="libnss3-dev_3.17.2-1.1_i386.deb"
                 local libnss3_filename5="libnss3-dbg_3.17.2-1.1_i386.deb"
             fi
+            [ ! -d ${cur_dir}/l2tp ] && mkdir -p ${cur_dir}/l2tp && cd ${cur_dir}/l2tp
             download_file "${libnspr4_filename1}"
             download_file "${libnspr4_filename2}"
             download_file "${libnspr4_filename3}"
@@ -278,9 +279,9 @@ install_l2tp(){
             download_file "${libnss3_filename5}"
             dpkg -i ${libnspr4_filename1} ${libnspr4_filename2} ${libnspr4_filename3} ${libnspr4_filename4}
             dpkg -i ${libnss3_filename1} ${libnss3_filename2} ${libnss3_filename3} ${libnss3_filename4} ${libnss3_filename5}
-            apt-get -y install gcc ppp flex bison make pkg-config libpam0g-dev libcap-ng-dev libcap-ng-utils libunbound-dev libevent-dev libcurl4-nss-dev
+            apt-get -y install wget gcc ppp flex bison make pkg-config libpam0g-dev libcap-ng-dev libcap-ng-utils libunbound-dev libevent-dev libcurl4-nss-dev
         else
-            apt-get -y install gcc ppp flex bison make python libnss3-dev libnspr4-dev pkg-config libpam0g-dev libcap-ng-dev libcap-ng-utils libunbound-dev libnss3-tools libevent-dev libcurl4-nss-dev
+            apt-get -y install wget gcc ppp flex bison make python libnss3-dev libnspr4-dev pkg-config libpam0g-dev libcap-ng-dev libcap-ng-utils libunbound-dev libnss3-tools libevent-dev libcurl4-nss-dev
         fi
         apt-get -y --no-install-recommends install xmlto
         apt-get -y install xl2tpd
