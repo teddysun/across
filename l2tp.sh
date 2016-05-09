@@ -511,16 +511,18 @@ EOF
            rm -f /var/tmp/libreswan-nss-pwd
         fi
 
-        update-rc.d xl2tpd defaults
+        update-rc.d -f xl2tpd defaults
+
         cp -f /etc/rc.local /etc/rc.local.old.`date +%Y%m%d`
         sed --follow-symlinks -i -e '/^exit 0/d' /etc/rc.local
         cat >> /etc/rc.local <<EOF
 
 # Added by L2TP VPN script
-/usr/sbin/service ipsec start
 echo 1 > /proc/sys/net/ipv4/ip_forward
+/usr/sbin/service ipsec start
 exit 0
 EOF
+        chmod +x /etc/rc.local
         echo 1 > /proc/sys/net/ipv4/ip_forward
 
         /sbin/iptables-restore < /etc/iptables.rules
