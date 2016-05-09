@@ -720,6 +720,84 @@ l2tp(){
     finally
 }
 
-#Run it
-rm -f /root/l2tp.log
-l2tp 2>&1 | tee -a /root/l2tp.log
+list_users(){
+    if [ ! -f /etc/ppp/chap-secrets ];then
+        echo "Error: /etc/ppp/chap-secrets file not found."
+        exit 1
+    fi
+    echo "========== Users List =========="
+    grep -v "^#" /etc/ppp/chap-secrets | awk '{print $1}'
+    echo "================================"
+}
+
+add_user(){
+    while :
+    do
+        read -p "Please input your Username:" user
+        if [ -z ${user} ]; then
+            echo "Username can not be empty"
+        else
+            grep -w "${user}" /etc/ppp/chap-secrets >/dev/null 2>&1
+            if [ $? -eq 0 ];then
+                echo "Username (${user}) already exists. Please re-enter your username."
+            else
+                break
+            fi
+        fi
+    done
+    pass=`rand`
+    echo "Please input ${user}'s password:"
+    read -p "(Default Password: ${pass}):" tmppass
+    [ ! -z ${tmppass} ] && pass=${tmppass}
+    echo "${user}    l2tpd    ${pass}       *" >> /etc/ppp/chap-secrets
+    echo "Username (${user}) add completed."
+}
+
+del_user(){
+    while :
+    do
+        read -p "Please input Username you want to delete it:" user
+        if [ -z ${user} ]; then
+            echo "Username can not be empty"
+        else
+            grep -w "${user}" /etc/ppp/chap-secrets >/dev/null 2>&1
+            if [ $? -eq 0 ];then
+                break
+            else
+                echo "Username (${user}) is not exists. Please re-enter your username."
+            fi
+        fi
+    done
+    sed -i "/^\<${user}\>/d" /etc/ppp/chap-secrets
+    echo "Username (${user}) delete completed."
+}
+
+# Main process
+action=$1
+[ -z ${action} ] && action=install
+
+case ${action} in
+    install)
+        rm -f /root/l2tp.log
+        l2tp 2>&1 | tee -a /root/l2tp.log
+        ;;
+    -l|--list)
+        list_users
+        ;;
+    -a|--add)
+        add_user
+        ;;
+    -d|--del)
+        del_user
+        ;;
+    -h|--help)
+        echo "Usage: `basename $0`             Install L2TP VPN Server"
+        echo "       `basename $0` -l,--list   List all users"
+        echo "       `basename $0` -a,--add    Add a user"
+        echo "       `basename $0` -d,--del    Delete a user"
+        echo "       `basename $0` -h,--help   Print this help information"
+        ;;
+    *)
+        echo "Usage: `basename $0` [-l,--list|-a,--add|-d,--del|-h,--help]" && exit
+        ;;
+esac
