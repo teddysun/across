@@ -322,6 +322,7 @@ compile_install(){
             make && make install
             if [ $? -eq 0 ]; then
                 ln -s /usr/local/lib/libevent-2.0.so.5 /usr/lib/libevent-2.0.so.5
+                ln -s /usr/local/lib/libevent_pthreads-2.0.so.5 /usr/lib/libevent_pthreads-2.0.so.5
             else
                 echo "libevent2 install failed..."
             fi
