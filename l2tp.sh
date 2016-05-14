@@ -9,6 +9,7 @@ export PATH
 #=======================================================================#
 cur_dir=`pwd`
 
+libevent2_src_filename="libevent-2.0.22-stable"
 libevent2_rpm_filename="libevent2-2.0.22-1.el6.x86_64.rpm"
 libevent2_devel_rpm_filename="libevent2-devel-2.0.22-1.el6.x86_64.rpm"
 libreswan_filename="libreswan-3.17"
@@ -309,9 +310,22 @@ compile_install(){
     tar -zxf ${libreswan_filename}.tar.gz
 
     if centosversion 6; then
-        download_file "${libevent2_rpm_filename}"
-        download_file "${libevent2_devel_rpm_filename}"
-        rpm -ivh --force ${libevent2_rpm_filename} ${libevent2_devel_rpm_filename}
+        if is_64bit;then
+            download_file "${libevent2_rpm_filename}"
+            download_file "${libevent2_devel_rpm_filename}"
+            rpm -ivh --force ${libevent2_rpm_filename} ${libevent2_devel_rpm_filename}
+        else
+            download_file "${libevent2_src_filename}.tar.gz"
+            tar -zxf ${libevent2_src_filename}.tar.gz
+            cd ${libevent2_src_filename}
+            ./configure
+            make && make install
+            if [ $? -eq 0 ]; then
+                ln -s /usr/local/lib/libevent-2.0.so.5 /usr/lib/libevent-2.0.so.5
+            else
+                echo "libevent2 install failed..."
+            fi
+        fi
     fi
 
     cd ${cur_dir}/l2tp/${libreswan_filename}
