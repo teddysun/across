@@ -10,8 +10,6 @@ export PATH
 cur_dir=`pwd`
 
 libevent2_src_filename="libevent-2.0.22-stable"
-libevent2_rpm_filename="libevent2-2.0.22-1.el6.x86_64.rpm"
-libevent2_devel_rpm_filename="libevent2-devel-2.0.22-1.el6.x86_64.rpm"
 libreswan_filename="libreswan-3.17"
 
 rootness(){
@@ -268,7 +266,9 @@ install_l2tp(){
                 local libnss3_filename4="libnss3-dev_3.17.2-1.1_i386.deb"
                 local libnss3_filename5="libnss3-dbg_3.17.2-1.1_i386.deb"
             fi
-            [ ! -d ${cur_dir}/l2tp ] && mkdir -p ${cur_dir}/l2tp && cd ${cur_dir}/l2tp
+            rm -f ${cur_dir}/l2tp
+            mkdir -p ${cur_dir}/l2tp
+            cd ${cur_dir}/l2tp
             download_file "${libnspr4_filename1}"
             download_file "${libnspr4_filename2}"
             download_file "${libnspr4_filename3}"
@@ -304,28 +304,24 @@ install_l2tp(){
 
 compile_install(){
 
-    [ ! -d ${cur_dir}/l2tp ] && mkdir -p ${cur_dir}/l2tp
+    rm -f ${cur_dir}/l2tp
+    mkdir -p ${cur_dir}/l2tp
     cd ${cur_dir}/l2tp
     download_file "${libreswan_filename}.tar.gz"
     tar -zxf ${libreswan_filename}.tar.gz
 
     if centosversion 6; then
-        if is_64bit;then
-            download_file "${libevent2_rpm_filename}"
-            download_file "${libevent2_devel_rpm_filename}"
-            rpm -ivh --force ${libevent2_rpm_filename} ${libevent2_devel_rpm_filename}
+        download_file "${libevent2_src_filename}.tar.gz"
+        tar -zxf ${libevent2_src_filename}.tar.gz
+        cd ${libevent2_src_filename}
+        ./configure
+        make && make install
+        if [ $? -eq 0 ]; then
+            ln -s /usr/local/lib/libevent-2.0.so.5 /usr/lib/libevent-2.0.so.5
+            ln -s /usr/local/lib/libevent_pthreads-2.0.so.5 /usr/lib/libevent_pthreads-2.0.so.5
         else
-            download_file "${libevent2_src_filename}.tar.gz"
-            tar -zxf ${libevent2_src_filename}.tar.gz
-            cd ${libevent2_src_filename}
-            ./configure
-            make && make install
-            if [ $? -eq 0 ]; then
-                ln -s /usr/local/lib/libevent-2.0.so.5 /usr/lib/libevent-2.0.so.5
-                ln -s /usr/local/lib/libevent_pthreads-2.0.so.5 /usr/lib/libevent_pthreads-2.0.so.5
-            else
-                echo "libevent2 install failed..."
-            fi
+            echo "libevent2 install failed..."
+            exit 1
         fi
     fi
 
