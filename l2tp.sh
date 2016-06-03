@@ -290,7 +290,7 @@ install_l2tp(){
     elif check_sys packageManager yum; then
         if centosversion 7; then
             yum -y install epel-release
-            yum -y install ppp libreswan xl2tpd
+            yum -y install ppp libreswan xl2tpd firewalld
             yum_install
         elif centosversion 6; then
             yum -y install epel-release
