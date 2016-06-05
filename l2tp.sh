@@ -200,6 +200,19 @@ version_check(){
 preinstall_l2tp(){
 
     echo
+    if [ -d "/proc/vz" ]; then
+        echo -e "\033[41;37m WARNING: \033[0m Your VPS is based OpenVZ, Maybe the kernel does not support IPSec."
+        echo "Continue to install it? (y/n)"
+        read -p "(Default: n)" agree
+        [ -z ${agree} ] && agree="n"
+        if [ "${agree}" == "n" ]; then
+            echo
+            echo "L2TP install cancelled, nothing to do..."
+            echo
+            exit 0
+        fi
+    fi
+    echo
     echo "Please input IP-Range:"
     read -p "(Default Range: 192.168.18):" iprange
     [ -z ${iprange} ] && iprange="192.168.18"
