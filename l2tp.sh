@@ -330,8 +330,13 @@ compile_install(){
         ./configure
         make && make install
         if [ $? -eq 0 ]; then
-            ln -s /usr/local/lib/libevent-2.0.so.5 /usr/lib/libevent-2.0.so.5
-            ln -s /usr/local/lib/libevent_pthreads-2.0.so.5 /usr/lib/libevent_pthreads-2.0.so.5
+            if is_64bit;then
+                ln -s /usr/local/lib/libevent-2.0.so.5 /usr/lib64/libevent-2.0.so.5
+                ln -s /usr/local/lib/libevent_pthreads-2.0.so.5 /usr/lib64/libevent_pthreads-2.0.so.5
+            else
+                ln -s /usr/local/lib/libevent-2.0.so.5 /usr/lib/libevent-2.0.so.5
+                ln -s /usr/local/lib/libevent_pthreads-2.0.so.5 /usr/lib/libevent_pthreads-2.0.so.5
+            fi
         else
             echo "libevent2 install failed..."
             exit 1
