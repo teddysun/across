@@ -704,6 +704,8 @@ finally(){
 
     cd ${cur_dir}
     rm -fr ${cur_dir}/l2tp
+    # create l2tp command
+    cp -f ${cur_dir}/l2tp.sh /usr/bin/l2tp
 
     echo "Please wait a moment..."
     sleep 5
@@ -758,7 +760,6 @@ list_users(){
     fi
     echo "========== Users List =========="
     grep -v "^#" /etc/ppp/chap-secrets | awk '{print $1}'
-    echo "================================"
 }
 
 add_user(){
@@ -768,7 +769,7 @@ add_user(){
         if [ -z ${user} ]; then
             echo "Username can not be empty"
         else
-            grep -w "${user}" /etc/ppp/chap-secrets >/dev/null 2>&1
+            grep -w "${user}" /etc/ppp/chap-secrets > /dev/null 2>&1
             if [ $? -eq 0 ];then
                 echo "Username (${user}) already exists. Please re-enter your username."
             else
