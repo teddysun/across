@@ -5,6 +5,17 @@ l2tp.sh
 
 * Description: Auto install L2TP VPN for CentOS6+/Debian7+/Ubuntu12+
 * Intro: https://teddysun.com/448.html
+```
+Usage: l2tp [-l,--list|-a,--add|-d,--del|-h,--help]
+```
+
+| Command          | Description                  |
+|------------------|------------------------------|
+| l2tp -l,--list   | List all users               |
+| l2tp -a,--add    | Add a user                   |
+| l2tp -d,--del    | Delete a user                |
+| l2tp -h,--help   | Print this help information  |
+
 
 bench.sh
 ========
