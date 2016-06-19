@@ -691,12 +691,15 @@ EOF
 
     systemctl enable ipsec
     systemctl enable xl2tpd
+    systemctl enable firewalld
     systemctl restart ipsec
     systemctl restart xl2tpd
     echo "confirm ipsec status..."
     systemctl -a | grep ipsec
     echo "confirm xl2tpd status..."
     systemctl -a | grep xl2tpd
+    echo "confirm firewalld status..."
+    firewall-cmd --list-all
 
 }
 
