@@ -279,7 +279,7 @@ install_l2tp(){
                 local libnss3_filename4="libnss3-dev_3.17.2-1.1_i386.deb"
                 local libnss3_filename5="libnss3-dbg_3.17.2-1.1_i386.deb"
             fi
-            rm -f ${cur_dir}/l2tp
+            rm -rf ${cur_dir}/l2tp
             mkdir -p ${cur_dir}/l2tp
             cd ${cur_dir}/l2tp
             download_file "${libnspr4_filename1}"
@@ -317,7 +317,7 @@ install_l2tp(){
 
 compile_install(){
 
-    rm -f ${cur_dir}/l2tp
+    rm -rf ${cur_dir}/l2tp
     mkdir -p ${cur_dir}/l2tp
     cd ${cur_dir}/l2tp
     download_file "${libreswan_filename}.tar.gz"
