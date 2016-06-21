@@ -137,13 +137,13 @@ is_64bit(){
 }
 
 download_file(){
-    local download_root_url="http://lamp.teddysun.com/files"
+    local download_root_url="https://lamp.teddysun.com/files"
 
     if [ -s ${1} ]; then
         echo "$1 [found]"
     else
         echo "$1 not found!!!download now..."
-        if ! wget -c -t3 -T60 ${download_root_url}/${1};then
+        if ! wget --no-check-certificate -c -t3 -T60 ${download_root_url}/${1};then
             echo "Failed to download $1, please download it to ${cur_dir} directory manually and try again."
             exit 1
         fi
