@@ -1,6 +1,6 @@
 #!/bin/bash
 #==============================================================#
-#   Description: bench test script                             #
+#   Description: bench test shell script                       #
 #   Author: Teddysun <i@teddysun.com>                          #
 #   Thanks: LookBack <admin@dwhd.org>                          #
 #   Visit:  https://teddysun.com                               #
@@ -79,33 +79,35 @@ io_test() {
     (LANG=en_US dd if=/dev/zero of=test_$$ bs=64k count=16k conv=fdatasync && rm -f test_$$ ) 2>&1 | awk -F, '{io=$NF} END { print io}' | sed 's/^[ \t]*//;s/[ \t]*$//'
 }
 
-cname=$( awk -F: '/model name/ {name=$2} END {print name}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
-cores=$( awk -F: '/model name/ {core++} END {print core}' /proc/cpuinfo )
-freq=$( awk -F: '/cpu MHz/ {freq=$2} END {print freq}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
-tram=$( free -m | awk '/Mem/ {print $2}' )
-swap=$( free -m | awk '/Swap/ {print $2}' )
-up=$( awk '{a=$1/86400;b=($1%86400)/3600;c=($1%3600)/60;d=$1%60} {printf("%ddays, %d:%d:%d\n",a,b,c,d)}' /proc/uptime )
-opsy=$( get_opsy )
-arch=$( uname -m )
-lbit=$( getconf LONG_BIT )
-host=$( hostname )
-kern=$( uname -r )
-ipv6=$( wget -qO- -t1 -T2 ipv6.icanhazip.com )
-
-clear
-next
-echo "CPU model            : $cname"
-echo "Number of cores      : $cores"
-echo "CPU frequency        : $freq MHz"
-echo "Total amount of ram  : $tram MB"
-echo "Total amount of swap : $swap MB"
-echo "System uptime        : $up"
-echo "OS                   : $opsy"
-echo "Arch                 : $arch ($lbit Bit)"
-echo "Kernel               : $kern"
-next
-
 if  [ -e '/usr/bin/wget' ]; then
+    cname=$( awk -F: '/model name/ {name=$2} END {print name}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
+    cores=$( awk -F: '/model name/ {core++} END {print core}' /proc/cpuinfo )
+    freq=$( awk -F: '/cpu MHz/ {freq=$2} END {print freq}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
+    tram=$( free -m | awk '/Mem/ {print $2}' )
+    swap=$( free -m | awk '/Swap/ {print $2}' )
+    up=$( awk '{a=$1/86400;b=($1%86400)/3600;c=($1%3600)/60;d=$1%60} {printf("%ddays, %d:%d:%d\n",a,b,c,d)}' /proc/uptime )
+    load=$( uptime | awk -F: '{print $5}' | sed 's/^[ \t]*//;s/[ \t]*$//' )
+    opsy=$( get_opsy )
+    arch=$( uname -m )
+    lbit=$( getconf LONG_BIT )
+    host=$( hostname )
+    kern=$( uname -r )
+    ipv6=$( wget -qO- -t1 -T2 ipv6.icanhazip.com )
+
+    clear
+    next
+    echo "CPU model            : $cname"
+    echo "Number of cores      : $cores"
+    echo "CPU frequency        : $freq MHz"
+    echo "Total amount of ram  : $tram MB"
+    echo "Total amount of swap : $swap MB"
+    echo "System uptime        : $up"
+    echo "Load average         : $load"
+    echo "OS                   : $opsy"
+    echo "Arch                 : $arch ($lbit Bit)"
+    echo "Kernel               : $kern"
+    next
+
     echo -e "Node Name\t\t\tIPv4 address\t\tDownload Speed"
     speed && next
     if [[ "$ipv6" != "" ]]; then
@@ -132,4 +134,4 @@ echo "I/O speed(1st run) : $io1"
 echo "I/O speed(2nd run) : $io2"
 echo "I/O speed(3rd run) : $io3"
 echo "Average I/O: $ioavg MB/s"
-echo ""
+echo
