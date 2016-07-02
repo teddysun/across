@@ -34,9 +34,9 @@ fi
 }
 
 get_opsy(){
+    [ -f /etc/redhat-release ] && awk '{print ($1,$3~/^[0-9]/?$3:$4)}' /etc/redhat-release && return
     [ -f /etc/os-release ] && awk -F'[= "]' '/PRETTY_NAME/{print $3,$4,$5}' /etc/os-release && return
     [ -f /etc/lsb-release ] && awk -F'[="]+' '/DESCRIPTION/{print $2}' /etc/lsb-release && return
-    [ -f /etc/redhat-release ] && awk '{print ($1,$3~/^[0-9]/?$3:$4)}' /etc/redhat-release && return
 }
 
 get_os_info(){
@@ -57,7 +57,7 @@ get_os_info(){
     local kern=$( uname -r )
 
     echo "########## System Information ##########"
-    echo ""
+    echo 
     echo "CPU model            : ${cname}"
     echo "Number of cores      : ${cores}"
     echo "CPU frequency        : ${freq} MHz"
@@ -69,7 +69,7 @@ get_os_info(){
     echo "Kernel               : ${kern}"
     echo "Hostname             : ${host}"
     echo "IPv4 address         : ${IP}"
-    echo ""
+    echo 
     echo "########################################"
 }
 
@@ -669,6 +669,7 @@ EOF
   <port protocol="udp" port="1701"/>
 </service>
 EOF
+    chmod 640 /usr/lib/firewalld/services/xl2tpd.xml
     systemctl status firewalld > /dev/null 2>&1
     if [ $? -eq 0 ];then
         firewall-cmd --permanent --add-service=ipsec
@@ -708,7 +709,7 @@ finally(){
     cd ${cur_dir}
     rm -fr ${cur_dir}/l2tp
     # create l2tp command
-    cp -f ${cur_dir}/l2tp.sh /usr/bin/l2tp
+    cp -f ${cur_dir}/`basename $0` /usr/bin/l2tp
 
     echo "Please wait a moment..."
     sleep 5
@@ -728,8 +729,10 @@ finally(){
     echo "Username:${username}"
     echo "Password:${password}"
     echo
-    echo "If you want to add users, please modify"
-    echo "/etc/ppp/chap-secrets and add it."
+    echo "If you want to operation user, please use command(s):"
+    echo "l2tp -a (Add a user)"
+    echo "l2tp -d (Delete a user)"
+    echo "l2tp -l (List all users)"
     echo "Welcome to visit https://teddysun.com/448.html"
     echo "Enjoy it!"
     echo
@@ -813,8 +816,14 @@ action=$1
 
 case ${action} in
     install)
-        rm -f /root/l2tp.log
-        l2tp 2>&1 | tee -a /root/l2tp.log
+        if [ -x /usr/bin/l2tp ]; then
+            echo "ERROR: /usr/bin/l2tp already exists. You must delete this file at first."
+            echo
+            exit 1
+        else
+            rm -f /root/l2tp.log
+            l2tp 2>&1 | tee -a /root/l2tp.log
+        fi
         ;;
     -l|--list)
         list_users
