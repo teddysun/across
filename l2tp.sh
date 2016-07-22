@@ -670,8 +670,16 @@ EOF
 </service>
 EOF
     chmod 640 /usr/lib/firewalld/services/xl2tpd.xml
+    sleep 5
+
+    systemctl enable ipsec
+    systemctl enable xl2tpd
+    systemctl enable firewalld
+
     systemctl status firewalld > /dev/null 2>&1
     if [ $? -eq 0 ];then
+        echo "confirm firewalld status..."
+        firewall-cmd --list-all
         firewall-cmd --permanent --add-service=ipsec
         firewall-cmd --permanent --add-service=xl2tpd
         firewall-cmd --permanent --add-masquerade
@@ -681,6 +689,8 @@ EOF
         systemctl start firewalld
         if [ $? -eq 0 ];then
             echo "Firewalld start success..."
+            echo "confirm firewalld status..."
+            firewall-cmd --list-all
             firewall-cmd --permanent --add-service=ipsec
             firewall-cmd --permanent --add-service=xl2tpd
             firewall-cmd --permanent --add-masquerade
@@ -690,9 +700,6 @@ EOF
         fi
     fi
 
-    systemctl enable ipsec
-    systemctl enable xl2tpd
-    systemctl enable firewalld
     systemctl restart ipsec
     systemctl restart xl2tpd
     echo "confirm ipsec status..."
