@@ -10,7 +10,7 @@ export PATH
 cur_dir=`pwd`
 
 libevent2_src_filename="libevent-2.0.22-stable"
-libreswan_filename="libreswan-3.17"
+libreswan_filename="libreswan-3.18"
 
 rootness(){
     if [[ $EUID -ne 0 ]]; then
