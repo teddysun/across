@@ -4,6 +4,7 @@
 #   Author: Teddysun <i@teddysun.com>                          #
 #   Intro:  https://teddysun.com/245.html                      #
 #==============================================================#
+cur_dir=/opt/unixbench
 
 # Check System
 [[ $EUID -ne 0 ]] && echo 'Error: This script must be run as root!' && exit 1
@@ -21,29 +22,28 @@ else
 fi
 
 # Create new soft download dir
-mkdir -p /opt/unixbench
-cd /opt/unixbench
-cur_dir=`pwd`
+mkdir -p ${cur_dir}
+cd ${cur_dir}
 
 # Download UnixBench5.1.3
 if [ -s UnixBench5.1.3.tgz ]; then
     echo "UnixBench5.1.3.tgz [found]"
 else
     echo "UnixBench5.1.3.tgz not found!!!download now..."
-    if ! wget -c http://lamp.teddysun.com/files/UnixBench5.1.3.tgz; then
+    if ! wget -c http://dl.teddysun.com/files/UnixBench5.1.3.tgz; then
         echo "Failed to download UnixBench5.1.3.tgz, please download it to ${cur_dir} directory manually and try again."
         exit 1
     fi
 fi
-tar -xzf UnixBench5.1.3.tgz
+tar -zxvf UnixBench5.1.3.tgz && rm -f UnixBench5.1.3.tgz
 cd UnixBench/
 
 #Run unixbench
 make
 ./Run
 
-echo ''
-echo ''
+echo
+echo
 echo "======= Script description and score comparison completed! ======= "
-echo ''
-echo ''
+echo
+echo
