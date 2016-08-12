@@ -32,6 +32,26 @@ Usage:
 | 4        | curl -so- 86.re/bench.sh | bash |
 ```
 
+backup.sh
+=========
+
+* You need to modify the config at first
+* Backup MySQL/MariaDB all datebases & files and directories
+* Backups are encrypted with AES256-cbc with SHA1 message-digest
+* Auto transfer backup file to Google Drive(need install `gdrive`)
+
+```bash
+Install gdrive step:
+
+For x86_64: 
+wget -O /usr/bin/gdrive http://dl.teddysun.com/files/gdrive-linux-x64
+chmod +x /usr/bin/gdrive
+
+For i386: 
+wget -O /usr/bin/gdrive http://dl.teddysun.com/files/gdrive-linux-386
+chmod +x /usr/bin/gdrive
+```
+
 unixbench.sh
 ============
 
