@@ -827,18 +827,14 @@ del_user(){
 
 # Main process
 action=$1
-[ -z ${action} ] && action=install
+if [ -z ${action} ] && [ "`basename $0`" != "l2tp" ]; then
+    action=install
+fi
 
 case ${action} in
     install)
-        if [ -x /usr/bin/l2tp ]; then
-            echo "ERROR: /usr/bin/l2tp already exists. You must delete this file at first."
-            echo
-            exit 1
-        else
-            rm -f /root/l2tp.log
-            l2tp 2>&1 | tee -a /root/l2tp.log
-        fi
+        rm -f /root/l2tp.log
+        l2tp 2>&1 | tee -a /root/l2tp.log
         ;;
     -l|--list)
         list_users
