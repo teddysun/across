@@ -2,8 +2,8 @@
 PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
 export PATH
 #=======================================================================#
-#   System Required:  CentOS/RadHat 6+ / Debian 7+ / Ubuntu 12+         #
-#   Description:  Auto Install L2TP VPN                                 #
+#   System Supported:  CentOS/RadHat 6+ / Debian 7+ / Ubuntu 12+        #
+#   Description: L2TP VPN Auto Installer                                #
 #   Author: Teddysun <i@teddysun.com>                                   #
 #   Intro:  https://teddysun.com/448.html                               #
 #=======================================================================#
@@ -193,7 +193,7 @@ debianversion(){
 version_check(){
     if check_sys packageManager yum; then
         if centosversion 5; then
-            echo "Error:Not support CentOS 5, Please change your OS and try again."
+            echo "Error: CentOS 5 is not supported, Please re-install OS and try again."
             exit 1
         fi
     fi
@@ -203,32 +203,32 @@ preinstall_l2tp(){
 
     echo
     if [ -d "/proc/vz" ]; then
-        echo -e "\033[41;37m WARNING: \033[0m Your VPS is based OpenVZ, Maybe the kernel does not support IPSec."
-        echo "Continue to install it? (y/n)"
+        echo -e "\033[41;37m WARNING: \033[0m Your VPS is based on OpenVZ, and IPSec might not be supported by the kernel."
+        echo "Continue installation? (y/n)"
         read -p "(Default: n)" agree
         [ -z ${agree} ] && agree="n"
         if [ "${agree}" == "n" ]; then
             echo
-            echo "L2TP install cancelled, nothing to do..."
+            echo "L2TP installation cancelled."
             echo
             exit 0
         fi
     fi
     echo
-    echo "Please input IP-Range:"
+    echo "Please enter IP-Range:"
     read -p "(Default Range: 192.168.18):" iprange
     [ -z ${iprange} ] && iprange="192.168.18"
 
-    echo "Please input PSK:"
+    echo "Please enter PSK:"
     read -p "(Default PSK: teddysun.com):" mypsk
     [ -z ${mypsk} ] && mypsk="teddysun.com"
 
-    echo "Please input Username:"
+    echo "Please enter Username:"
     read -p "(Default Username: teddysun):" username
     [ -z ${username} ] && username="teddysun"
 
     password=`rand`
-    echo "Please input ${username}'s password:"
+    echo "Please enter ${username}'s password:"
     read -p "(Default Password: ${password}):" tmppassword
     [ ! -z ${tmppassword} ] && password=${tmppassword}
 
@@ -247,7 +247,7 @@ preinstall_l2tp(){
     echo "Client Remote IP Range:${iprange}.2-${iprange}.254"
     echo "PSK:${mypsk}"
     echo
-    echo "Press any key to start...or Press Ctrl+c to cancel"
+    echo "Press any key to start... or press Ctrl + C to cancel."
     char=`get_char`
 
 }
@@ -679,7 +679,7 @@ EOF
 
     systemctl status firewalld > /dev/null 2>&1
     if [ $? -eq 0 ];then
-        echo "confirm firewalld status..."
+        echo "Checking firewalld status..."
         firewall-cmd --list-all
         echo "add firewalld rules..."
         firewall-cmd --permanent --add-service=ipsec
@@ -687,29 +687,29 @@ EOF
         firewall-cmd --permanent --add-masquerade
         firewall-cmd --reload
     else
-        echo "Firewalld looks like not running, try to start..."
+        echo "Firewalld looks like not running, trying to start..."
         systemctl start firewalld
         if [ $? -eq 0 ];then
-            echo "Firewalld start success..."
-            echo "confirm firewalld status..."
+            echo "Firewalld start successfully..."
+            echo "Checking firewalld status..."
             firewall-cmd --list-all
-            echo "add firewalld rules..."
+            echo "adding firewalld rules..."
             firewall-cmd --permanent --add-service=ipsec
             firewall-cmd --permanent --add-service=xl2tpd
             firewall-cmd --permanent --add-masquerade
             firewall-cmd --reload
         else
-            echo "Try to start firewalld failed. please enable port 500 4500 manually if necessary."
+            echo "Failed to start firewalld. please enable port 500 4500 manually if necessary."
         fi
     fi
 
     systemctl restart ipsec
     systemctl restart xl2tpd
-    echo "confirm ipsec status..."
+    echo "Checking ipsec status..."
     systemctl -a | grep ipsec
-    echo "confirm xl2tpd status..."
+    echo "Checking xl2tpd status..."
     systemctl -a | grep xl2tpd
-    echo "confirm firewalld status..."
+    echo "Checking firewalld status..."
     firewall-cmd --list-all
     firewall-cmd --list-all | grep xl2tpd > /dev/null 2>&1
     if [ $? -ne 0 ];then
@@ -731,20 +731,20 @@ finally(){
     ipsec verify
     echo
     echo "###############################################################"
-    echo "# Auto Install L2TP VPN for your Server                       #"
-    echo "# System Required:  CentOS/RadHat 6+ / Debian 7+ / Ubuntu 12+ #"
+    echo "# L2TP VPN Auto Installer                                     #"
+    echo "# System Supported: CentOS/RadHat 6+ / Debian 7+ / Ubuntu 12+ #"
     echo "# Intro: https://teddysun.com/448.html                        #"
     echo "# Author: Teddysun <i@teddysun.com>                           #"
     echo "###############################################################"
-    echo "If there are no [FAILED] above, then you can connect to your"
-    echo "L2TP VPN Server with the default Username/Password is below:"
+    echo "If there is no [FAILED] above, you can connect to your L2TP "
+    echo "VPN Server with the default Username/Password is below:"
     echo
     echo "ServerIP:${IP}"
     echo "PSK:${mypsk}"
     echo "Username:${username}"
     echo "Password:${password}"
     echo
-    echo "If you want to operation user, please use command(s):"
+    echo "If you want to modify user settings, please use command(s):"
     echo "l2tp -a (Add a user)"
     echo "l2tp -d (Delete a user)"
     echo "l2tp -l (List all users)"
@@ -758,8 +758,8 @@ l2tp(){
     clear
     echo
     echo "###############################################################"
-    echo "# Auto Install L2TP VPN for your Server                       #"
-    echo "# System Required:  CentOS/RadHat 6+ / Debian 7+ / Ubuntu 12+ #"
+    echo "# L2TP VPN Auto Installer                                     #"
+    echo "# System Supported: CentOS/RadHat 6+ / Debian 7+ / Ubuntu 12+ #"
     echo "# Intro: https://teddysun.com/448.html                        #"
     echo "# Author: Teddysun <i@teddysun.com>                           #"
     echo "###############################################################"
