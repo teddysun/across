@@ -92,7 +92,7 @@ if [ -z ${MYSQL_ROOT_PASSWORD} ]; then
     log "MySQL root password not set, MySQL back up skip"
 else
     log "MySQL dump start"
-    mysql -u root -p"${MYSQL_ROOT_PASSWORD}" <<EOF
+    mysql -u root -p"${MYSQL_ROOT_PASSWORD}" 2>/dev/null <<EOF
 exit
 EOF
     if [ $? -ne 0 ]; then
@@ -101,7 +101,7 @@ EOF
     fi
 
     if [ "${MYSQL_DATABASE_NAME[*]}" == "" ]; then
-        mysqldump -u root -p"${MYSQL_ROOT_PASSWORD}" --all-databases > "${SQLFILE}"
+        mysqldump -u root -p"${MYSQL_ROOT_PASSWORD}" --all-databases > "${SQLFILE}" 2>/dev/null
         if [ $? -ne 0 ]; then
             log "MySQL all databases backup failed"
             exit 1
@@ -114,7 +114,7 @@ EOF
         do
             unset DBFILE
             DBFILE="${TEMPDIR}${db}_${BACKUPDATE}.sql"
-            mysqldump -u root -p"${MYSQL_ROOT_PASSWORD}" ${db} > "${DBFILE}"
+            mysqldump -u root -p"${MYSQL_ROOT_PASSWORD}" ${db} > "${DBFILE}" 2>/dev/null
             if [ $? -ne 0 ]; then
                 log "MySQL database name [${db}] backup failed, please check database name is correct and try again"
                 exit 1
