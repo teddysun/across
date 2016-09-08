@@ -41,6 +41,12 @@ MYSQL_DATABASE_NAME[0]=""
 # if you want not to be backed up, leave it blank.
 BACKUP[0]=""
 
+# Number of days to store daily local backups
+LOCALAGEDAILIES="7"
+
+# Delete Googole Drive's remote file flag(true:delete, false:not delete)
+DELETE_REMOTE_FILE_FLG=true
+
 # Date & Time
 BACKUPDATE=$(date +%Y%m%d%H%M%S)
 
@@ -50,8 +56,6 @@ TARFILE="${LOCALDIR}""$(hostname)"_"${BACKUPDATE}".tgz
 # Backup MySQL dump file name
 SQLFILE="${TEMPDIR}mysql_${BACKUPDATE}.sql"
 
-# Number of days to store daily local backups
-LOCALAGEDAILIES="7"
 ### END OF CONFIG ###
 
 
@@ -173,9 +177,11 @@ fi
 # For i386: wget -O /usr/bin/gdrive http://dl.teddysun.com/files/gdrive-linux-386; chmod +x /usr/bin/gdrive
 
 if [ ! "$(command -v "gdrive")" ]; then
+    GDRIVE_COMMAND=false
     log "gdrive is not installed"
     log "File transfer skipped. please install it and try again"
 else
+    GDRIVE_COMMAND=true
     log "Tranferring backup file to Google Drive"
     if ${ENCRYPTFLG}; then
         gdrive upload --no-progress ${TARFILE}.enc >> ${LOGFILE}
@@ -205,6 +211,17 @@ getFileDate() {
     return 1
 }
 
+deleteRemoteFile() {
+    local FILENAME=$1
+    if ${DELETE_REMOTE_FILE_FLG} && ${GDRIVE_COMMAND}; then
+        local FILEID=$(gdrive list -q "name = '${FILENAME}'" --no-header | awk '{print $1}')
+        if [ -n ${FILEID} ]; then
+            gdrive delete ${FILEID} >> ${LOGFILE}
+            log "Google Drive's old backup file name:${FILENAME} has been deleted"
+        fi
+    fi
+}
+
 AGEDAILIES=${LOCALAGEDAILIES}
 DAY=$(date +%d)
 MONTH=$(date +%m)
@@ -227,6 +244,7 @@ do
         if [[ ${FILEAGE} -gt ${AGEDAILIES} ]]; then
             rm -f ${f}
             log "Old backup file name:${f} has been deleted"
+            deleteRemoteFile ${f}
         fi
     fi
 done
