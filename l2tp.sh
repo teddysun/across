@@ -750,6 +750,7 @@ finally(){
     echo "l2tp -a (Add a user)"
     echo "l2tp -d (Delete a user)"
     echo "l2tp -l (List all users)"
+    echo "l2tp -m (Modify a user password)"
     echo "Welcome to visit https://teddysun.com/448.html"
     echo "Enjoy it!"
     echo
