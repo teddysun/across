@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
 export PATH
 #=======================================================================#
@@ -165,7 +165,7 @@ centosversion(){
         local code=${1}
         local version="`versionget`"
         local main_ver=${version%%.*}
-        if [ ${main_ver} == ${code} ];then
+        if [ "${main_ver}" == "${code}" ];then
             return 0
         else
             return 1
@@ -180,7 +180,7 @@ debianversion(){
         local version=$( get_opsy )
         local code=${1}
         local main_ver=$( echo ${version} | sed 's/[^0-9]//g')
-        if [ ${main_ver} == ${code} ];then
+        if [ "${main_ver}" == "${code}" ];then
             return 0
         else
             return 1
@@ -339,6 +339,8 @@ compile_install(){
                 ln -sf /usr/local/lib/libevent-2.0.so.5 /usr/lib/libevent-2.0.so.5
                 ln -sf /usr/local/lib/libevent_pthreads-2.0.so.5 /usr/lib/libevent_pthreads-2.0.so.5
             fi
+            echo "/usr/local/lib" > /etc/ld.so.conf.d/local.conf
+            ldconfig
         else
             echo "libevent2 install failed..."
             exit 1
@@ -779,8 +781,11 @@ list_users(){
         echo "Error: /etc/ppp/chap-secrets file not found."
         exit 1
     fi
-    echo "========== Users List =========="
-    grep -v "^#" /etc/ppp/chap-secrets | awk '{print $1}'
+    echo -e "+---------------+---------------+"
+    echo -e "| Username\t| Password\t|"
+    echo -e "+---------------+---------------+"
+    grep -v "^#" /etc/ppp/chap-secrets | awk '{print "| "$1"\t| "$3"\t|"}'
+    echo -e "+---------------+---------------+"
 }
 
 add_user(){
@@ -825,6 +830,30 @@ del_user(){
     echo "Username (${user}) delete completed."
 }
 
+mod_user(){
+    while :
+    do
+        read -p "Please input Username you want to change password:" user
+        if [ -z ${user} ]; then
+            echo "Username can not be empty"
+        else
+            grep -w "${user}" /etc/ppp/chap-secrets >/dev/null 2>&1
+            if [ $? -eq 0 ];then
+                break
+            else
+                echo "Username (${user}) is not exists. Please re-enter your username."
+            fi
+        fi
+    done
+    pass=`rand`
+    echo "Please input ${user}'s new password:"
+    read -p "(Default Password: ${pass}):" tmppass
+    [ ! -z ${tmppass} ] && pass=${tmppass}
+    sed -i "/^\<${user}\>/d" /etc/ppp/chap-secrets
+    echo "${user}    l2tpd    ${pass}       *" >> /etc/ppp/chap-secrets
+    echo "Username ${user}'s password has been changed."
+}
+
 # Main process
 action=$1
 if [ -z ${action} ] && [ "`basename $0`" != "l2tp" ]; then
@@ -833,8 +862,7 @@ fi
 
 case ${action} in
     install)
-        rm -f /root/l2tp.log
-        l2tp 2>&1 | tee -a /root/l2tp.log
+        l2tp 2>&1 | tee /root/l2tp.log
         ;;
     -l|--list)
         list_users
@@ -845,14 +873,17 @@ case ${action} in
     -d|--del)
         del_user
         ;;
+    -m|--mod)
+        mod_user
+        ;;
     -h|--help)
-        echo "Usage: `basename $0`             Install L2TP VPN Server"
-        echo "       `basename $0` -l,--list   List all users"
+        echo "Usage: `basename $0` -l,--list   List all users"
         echo "       `basename $0` -a,--add    Add a user"
         echo "       `basename $0` -d,--del    Delete a user"
+        echo "       `basename $0` -m,--mod    Modify a user password"
         echo "       `basename $0` -h,--help   Print this help information"
         ;;
     *)
-        echo "Usage: `basename $0` [-l,--list|-a,--add|-d,--del|-h,--help]" && exit
+        echo "Usage: `basename $0` [-l,--list|-a,--add|-d,--del|-m,--mod|-h,--help]" && exit
         ;;
 esac
