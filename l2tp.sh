@@ -782,11 +782,11 @@ list_users(){
         echo "Error: /etc/ppp/chap-secrets file not found."
         exit 1
     fi
-    echo -e "+---------------+---------------+"
-    echo -e "| Username\t| Password\t|"
-    echo -e "+---------------+---------------+"
-    grep -v "^#" /etc/ppp/chap-secrets | awk '{print "| "$1"\t| "$3"\t|"}'
-    echo -e "+---------------+---------------+"
+    local line="+-------------------------------------------+\n"
+    local string=%20s
+    printf "${line}|${string} |${string} |\n${line}" Username Password
+    grep -v "^#" /etc/ppp/chap-secrets | awk '{printf "|'${string}' |'${string}' |\n", $1,$3}'
+    printf ${line}
 }
 
 add_user(){
