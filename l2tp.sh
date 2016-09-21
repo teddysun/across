@@ -763,7 +763,7 @@ l2tp(){
     echo
     echo "###############################################################"
     echo "# L2TP VPN Auto Installer                                     #"
-    echo "# System Supported: CentOS/RadHat 6+ / Debian 7+ / Ubuntu 12+ #"
+    echo "# System Supported: CentOS 6+ / Debian 7+ / Ubuntu 12+        #"
     echo "# Intro: https://teddysun.com/448.html                        #"
     echo "# Author: Teddysun <i@teddysun.com>                           #"
     echo "###############################################################"
