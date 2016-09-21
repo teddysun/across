@@ -2,7 +2,7 @@
 PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
 export PATH
 #=======================================================================#
-#   System Supported:  CentOS/RadHat 6+ / Debian 7+ / Ubuntu 12+        #
+#   System Supported:  CentOS 6+ / Debian 7+ / Ubuntu 12+               #
 #   Description: L2TP VPN Auto Installer                                #
 #   Author: Teddysun <i@teddysun.com>                                   #
 #   Intro:  https://teddysun.com/448.html                               #
@@ -734,7 +734,7 @@ finally(){
     echo
     echo "###############################################################"
     echo "# L2TP VPN Auto Installer                                     #"
-    echo "# System Supported: CentOS/RadHat 6+ / Debian 7+ / Ubuntu 12+ #"
+    echo "# System Supported: CentOS 6+ / Debian 7+ / Ubuntu 12+        #"
     echo "# Intro: https://teddysun.com/448.html                        #"
     echo "# Author: Teddysun <i@teddysun.com>                           #"
     echo "###############################################################"
@@ -751,6 +751,7 @@ finally(){
     echo "l2tp -d (Delete a user)"
     echo "l2tp -l (List all users)"
     echo "l2tp -m (Modify a user password)"
+    echo
     echo "Welcome to visit https://teddysun.com/448.html"
     echo "Enjoy it!"
     echo
