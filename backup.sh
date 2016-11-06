@@ -151,13 +151,16 @@ if ${ENCRYPTFLG}; then
     log "Encrypt backup file completed"
 
     # Delete unencrypted tar
-    log "Delete unencrypted tar file"
+    log "Delete unencrypted tar file: ${TARFILE}"
     rm -f ${TARFILE}
 fi
 
 # Delete MySQL temporary dump file
-log "Delete MySQL temporary dump file"
-rm -f ${TEMPDIR}*.sql
+for sql in `ls ${TEMPDIR}*.sql`
+do
+    log "Delete MySQL temporary dump file: ${sql}"
+    rm -f ${sql}
+done
 
 log "Backup progress complete"
 
@@ -173,8 +176,8 @@ fi
 # If you want to install gdrive command, please visit website:
 # https://github.com/prasmussen/gdrive
 # of cause, you can use below command to install it
-# For x86_64: wget -O /usr/bin/gdrive http://dl.teddysun.com/files/gdrive-linux-x64; chmod +x /usr/bin/gdrive
-# For i386: wget -O /usr/bin/gdrive http://dl.teddysun.com/files/gdrive-linux-386; chmod +x /usr/bin/gdrive
+# For x86_64: wget -O /usr/bin/gdrive http://dl.lamp.sh/files/gdrive-linux-x64; chmod +x /usr/bin/gdrive
+# For i386: wget -O /usr/bin/gdrive http://dl.lamp.sh/files/gdrive-linux-386; chmod +x /usr/bin/gdrive
 
 if [ ! "$(command -v "gdrive")" ]; then
     GDRIVE_COMMAND=false
