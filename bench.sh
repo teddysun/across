@@ -100,6 +100,7 @@ cname=$( awk -F: '/model name/ {name=$2} END {print name}' /proc/cpuinfo | sed '
 cores=$( awk -F: '/model name/ {core++} END {print core}' /proc/cpuinfo )
 freq=$( awk -F: '/cpu MHz/ {freq=$2} END {print freq}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
 tram=$( free -m | awk '/Mem/ {print $2}' )
+uram=$( free -m | awk '/Mem/ {print $3}' )
 swap=$( free -m | awk '/Swap/ {print $2}' )
 up=$( awk '{a=$1/86400;b=($1%86400)/3600;c=($1%3600)/60;d=$1%60} {printf("%ddays, %d:%d:%d\n",a,b,c,d)}' /proc/uptime )
 load=$( w | head -1 | awk -F'load average:' '{print $2}' | sed 's/^[ \t]*//;s/[ \t]*$//' )
@@ -111,20 +112,16 @@ kern=$( uname -r )
 ipv6=$( wget -qO- -t1 -T2 ipv6.icanhazip.com )
 disk_size1=($( df -ahPl | grep -wvE '\-|none|Filesystem' | awk '{print $2}' ))
 disk_size2=($( df -ahPl | grep -wvE '\-|none|Filesystem' | awk '{print $3}' ))
-disk_size3=($( df -ahPl | grep -wvE '\-|none|Filesystem' | awk '{print $4}' ))
 disk_total_size=$( calc_disk $disk_size1 )
 disk_used_size=$( calc_disk $disk_size2 )
-disk_avail_size=$( calc_disk $disk_size3 )
 
 clear
 next
 echo "CPU model            : $cname"
 echo "Number of cores      : $cores"
 echo "CPU frequency        : $freq MHz"
-echo "Total size of Disk   : $disk_total_size GB"
-echo "Used size of Disk    : $disk_used_size GB"
-echo "Avail size of Disk   : $disk_avail_size GB"
-echo "Total amount of Mem  : $tram MB"
+echo "Total size of Disk   : $disk_total_size GB ($disk_used_size GB Used)"
+echo "Total amount of Mem  : $tram MB ($uram MB Used)"
 echo "Total amount of Swap : $swap MB"
 echo "System uptime        : $up"
 echo "Load average         : $load"
