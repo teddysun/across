@@ -6,6 +6,11 @@
 #   Visit:  https://teddysun.com                               #
 #==============================================================#
 
+if  [ ! -e '/usr/bin/wget' ]; then
+    echo "Error: wget command not found. You must be install wget command at first."
+    exit 1
+fi
+
 get_opsy() {
     [ -f /etc/redhat-release ] && awk '{print ($1,$3~/^[0-9]/?$3:$4)}' /etc/redhat-release && return
     [ -f /etc/os-release ] && awk -F'[= "]' '/PRETTY_NAME/{print $3,$4,$5}' /etc/os-release && return
@@ -17,9 +22,9 @@ next() {
 }
 
 speed_test() {
-    speedtest=$(wget -4O /dev/null -T300 $1 2>&1 | awk '/\/dev\/null/ {speed=$3 $4} END {gsub(/\(|\)/,"",speed); print speed}')
-    ipaddress=$(ping -c1 -n `awk -F'/' '{print $3}' <<< $1` | awk -F'[()]' '{print $2;exit}')
-    nodeName=$2
+    local speedtest=$(wget -4O /dev/null -T300 $1 2>&1 | awk '/\/dev\/null/ {speed=$3 $4} END {gsub(/\(|\)/,"",speed); print speed}')
+    local ipaddress=$(ping -c1 -n `awk -F'/' '{print $3}' <<< $1` | awk -F'[()]' '{print $2;exit}')
+    local nodeName=$2
     if   [ "${#nodeName}" -lt "8" ]; then
         echo -e "\e[33m$2\e[0m\t\t\t\t\e[32m$ipaddress\e[0m\t\t\e[31m$speedtest\e[0m"
     elif [ "${#nodeName}" -lt "13" ]; then
@@ -32,9 +37,9 @@ speed_test() {
 }
 
 speed_test_v6() {
-    speedtest=$(wget -6O /dev/null -T300 $1 2>&1 | awk '/\/dev\/null/ {speed=$3 $4} END {gsub(/\(|\)/,"",speed); print speed}')
-    ipaddress=$(ping6 -c1 -n `awk -F'/' '{print $3}' <<< $1` | awk -F'[()]' '{print $2;exit}')
-    nodeName=$2
+    local speedtest=$(wget -6O /dev/null -T300 $1 2>&1 | awk '/\/dev\/null/ {speed=$3 $4} END {gsub(/\(|\)/,"",speed); print speed}')
+    local ipaddress=$(ping6 -c1 -n `awk -F'/' '{print $3}' <<< $1` | awk -F'[()]' '{print $2;exit}')
+    local nodeName=$2
     if   [ "${#nodeName}" -lt "8" -a "${#ipaddress}" -eq "13" ]; then
         echo -e "\e[33m$2\e[0m\t\t\t\t\e[32m$ipaddress\e[0m\t\t\e[31m$speedtest\e[0m"
     elif [ "${#nodeName}" -lt "13" -a "${#ipaddress}" -eq "13" ]; then
@@ -76,47 +81,63 @@ speed_v6() {
 }
 
 io_test() {
-    (LANG=en_US dd if=/dev/zero of=test_$$ bs=64k count=16k conv=fdatasync && rm -f test_$$ ) 2>&1 | awk -F, '{io=$NF} END { print io}' | sed 's/^[ \t]*//;s/[ \t]*$//'
+    (LANG=C dd if=/dev/zero of=test_$$ bs=64k count=16k conv=fdatasync && rm -f test_$$ ) 2>&1 | awk -F, '{io=$NF} END { print io}' | sed 's/^[ \t]*//;s/[ \t]*$//'
 }
 
-if  [ -e '/usr/bin/wget' ]; then
-    cname=$( awk -F: '/model name/ {name=$2} END {print name}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
-    cores=$( awk -F: '/model name/ {core++} END {print core}' /proc/cpuinfo )
-    freq=$( awk -F: '/cpu MHz/ {freq=$2} END {print freq}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
-    tram=$( free -m | awk '/Mem/ {print $2}' )
-    swap=$( free -m | awk '/Swap/ {print $2}' )
-    up=$( awk '{a=$1/86400;b=($1%86400)/3600;c=($1%3600)/60;d=$1%60} {printf("%ddays, %d:%d:%d\n",a,b,c,d)}' /proc/uptime )
-    load=$( w | head -1 | awk -F'load average:' '{print $2}' | sed 's/^[ \t]*//;s/[ \t]*$//' )
-    opsy=$( get_opsy )
-    arch=$( uname -m )
-    lbit=$( getconf LONG_BIT )
-    host=$( hostname )
-    kern=$( uname -r )
-    ipv6=$( wget -qO- -t1 -T2 ipv6.icanhazip.com )
+calc_disk() {
+    local total_size=0
+    local array=$1
+    for size in ${array[@]}
+    do
+        size_t=`echo ${size:0:${#size}-1}`
+        [ "`echo ${size:(-1)}`" == "M" ] && size=$( awk 'BEGIN{print '$size_t' / 1024}' ) || size=${size_t}
+        total_size=$( awk 'BEGIN{print '$total_size' + '$size'}' )
+    done
+    echo ${total_size}
+}
 
-    clear
-    next
-    echo "CPU model            : $cname"
-    echo "Number of cores      : $cores"
-    echo "CPU frequency        : $freq MHz"
-    echo "Total amount of ram  : $tram MB"
-    echo "Total amount of swap : $swap MB"
-    echo "System uptime        : $up"
-    echo "Load average         : $load"
-    echo "OS                   : $opsy"
-    echo "Arch                 : $arch ($lbit Bit)"
-    echo "Kernel               : $kern"
-    next
+cname=$( awk -F: '/model name/ {name=$2} END {print name}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
+cores=$( awk -F: '/model name/ {core++} END {print core}' /proc/cpuinfo )
+freq=$( awk -F: '/cpu MHz/ {freq=$2} END {print freq}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
+tram=$( free -m | awk '/Mem/ {print $2}' )
+swap=$( free -m | awk '/Swap/ {print $2}' )
+up=$( awk '{a=$1/86400;b=($1%86400)/3600;c=($1%3600)/60;d=$1%60} {printf("%ddays, %d:%d:%d\n",a,b,c,d)}' /proc/uptime )
+load=$( w | head -1 | awk -F'load average:' '{print $2}' | sed 's/^[ \t]*//;s/[ \t]*$//' )
+opsy=$( get_opsy )
+arch=$( uname -m )
+lbit=$( getconf LONG_BIT )
+host=$( hostname )
+kern=$( uname -r )
+ipv6=$( wget -qO- -t1 -T2 ipv6.icanhazip.com )
+disk_size1=($( df -ahPl | grep -wvE '\-|none|Filesystem' | awk '{print $2}' ))
+disk_size2=($( df -ahPl | grep -wvE '\-|none|Filesystem' | awk '{print $3}' ))
+disk_size3=($( df -ahPl | grep -wvE '\-|none|Filesystem' | awk '{print $4}' ))
+disk_total_size=$( calc_disk $disk_size1 )
+disk_used_size=$( calc_disk $disk_size2 )
+disk_avail_size=$( calc_disk $disk_size3 )
 
-    echo -e "Node Name\t\t\tIPv4 address\t\tDownload Speed"
-    speed && next
-    if [[ "$ipv6" != "" ]]; then
-        echo -e "Node Name\t\t\tIPv6 address\t\tDownload Speed"
-        speed_v6 && next
-    fi
-else
-    echo "Error: wget command not found. You must be install wget command at first."
-    exit 1
+clear
+next
+echo "CPU model            : $cname"
+echo "Number of cores      : $cores"
+echo "CPU frequency        : $freq MHz"
+echo "Total size of Disk   : $disk_total_size GB"
+echo "Used size of Disk    : $disk_used_size GB"
+echo "Avail size of Disk   : $disk_avail_size GB"
+echo "Total amount of Mem  : $tram MB"
+echo "Total amount of Swap : $swap MB"
+echo "System uptime        : $up"
+echo "Load average         : $load"
+echo "OS                   : $opsy"
+echo "Arch                 : $arch ($lbit Bit)"
+echo "Kernel               : $kern"
+next
+
+echo -e "Node Name\t\t\tIPv4 address\t\tDownload Speed"
+speed && next
+if [[ "$ipv6" != "" ]]; then
+    echo -e "Node Name\t\t\tIPv6 address\t\tDownload Speed"
+    speed_v6 && next
 fi
 
 io1=$( io_test )
