@@ -86,10 +86,10 @@ io_test() {
 
 calc_disk() {
     local total_size=0
-    local array=$1
+    local array=$@
     for size in ${array[@]}
     do
-        size_t=`echo ${size:0:${#size}-1}`
+        [ "${size}" == "0" ] && size_t=0 || size_t=`echo ${size:0:${#size}-1}`
         [ "`echo ${size:(-1)}`" == "M" ] && size=$( awk 'BEGIN{print '$size_t' / 1024}' ) || size=${size_t}
         total_size=$( awk 'BEGIN{print '$total_size' + '$size'}' )
     done
@@ -110,10 +110,10 @@ lbit=$( getconf LONG_BIT )
 host=$( hostname )
 kern=$( uname -r )
 ipv6=$( wget -qO- -t1 -T2 ipv6.icanhazip.com )
-disk_size1=($( df -ahPl | grep -wvE '\-|none|Filesystem' | awk '{print $2}' ))
-disk_size2=($( df -ahPl | grep -wvE '\-|none|Filesystem' | awk '{print $3}' ))
-disk_total_size=$( calc_disk $disk_size1 )
-disk_used_size=$( calc_disk $disk_size2 )
+disk_size1=($( df -ahPl | grep -wvE '\-|none|tmpfs|Filesystem' | awk '{print $2}' ))
+disk_size2=($( df -ahPl | grep -wvE '\-|none|tmpfs|Filesystem' | awk '{print $3}' ))
+disk_total_size=$( calc_disk ${disk_size1[@]} )
+disk_used_size=$( calc_disk ${disk_size2[@]} )
 
 clear
 next
