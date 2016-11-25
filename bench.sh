@@ -142,7 +142,7 @@ ioraw2=$( echo $io2 | awk 'NR==1 {print $1}' )
 ioraw3=$( echo $io3 | awk 'NR==1 {print $1}' )
 [ "`echo $io3 | awk 'NR==1 {print $2}'`" == "GB/s" ] && ioraw3=$( awk 'BEGIN{print '$ioraw3' * 1024}' )
 ioall=$( awk 'BEGIN{print '$ioraw1' + '$ioraw2' + '$ioraw3'}' )
-ioavg=$( awk 'BEGIN{print '$ioall'/3}' )
+ioavg=$( awk 'BEGIN{printf "%.1f", '$ioall' / 3}' )
 echo "Average I/O speed    : $ioavg MB/s"
 next
 echo -e "Node Name\t\t\tIPv4 address\t\tDownload Speed"
