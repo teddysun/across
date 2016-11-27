@@ -90,7 +90,9 @@ calc_disk() {
     for size in ${array[@]}
     do
         [ "${size}" == "0" ] && size_t=0 || size_t=`echo ${size:0:${#size}-1}`
-        [ "`echo ${size:(-1)}`" == "M" ] && size=$( awk 'BEGIN{printf "%.1f", '$size_t' / 1024}' ) || size=${size_t}
+        [ "`echo ${size:(-1)}`" == "M" ] && size=$( awk 'BEGIN{printf "%.1f", '$size_t' / 1024}' )
+        [ "`echo ${size:(-1)}`" == "T" ] && size=$( awk 'BEGIN{printf "%.1f", '$size_t' * 1024}' )
+        [ "`echo ${size:(-1)}`" == "G" ] && size=${size_t}
         total_size=$( awk 'BEGIN{printf "%.1f", '$total_size' + '$size'}' )
     done
     echo ${total_size}
