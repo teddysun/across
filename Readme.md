@@ -45,7 +45,7 @@ backup.sh
 - Intro: https://teddysun.com/469.html
 
 ```bash
-Install gdrive step:
+Install gdrive command step:
 
 For x86_64: 
 wget -O /usr/bin/gdrive http://dl.lamp.sh/files/gdrive-linux-x64
@@ -55,6 +55,13 @@ For i386:
 wget -O /usr/bin/gdrive http://dl.lamp.sh/files/gdrive-linux-386
 chmod +x /usr/bin/gdrive
 ```
+
+ftp_upload.sh
+=============
+
+- You must to modify the config before run it
+- Upload file(s) to FTP server
+- Intro: https://teddysun.com/484.html
 
 unixbench.sh
 ============
