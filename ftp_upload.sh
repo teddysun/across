@@ -7,7 +7,8 @@
 # Argument example:
 # 1) ./ftp_upload.sh filename
 # 2) ./ftp_upload.sh filename1 filename2 filename3 ...
-# 3) ./ftp_upload.sh *.extension
+# 3) ./ftp_upload.sh "*.extension"
+# 4) ./ftp_upload.sh "*.extension1" "*.extension2"
 #
 
 ########## START OF CONFIG ##########
