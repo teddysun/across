@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 #
-# Auto upload file(s) to FTP server
+# Upload file(s) to FTP server
 #
 # Copyright (C) 2016 Teddysun <i@teddysun.com>
 #
 # Argument example:
 # 1) ./ftp_upload.sh filename
 # 2) ./ftp_upload.sh filename1 filename2 filename3 ...
-# 3) ./ftp_upload.sh *.gz
+# 3) ./ftp_upload.sh *.extension
 #
 
 ########## START OF CONFIG ##########
@@ -63,7 +63,7 @@ ftp_upload() {
     local FTP_OUT_FILE="$1"
     echo "${FTP_OUT_FILE}" | grep "*" 2>&1 > /dev/null
     if [ $? -eq 0 ]; then
-        ls ${FTP_OUT_FILE} 2>&1 > /dev/null
+        ls ${FTP_OUT_FILE} 2>/dev/null
         [ $? -ne 0 ] && log "Error: [${FTP_OUT_FILE}] file(s) not exists!" && exit 1
     else
         [ ! -f ${FTP_OUT_FILE} ] && log "Error: [${FTP_OUT_FILE}] not exists!" && exit 1
@@ -87,16 +87,12 @@ STARTTIME=$(date +%s)
 
 [ $# -eq 0 ] && log "Error: argument can not be empty!" && exit 1
 
-log "Upload progress start"
-
 check_command
 
 for i in $@
 do
     ftp_upload $i
 done
-
-log "Upload progress complete"
 
 ENDTIME=$(date +%s)
 DURATION=$((ENDTIME - STARTTIME))
