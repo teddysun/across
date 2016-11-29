@@ -3,8 +3,8 @@
 l2tp.sh
 =======
 
-* Description: Auto install L2TP VPN for CentOS6+/Debian7+/Ubuntu12+
-* Intro: https://teddysun.com/448.html
+- Description: Auto install L2TP VPN for CentOS6+/Debian7+/Ubuntu12+
+- Intro: https://teddysun.com/448.html
 ```bash
 Usage: l2tp [-l,--list|-a,--add|-d,--del|-m,--mod|-h,--help]
 
@@ -20,8 +20,8 @@ Usage: l2tp [-l,--list|-a,--add|-d,--del|-m,--mod|-h,--help]
 bench.sh
 ========
 
-* Description: Auto test download & I/O speed script
-* Intro: https://teddysun.com/444.html
+- Description: Auto test download & I/O speed script
+- Intro: https://teddysun.com/444.html
 ```bash
 Usage:
 
@@ -36,34 +36,36 @@ Usage:
 backup.sh
 =========
 
-* You need to modify the config at first
-* Backup MySQL/MariaDB all datebases & files and directories
-* Backups are encrypted with AES256-cbc with SHA1 message-digest
-* Auto transfer backup file to Google Drive (need install `gdrive`)
-* Auto delete Google Drive's remote file (option)
+- You must to modify the config before run it
+- Backup MySQL/MariaDB/Percona datebases, files and directories
+- Backup file is encrypted with AES256-cbc with SHA1 message-digest (option)
+- Auto transfer backup file to Google Drive (need install `gdrive` command) (option)
+- Auto transfer backup file to FTP server (option)
+- Auto delete Google Drive's or FTP server's remote file (option)
+- Intro: https://teddysun.com/469.html
 
 ```bash
 Install gdrive step:
 
 For x86_64: 
-wget -O /usr/bin/gdrive http://dl.teddysun.com/files/gdrive-linux-x64
+wget -O /usr/bin/gdrive http://dl.lamp.sh/files/gdrive-linux-x64
 chmod +x /usr/bin/gdrive
 
 For i386: 
-wget -O /usr/bin/gdrive http://dl.teddysun.com/files/gdrive-linux-386
+wget -O /usr/bin/gdrive http://dl.lamp.sh/files/gdrive-linux-386
 chmod +x /usr/bin/gdrive
 ```
 
 unixbench.sh
 ============
 
-* Description: Auto install unixbench and test script
-* Intro: https://teddysun.com/245.html
+- Description: Auto install unixbench and test script
+- Intro: https://teddysun.com/245.html
 
 pptp.sh(Deprecated)
 ===================
 
-* Description: Auto Install PPTP for CentOS 6
-* Intro: https://teddysun.com/134.html
+- Description: Auto Install PPTP for CentOS 6
+- Intro: https://teddysun.com/134.html
 
 Copyright (C) 2013-2016 Teddysun <i@teddysun.com>
