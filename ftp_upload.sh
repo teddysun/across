@@ -60,25 +60,33 @@ ftp_upload() {
     [ -z ${FTP_PASS} ] && log "Error: FTP_PASS can not be empty!" && exit 1
     [ -z ${FTP_DIR} ] && log "Error: FTP_DIR can not be empty!" && exit 1
 
-    local FTP_OUT_FILE="$1"
-    echo "${FTP_OUT_FILE}" | grep "*" 2>&1 > /dev/null
+    echo "$@" | grep "*" > /dev/null 2>&1
     if [ $? -eq 0 ]; then
-        ls ${FTP_OUT_FILE} 2>/dev/null
-        [ $? -ne 0 ] && log "Error: [${FTP_OUT_FILE}] file(s) not exists!" && exit 1
+        ls $@ > /dev/null 2>&1
+        [ $? -ne 0 ] && log "Error: [$@] file(s) not exists!" && exit 1
     else
-        [ ! -f ${FTP_OUT_FILE} ] && log "Error: [${FTP_OUT_FILE}] not exists!" && exit 1
+        for f in $@
+        do
+            [ ! -f ${f} ] && log "Error: [${f}] not exists!" && exit 1
+        done
     fi
 
-    log "Tranferring [${FTP_OUT_FILE}] to FTP server"
+    local FTP_OUT_FILE=("$@")
+
+    log "Tranferring file(s) list below to FTP server:"
+    for file in ${FTP_OUT_FILE[@]}
+    do
+        log "$file"
+    done
     ftp -in ${FTP_HOST} 2>&1 >> ${LOGFILE} <<EOF
 user $FTP_USER $FTP_PASS
 binary
 lcd $LOCALDIR
 cd $FTP_DIR
-mput $FTP_OUT_FILE
+mput ${FTP_OUT_FILE[@]}
 quit
 EOF
-    log "Tranfer completed"
+    log "Tranfer to FTP server completed"
 }
 
 
@@ -89,10 +97,8 @@ STARTTIME=$(date +%s)
 
 check_command
 
-for i in $@
-do
-    ftp_upload $i
-done
+ftp_upload "$@"
+
 
 ENDTIME=$(date +%s)
 DURATION=$((ENDTIME - STARTTIME))
