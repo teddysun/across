@@ -226,10 +226,10 @@ gdrive_upload() {
 # Tranferring backup file to FTP server
 ftp_upload() {
     if ${FTP_FLG}; then
-        [ -z ${FTP_HOST} ] && echo "Error: FTP_HOST can not be empty!" && exit 1
-        [ -z ${FTP_USER} ] && echo "Error: FTP_USER can not be empty!" && exit 1
-        [ -z ${FTP_PASS} ] && echo "Error: FTP_PASS can not be empty!" && exit 1
-        [ -z ${FTP_DIR} ] && echo "Error: FTP_DIR can not be empty!" && exit 1
+        [ -z ${FTP_HOST} ] && log "Error: FTP_HOST can not be empty!" && exit 1
+        [ -z ${FTP_USER} ] && log "Error: FTP_USER can not be empty!" && exit 1
+        [ -z ${FTP_PASS} ] && log "Error: FTP_PASS can not be empty!" && exit 1
+        [ -z ${FTP_DIR} ] && log "Error: FTP_DIR can not be empty!" && exit 1
 
         local FTP_OUT_FILE=$(basename ${OUT_FILE})
         log "Tranferring backup file to FTP server"
