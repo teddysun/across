@@ -1,10 +1,13 @@
-#!/bin/bash
-#==============================================================#
-#   Description: bench test shell script                       #
-#   Author: Teddysun <i@teddysun.com>                          #
-#   Thanks: LookBack <admin@dwhd.org>                          #
-#   Visit:  https://teddysun.com                               #
-#==============================================================#
+#!/usr/bin/env bash
+#
+# Description: Auto test download & I/O speed script
+#
+# Copyright (C) 2015 - 2016 Teddysun <i@teddysun.com>
+#
+# Thanks: LookBack <admin@dwhd.org>
+#
+# URL: https://teddysun.com/444.html
+#
 
 if  [ ! -e '/usr/bin/wget' ]; then
     echo "Error: wget command not found. You must be install wget command at first."
@@ -104,12 +107,12 @@ freq=$( awk -F: '/cpu MHz/ {freq=$2} END {print freq}' /proc/cpuinfo | sed 's/^[
 tram=$( free -m | awk '/Mem/ {print $2}' )
 uram=$( free -m | awk '/Mem/ {print $3}' )
 swap=$( free -m | awk '/Swap/ {print $2}' )
+uswap=$( free -m | awk '/Swap/ {print $3}' )
 up=$( awk '{a=$1/86400;b=($1%86400)/3600;c=($1%3600)/60} {printf("%d days, %d hour %d min\n",a,b,c)}' /proc/uptime )
 load=$( w | head -1 | awk -F'load average:' '{print $2}' | sed 's/^[ \t]*//;s/[ \t]*$//' )
 opsy=$( get_opsy )
 arch=$( uname -m )
 lbit=$( getconf LONG_BIT )
-host=$( hostname )
 kern=$( uname -r )
 ipv6=$( wget -qO- -t1 -T2 ipv6.icanhazip.com )
 disk_size1=($( df -ahPl | grep -wvE '\-|none|tmpfs|by-uuid|Filesystem' | awk '{print $2}' ))
@@ -124,7 +127,7 @@ echo "Number of cores      : $cores"
 echo "CPU frequency        : $freq MHz"
 echo "Total size of Disk   : $disk_total_size GB ($disk_used_size GB Used)"
 echo "Total amount of Mem  : $tram MB ($uram MB Used)"
-echo "Total amount of Swap : $swap MB"
+echo "Total amount of Swap : $swap MB ($uswap MB Used)"
 echo "System uptime        : $up"
 echo "Load average         : $load"
 echo "OS                   : $opsy"
