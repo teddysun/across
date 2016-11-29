@@ -44,8 +44,7 @@ log() {
 }
 
 # Check ftp command
-check_commands() {
-    # Iterate over the list of binaries, and if one isn't found, abort
+check_command() {
     if [ ! "$(command -v "ftp")" ]; then
         log "ftp command is not installed, please install it and try again"
         exit 1
@@ -90,7 +89,7 @@ STARTTIME=$(date +%s)
 
 log "Upload progress start"
 
-check_commands
+check_command
 
 for i in $@
 do
