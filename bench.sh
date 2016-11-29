@@ -1,10 +1,13 @@
-#!/bin/bash
-#==============================================================#
-#   Description: bench test shell script                       #
-#   Author: Teddysun <i@teddysun.com>                          #
-#   Thanks: LookBack <admin@dwhd.org>                          #
-#   Visit:  https://teddysun.com                               #
-#==============================================================#
+#!/usr/bin/env bash
+#
+# Description: Auto test download & I/O speed script
+#
+# Copyright (C) 2015 - 2016 Teddysun <i@teddysun.com>
+#
+# Thanks: LookBack <admin@dwhd.org>
+#
+# URL: https://teddysun.com/444.html
+#
 
 if  [ ! -e '/usr/bin/wget' ]; then
     echo "Error: wget command not found. You must be install wget command at first."
@@ -86,12 +89,14 @@ io_test() {
 
 calc_disk() {
     local total_size=0
-    local array=$1
+    local array=$@
     for size in ${array[@]}
     do
-        size_t=`echo ${size:0:${#size}-1}`
-        [ "`echo ${size:(-1)}`" == "M" ] && size=$( awk 'BEGIN{print '$size_t' / 1024}' ) || size=${size_t}
-        total_size=$( awk 'BEGIN{print '$total_size' + '$size'}' )
+        [ "${size}" == "0" ] && size_t=0 || size_t=`echo ${size:0:${#size}-1}`
+        [ "`echo ${size:(-1)}`" == "M" ] && size=$( awk 'BEGIN{printf "%.1f", '$size_t' / 1024}' )
+        [ "`echo ${size:(-1)}`" == "T" ] && size=$( awk 'BEGIN{printf "%.1f", '$size_t' * 1024}' )
+        [ "`echo ${size:(-1)}`" == "G" ] && size=${size_t}
+        total_size=$( awk 'BEGIN{printf "%.1f", '$total_size' + '$size'}' )
     done
     echo ${total_size}
 }
@@ -100,32 +105,29 @@ cname=$( awk -F: '/model name/ {name=$2} END {print name}' /proc/cpuinfo | sed '
 cores=$( awk -F: '/model name/ {core++} END {print core}' /proc/cpuinfo )
 freq=$( awk -F: '/cpu MHz/ {freq=$2} END {print freq}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
 tram=$( free -m | awk '/Mem/ {print $2}' )
+uram=$( free -m | awk '/Mem/ {print $3}' )
 swap=$( free -m | awk '/Swap/ {print $2}' )
-up=$( awk '{a=$1/86400;b=($1%86400)/3600;c=($1%3600)/60;d=$1%60} {printf("%ddays, %d:%d:%d\n",a,b,c,d)}' /proc/uptime )
+uswap=$( free -m | awk '/Swap/ {print $3}' )
+up=$( awk '{a=$1/86400;b=($1%86400)/3600;c=($1%3600)/60} {printf("%d days, %d hour %d min\n",a,b,c)}' /proc/uptime )
 load=$( w | head -1 | awk -F'load average:' '{print $2}' | sed 's/^[ \t]*//;s/[ \t]*$//' )
 opsy=$( get_opsy )
 arch=$( uname -m )
 lbit=$( getconf LONG_BIT )
-host=$( hostname )
 kern=$( uname -r )
 ipv6=$( wget -qO- -t1 -T2 ipv6.icanhazip.com )
-disk_size1=($( df -ahPl | grep -wvE '\-|none|Filesystem' | awk '{print $2}' ))
-disk_size2=($( df -ahPl | grep -wvE '\-|none|Filesystem' | awk '{print $3}' ))
-disk_size3=($( df -ahPl | grep -wvE '\-|none|Filesystem' | awk '{print $4}' ))
-disk_total_size=$( calc_disk $disk_size1 )
-disk_used_size=$( calc_disk $disk_size2 )
-disk_avail_size=$( calc_disk $disk_size3 )
+disk_size1=($( df -ahPl | grep -wvE '\-|none|tmpfs|by-uuid|Filesystem' | awk '{print $2}' ))
+disk_size2=($( df -ahPl | grep -wvE '\-|none|tmpfs|by-uuid|Filesystem' | awk '{print $3}' ))
+disk_total_size=$( calc_disk ${disk_size1[@]} )
+disk_used_size=$( calc_disk ${disk_size2[@]} )
 
 clear
 next
 echo "CPU model            : $cname"
 echo "Number of cores      : $cores"
 echo "CPU frequency        : $freq MHz"
-echo "Total size of Disk   : $disk_total_size GB"
-echo "Used size of Disk    : $disk_used_size GB"
-echo "Avail size of Disk   : $disk_avail_size GB"
-echo "Total amount of Mem  : $tram MB"
-echo "Total amount of Swap : $swap MB"
+echo "Total size of Disk   : $disk_total_size GB ($disk_used_size GB Used)"
+echo "Total amount of Mem  : $tram MB ($uram MB Used)"
+echo "Total amount of Swap : $swap MB ($uswap MB Used)"
 echo "System uptime        : $up"
 echo "Load average         : $load"
 echo "OS                   : $opsy"
@@ -145,7 +147,7 @@ ioraw2=$( echo $io2 | awk 'NR==1 {print $1}' )
 ioraw3=$( echo $io3 | awk 'NR==1 {print $1}' )
 [ "`echo $io3 | awk 'NR==1 {print $2}'`" == "GB/s" ] && ioraw3=$( awk 'BEGIN{print '$ioraw3' * 1024}' )
 ioall=$( awk 'BEGIN{print '$ioraw1' + '$ioraw2' + '$ioraw3'}' )
-ioavg=$( awk 'BEGIN{print '$ioall'/3}' )
+ioavg=$( awk 'BEGIN{printf "%.1f", '$ioall' / 3}' )
 echo "Average I/O speed    : $ioavg MB/s"
 next
 echo -e "Node Name\t\t\tIPv4 address\t\tDownload Speed"
