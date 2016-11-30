@@ -14,6 +14,11 @@ if  [ ! -e '/usr/bin/wget' ]; then
     exit 1
 fi
 
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+
 get_opsy() {
     [ -f /etc/redhat-release ] && awk '{print ($1,$3~/^[0-9]/?$3:$4)}' /etc/redhat-release && return
     [ -f /etc/os-release ] && awk -F'[= "]' '/PRETTY_NAME/{print $3,$4,$5}' /etc/os-release && return
@@ -29,13 +34,13 @@ speed_test() {
     local ipaddress=$(ping -c1 -n `awk -F'/' '{print $3}' <<< $1` | awk -F'[()]' '{print $2;exit}')
     local nodeName=$2
     if   [ "${#nodeName}" -lt "8" ]; then
-        echo -e "\e[33m$2\e[0m\t\t\t\t\e[32m$ipaddress\e[0m\t\t\e[31m$speedtest\e[0m"
+        echo -e "${YELLOW}${nodeName}\t\t\t\t${GREEN}${ipaddress}\t\t${RED}${speedtest}"
     elif [ "${#nodeName}" -lt "13" ]; then
-        echo -e "\e[33m$2\e[0m\t\t\t\e[32m$ipaddress\e[0m\t\t\e[31m$speedtest\e[0m"
+        echo -e "${YELLOW}${nodeName}\t\t\t${GREEN}${ipaddress}\t\t${RED}${speedtest}"
     elif [ "${#nodeName}" -lt "24" ]; then
-        echo -e "\e[33m$2\e[0m\t\t\e[32m$ipaddress\e[0m\t\t\e[31m$speedtest\e[0m"
+        echo -e "${YELLOW}${nodeName}\t\t${GREEN}${ipaddress}\t\t${RED}${speedtest}"
     elif [ "${#nodeName}" -ge "24" ]; then
-        echo -e "\e[33m$2\e[0m\t\e[32m$ipaddress\e[0m\t\t\e[31m$speedtest\e[0m"
+        echo -e "${YELLOW}${nodeName}\t${GREEN}${ipaddress}\t\t${RED}${speedtest}"
     fi
 }
 
@@ -44,15 +49,15 @@ speed_test_v6() {
     local ipaddress=$(ping6 -c1 -n `awk -F'/' '{print $3}' <<< $1` | awk -F'[()]' '{print $2;exit}')
     local nodeName=$2
     if   [ "${#nodeName}" -lt "8" -a "${#ipaddress}" -eq "13" ]; then
-        echo -e "\e[33m$2\e[0m\t\t\t\t\e[32m$ipaddress\e[0m\t\t\e[31m$speedtest\e[0m"
+        echo -e "${YELLOW}${nodeName}\t\t\t\t${GREEN}${ipaddress}\t\t${RED}${speedtest}"
     elif [ "${#nodeName}" -lt "13" -a "${#ipaddress}" -eq "13" ]; then
-        echo -e "\e[33m$2\e[0m\t\t\t\e[32m$ipaddress\e[0m\t\t\e[31m$speedtest\e[0m"
+        echo -e "${YELLOW}${nodeName}\t\t\t${GREEN}${ipaddress}\t\t${RED}${speedtest}"
     elif [ "${#nodeName}" -lt "24" -a "${#ipaddress}" -eq "13" ]; then
-        echo -e "\e[33m$2\e[0m\t\t\e[32m$ipaddress\e[0m\t\t\e[31m$speedtest\e[0m"
+        echo -e "${YELLOW}${nodeName}\t\t${GREEN}${ipaddress}\t\t${RED}${speedtest}"
     elif [ "${#nodeName}" -lt "24" -a "${#ipaddress}" -gt "13" ]; then
-        echo -e "\e[33m$2\e[0m\t\t\e[32m$ipaddress\e[0m\t\e[31m$speedtest\e[0m"
+        echo -e "${YELLOW}${nodeName}\t\t${GREEN}${ipaddress}\t${RED}${speedtest}"
     elif [ "${#nodeName}" -ge "24" ]; then
-        echo -e "\e[33m$2\e[0m\t\e[32m$ipaddress\e[0m\t\e[31m$speedtest\e[0m"
+        echo -e "${YELLOW}${nodeName}\t${GREEN}${ipaddress}\t${RED}${speedtest}"
     fi
 }
 
