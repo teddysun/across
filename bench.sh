@@ -54,14 +54,14 @@ speed_test() {
     local speedtest=$(wget -4O /dev/null -T300 $1 2>&1 | awk '/\/dev\/null/ {speed=$3 $4} END {gsub(/\(|\)/,"",speed); print speed}')
     local ipaddress=$(ping -c1 -n `awk -F'/' '{print $3}' <<< $1` | awk -F'[()]' '{print $2;exit}')
     local nodeName=$2
-    display ${nodeName} ${ipaddress} ${speedtest}
+    display "${nodeName}" "${ipaddress}" "${speedtest}"
 }
 
 speed_test_v6() {
     local speedtest=$(wget -6O /dev/null -T300 $1 2>&1 | awk '/\/dev\/null/ {speed=$3 $4} END {gsub(/\(|\)/,"",speed); print speed}')
     local ipaddress=$(ping6 -c1 -n `awk -F'/' '{print $3}' <<< $1` | awk -F'[()]' '{print $2;exit}')
     local nodeName=$2
-    display ${nodeName} ${ipaddress} ${speedtest}
+    display "${nodeName}" "${ipaddress}" "${speedtest}"
 }
 
 speed() {
