@@ -30,38 +30,18 @@ next() {
     printf "%-70s\n" "-" | sed 's/\s/-/g'
 }
 
-display() {
-    unset nodeName ipaddress speedtest
-    local nodeName=$1
-    local ipaddress=$2
-    local speedtest=$3
-    if [ "${#nodeName}" -lt "8" ]; then
-        echo -e "${YELLOW}${nodeName}\t\t\t\t${GREEN}${ipaddress}\t\t${RED}${speedtest}${PLAIN}"
-    elif [ "${#nodeName}" -lt "13" ]; then
-        echo -e "${YELLOW}${nodeName}\t\t\t${GREEN}${ipaddress}\t\t${RED}${speedtest}${PLAIN}"
-    elif [ "${#nodeName}" -lt "24" -a "${#ipaddress}" -gt "13" ]; then
-        echo -e "${YELLOW}${nodeName}\t\t${GREEN}${ipaddress}\t${RED}${speedtest}${PLAIN}"
-    elif [ "${#nodeName}" -lt "24" ]; then
-        echo -e "${YELLOW}${nodeName}\t\t${GREEN}${ipaddress}\t\t${RED}${speedtest}${PLAIN}"
-    elif [ "${#nodeName}" -ge "24" -a "${#ipaddress}" -gt "13" ]; then
-        echo -e "${YELLOW}${nodeName}\t${GREEN}${ipaddress}\t${RED}${speedtest}${PLAIN}"
-    elif [ "${#nodeName}" -ge "24" ]; then
-        echo -e "${YELLOW}${nodeName}\t${GREEN}${ipaddress}\t\t${RED}${speedtest}${PLAIN}"
-    fi
-}
-
 speed_test() {
     local speedtest=$(wget -4O /dev/null -T300 $1 2>&1 | awk '/\/dev\/null/ {speed=$3 $4} END {gsub(/\(|\)/,"",speed); print speed}')
     local ipaddress=$(ping -c1 -n `awk -F'/' '{print $3}' <<< $1` | awk -F'[()]' '{print $2;exit}')
     local nodeName=$2
-    display "${nodeName}" "${ipaddress}" "${speedtest}"
+    printf "${YELLOW}%-32s${GREEN}%-24s${RED}%-14s${PLAIN}\n" "${nodeName}" "${ipaddress}" "${speedtest}"
 }
 
 speed_test_v6() {
     local speedtest=$(wget -6O /dev/null -T300 $1 2>&1 | awk '/\/dev\/null/ {speed=$3 $4} END {gsub(/\(|\)/,"",speed); print speed}')
     local ipaddress=$(ping6 -c1 -n `awk -F'/' '{print $3}' <<< $1` | awk -F'[()]' '{print $2;exit}')
     local nodeName=$2
-    display "${nodeName}" "${ipaddress}" "${speedtest}"
+    printf "${YELLOW}%-32s${GREEN}%-24s${RED}%-14s${PLAIN}\n" "${nodeName}" "${ipaddress}" "${speedtest}"
 }
 
 speed() {
@@ -158,9 +138,9 @@ ioall=$( awk 'BEGIN{print '$ioraw1' + '$ioraw2' + '$ioraw3'}' )
 ioavg=$( awk 'BEGIN{printf "%.1f", '$ioall' / 3}' )
 echo "Average I/O speed    : $ioavg MB/s"
 next
-echo -e "Node Name\t\t\tIPv4 address\t\tDownload Speed"
+printf "%-32s%-24s%-14s\n" "Node Name" "IPv4 address" "Download Speed"
 speed && next
 if [[ "$ipv6" != "" ]]; then
-    echo -e "Node Name\t\t\tIPv6 address\t\tDownload Speed"
+    printf "%-32s%-24s%-14s\n" "Node Name" "IPv6 address" "Download Speed"
     speed_v6 && next
 fi
