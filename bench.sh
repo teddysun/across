@@ -31,6 +31,7 @@ next() {
 }
 
 display() {
+    unset nodeName ipaddress speedtest
     local nodeName=$1
     local ipaddress=$2
     local speedtest=$3
