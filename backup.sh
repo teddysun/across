@@ -99,7 +99,7 @@ log() {
 # Check for list of mandatory binaries
 check_commands() {
     # This section checks for all of the binaries used in the backup
-    BINARIES=( cat cd du date dirname echo openssl mysql mysqldump pwd rm tar ftp )
+    BINARIES=( cat cd du date dirname echo openssl mysql mysqldump pwd rm tar )
     
     # Iterate over the list of binaries, and if one isn't found, abort
     for BINARY in "${BINARIES[@]}"; do
@@ -113,6 +113,14 @@ check_commands() {
     GDRIVE_COMMAND=false
     if [ "$(command -v "gdrive")" ]; then
         GDRIVE_COMMAND=true
+    fi
+
+    # check ftp command
+    if ${FTP_FLG}; then
+        if [ ! "$(command -v "ftp")" ]; then
+            log "ftp is not installed. Install it and try again"
+            exit 1
+        fi
     fi
 }
 
