@@ -6,7 +6,7 @@
 #
 # Copyright (C) 2016 Teddysun <i@teddysun.com>
 #
-# URL: https://teddysun.com/488.html
+# URL: https://teddysun.com/489.html
 #
 
 red='\033[0;31m'
@@ -185,7 +185,7 @@ echo " Kernel  : $kern"
 echo "----------------------------------------"
 echo " Auto install latest kernel for TCP BBR"
 echo
-echo " URL: https://teddysun.com/488.html"
+echo " URL: https://teddysun.com/489.html"
 echo "----------------------------------------"
 echo
 echo "Press any key to start...or Press Ctrl+C to cancel"
