@@ -17,6 +17,12 @@ Usage: l2tp [-l,--list|-a,--add|-d,--del|-m,--mod|-h,--help]
 | l2tp -h,--help   | Print this help information  |
 ```
 
+bbr.sh
+======
+
+- Description: Auto install latest kernel for TCP BBR
+- Intro: https://teddysun.com/489.html
+
 bench.sh
 ========
 
