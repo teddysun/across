@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Auto install latest kernel for BBR
+# Auto install latest kernel for TCP BBR
 #
 # System Required:  CentOS 6+, Debian7+, Ubuntu12+
 #
@@ -172,7 +172,7 @@ install_bbr() {
         rm -f ${deb_kernel_name}
         install_config
     else
-        echo -e "${red}Error:${plain} Your OS is not supported, please change to CentOS/Debian/Ubuntu and try again."
+        echo -e "${red}Error:${plain} OS is not be supported, please change to CentOS/Debian/Ubuntu and try again."
         exit 1
     fi
 }
