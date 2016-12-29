@@ -20,17 +20,17 @@ plain='\033[0m'
 
 if [ -f /etc/redhat-release ]; then
     release="centos"
-elif cat /etc/issue | grep -q -E -i "debian"; then
+elif cat /etc/issue | grep -Eqi "debian"; then
     release="debian"
-elif cat /etc/issue | grep -q -E -i "ubuntu"; then
+elif cat /etc/issue | grep -Eqi "ubuntu"; then
     release="ubuntu"
-elif cat /etc/issue | grep -q -E -i "centos|red hat|redhat"; then
+elif cat /etc/issue | grep -Eqi "centos|red hat|redhat"; then
     release="centos"
-elif cat /proc/version | grep -q -E -i "debian"; then
+elif cat /proc/version | grep -Eqi "debian"; then
     release="debian"
-elif cat /proc/version | grep -q -E -i "ubuntu"; then
+elif cat /proc/version | grep -Eqi "ubuntu"; then
     release="ubuntu"
-elif cat /proc/version | grep -q -E -i "centos|red hat|redhat"; then
+elif cat /proc/version | grep -Eqi "centos|red hat|redhat"; then
     release="centos"
 fi
 
@@ -124,25 +124,22 @@ install_config() {
                 exit 1
             fi
             sed -i 's/^default=.*/default=0/g' /boot/grub/grub.conf
-            echo "net.core.default_qdisc = fq" >> /etc/sysctl.conf
-            echo "net.ipv4.tcp_congestion_control = bbr" >> /etc/sysctl.conf
-            sysctl -p >/dev/null 2>&1
         elif centosversion 7; then
             if [ ! -f "/boot/grub2/grub.cfg" ]; then
                 echo -e "${red}Error:${plain} /boot/grub2/grub.cfg not found, please check it."
                 exit 1
             fi
             grub2-set-default 0
-            echo "net.core.default_qdisc = fq" >> /etc/sysctl.conf
-            echo "net.ipv4.tcp_congestion_control = bbr" >> /etc/sysctl.conf
-            sysctl -p >/dev/null 2>&1
         fi
     elif [[ "${release}" == "debian" || "${release}" == "ubuntu" ]]; then
         update-grub
-        echo "net.core.default_qdisc = fq" >> /etc/sysctl.conf
-        echo "net.ipv4.tcp_congestion_control = bbr" >> /etc/sysctl.conf
-        sysctl -p >/dev/null 2>&1
     fi
+
+    sed -i '/net.core.default_qdisc/d' /etc/sysctl.conf
+    sed -i '/net.ipv4.tcp_congestion_control/d' /etc/sysctl.conf
+    echo "net.core.default_qdisc = fq" >> /etc/sysctl.conf
+    echo "net.ipv4.tcp_congestion_control = bbr" >> /etc/sysctl.conf
+    sysctl -p >/dev/null 2>&1
 }
 
 install_bbr() {
@@ -160,7 +157,6 @@ install_bbr() {
             echo -e "${red}Error:${plain} Install latest kernel failed, please check it."
             exit 1
         fi
-        install_config
     elif [[ "${release}" == "debian" || "${release}" == "ubuntu" ]]; then
         [[ ! -e "/usr/bin/wget" ]] && apt-get -y update && apt-get -y install wget
         wget -c -t3 -T60 -O ${deb_kernel_name} ${deb_kernel_url}
@@ -170,11 +166,12 @@ install_bbr() {
         fi
         dpkg -i ${deb_kernel_name}
         rm -f ${deb_kernel_name}
-        install_config
     else
         echo -e "${red}Error:${plain} OS is not be supported, please change to CentOS/Debian/Ubuntu and try again."
         exit 1
     fi
+
+    install_config
 }
 
 clear
