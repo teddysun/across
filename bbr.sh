@@ -132,7 +132,7 @@ install_config() {
             grub2-set-default 0
         fi
     elif [[ "${release}" == "debian" || "${release}" == "ubuntu" ]]; then
-        update-grub
+        /usr/sbin/update-grub
     fi
 
     sed -i '/net.core.default_qdisc/d' /etc/sysctl.conf
