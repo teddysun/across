@@ -35,11 +35,11 @@ elif cat /proc/version | grep -Eqi "centos|red hat|redhat"; then
 fi
 
 if [[ `getconf WORD_BIT` == "32" && `getconf LONG_BIT` == "64" ]]; then
-    deb_kernel_url="http://kernel.ubuntu.com/~kernel-ppa/mainline/v4.9.1/linux-image-4.9.1-040901-generic_4.9.1-040901.201701060531_amd64.deb"
-    deb_kernel_name="linux-image-4.9.1-amd64.deb"
+    deb_kernel_url="http://kernel.ubuntu.com/~kernel-ppa/mainline/v4.9.3/linux-image-4.9.3-040903-generic_4.9.3-040903.201701120631_amd64.deb"
+    deb_kernel_name="linux-image-4.9.3-amd64.deb"
 else
-    deb_kernel_url="http://kernel.ubuntu.com/~kernel-ppa/mainline/v4.9.1/linux-image-4.9.1-040901-generic_4.9.1-040901.201701060531_i386.deb"
-    deb_kernel_name="linux-image-4.9.1-i386.deb"
+    deb_kernel_url="http://kernel.ubuntu.com/~kernel-ppa/mainline/v4.9.3/linux-image-4.9.3-040903-generic_4.9.3-040903.201701120631_i386.deb"
+    deb_kernel_name="linux-image-4.9.3-i386.deb"
 fi
 
 get_opsy() {
@@ -152,7 +152,7 @@ install_bbr() {
 
     if [[ "${release}" == "centos" ]]; then
         install_elrepo
-        yum --enablerepo=elrepo-kernel -y install kernel-ml
+        yum --enablerepo=elrepo-kernel -y install kernel-ml kernel-ml-devel
         if [ $? -ne 0 ]; then
             echo -e "${red}Error:${plain} Install latest kernel failed, please check it."
             exit 1
