@@ -35,11 +35,11 @@ elif cat /proc/version | grep -Eqi "centos|red hat|redhat"; then
 fi
 
 if [[ `getconf WORD_BIT` == "32" && `getconf LONG_BIT` == "64" ]]; then
-    deb_kernel_url="http://kernel.ubuntu.com/~kernel-ppa/mainline/v4.9.3/linux-image-4.9.3-040903-generic_4.9.3-040903.201701120631_amd64.deb"
-    deb_kernel_name="linux-image-4.9.3-amd64.deb"
+    deb_kernel_url="http://kernel.ubuntu.com/~kernel-ppa/mainline/v4.9.4/linux-image-4.9.4-040904-generic_4.9.4-040904.201701150831_amd64.deb"
+    deb_kernel_name="linux-image-4.9.4-amd64.deb"
 else
-    deb_kernel_url="http://kernel.ubuntu.com/~kernel-ppa/mainline/v4.9.3/linux-image-4.9.3-040903-generic_4.9.3-040903.201701120631_i386.deb"
-    deb_kernel_name="linux-image-4.9.3-i386.deb"
+    deb_kernel_url="http://kernel.ubuntu.com/~kernel-ppa/mainline/v4.9.4/linux-image-4.9.4-040904-generic_4.9.4-040904.201701150831_i386.deb"
+    deb_kernel_name="linux-image-4.9.4-i386.deb"
 fi
 
 get_opsy() {
