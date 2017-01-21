@@ -81,4 +81,4 @@ pptp.sh(Deprecated)
 - Description: Auto Install PPTP for CentOS 6
 - Intro: https://teddysun.com/134.html
 
-Copyright (C) 2013-2016 Teddysun <i@teddysun.com>
+Copyright (C) 2013-2017 Teddysun <i@teddysun.com>
