@@ -65,7 +65,7 @@ chmod +x /usr/bin/gdrive
 ftp_upload.sh
 =============
 
-- You must to modify the config before run it
+- You must modify the config before run it
 - Upload file(s) to FTP server
 - Intro: https://teddysun.com/484.html
 
