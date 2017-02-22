@@ -31,7 +31,7 @@ bench.sh
 ```bash
 Usage:
 
-| Option   | Bash Command                    |
+| No.      | Bash Command                    |
 |----------|---------------------------------|
 | 1        | wget -qO- bench.sh | bash       |
 | 2        | curl -Lso- bench.sh | bash      |
