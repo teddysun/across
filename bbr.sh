@@ -97,7 +97,7 @@ centosversion() {
 
 check_bbr_status() {
     local param=$(sysctl net.ipv4.tcp_available_congestion_control | awk '{print $3}')
-    if uname -r | grep -Eqi "4.9."; then
+    if uname -r | grep -Eqi "4.10."; then
         if [[ "${param}" == "bbr" ]]; then
             return 0
         else
