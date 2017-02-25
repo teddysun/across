@@ -10,7 +10,7 @@ export PATH
 cur_dir=`pwd`
 
 libevent2_src_filename="libevent-2.0.22-stable"
-libreswan_filename="libreswan-3.18"
+libreswan_filename="libreswan-3.19"
 
 rootness(){
     if [[ $EUID -ne 0 ]]; then
@@ -41,9 +41,7 @@ get_opsy(){
 
 get_os_info(){
     IP=$( ip addr | egrep -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | egrep -v "^192\.168|^172\.1[6-9]\.|^172\.2[0-9]\.|^172\.3[0-2]\.|^10\.|^127\.|^255\.|^0\." | head -n 1 )
-    if [ -z ${IP} ]; then
-        IP=$( wget -qO- -t1 -T2 ipv4.icanhazip.com )
-    fi
+    [ -z ${IP} ] && IP=$( wget -qO- -t1 -T2 ipv4.icanhazip.com )
     local cname=$( awk -F: '/model name/ {name=$2} END {print name}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
     local cores=$( awk -F: '/model name/ {core++} END {print core}' /proc/cpuinfo )
     local freq=$( awk -F: '/cpu MHz/ {freq=$2} END {print freq}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
@@ -120,7 +118,7 @@ check_sys(){
     fi
 }
 
-rand() {
+rand(){
     index=0
     str=""
     for i in {a..z}; do arr[index]=${i}; index=`expr ${index} + 1`; done
@@ -199,6 +197,16 @@ version_check(){
     fi
 }
 
+get_char(){
+    SAVEDSTTY=`stty -g`
+    stty -echo
+    stty cbreak
+    dd if=/dev/tty bs=1 count=1 2> /dev/null
+    stty -raw
+    stty echo
+    stty $SAVEDSTTY
+}
+
 preinstall_l2tp(){
 
     echo
@@ -232,15 +240,6 @@ preinstall_l2tp(){
     read -p "(Default Password: ${password}):" tmppassword
     [ ! -z ${tmppassword} ] && password=${tmppassword}
 
-    get_char(){
-    SAVEDSTTY=`stty -g`
-    stty -echo
-    stty cbreak
-    dd if=/dev/tty bs=1 count=1 2> /dev/null
-    stty -raw
-    stty echo
-    stty $SAVEDSTTY
-    }
     echo
     echo "ServerIP:${IP}"
     echo "Server Local IP:${iprange}.1"
