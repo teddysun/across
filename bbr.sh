@@ -38,6 +38,8 @@ get_latest_version() {
 
     latest_version=$(wget -qO- http://kernel.ubuntu.com/~kernel-ppa/mainline/ | awk -F'\"v' '/v[4-9]./{print $2}' | cut -d/ -f1 | grep -v -  | sort -V | tail -1)
 
+    [ -z ${latest_version} ] && return 1
+
     if [[ `getconf WORD_BIT` == "32" && `getconf LONG_BIT` == "64" ]]; then
         deb_name=$(wget -qO- http://kernel.ubuntu.com/~kernel-ppa/mainline/v${latest_version}/ | grep "linux-image" | grep "generic" | awk -F'\">' '/amd64.deb/{print $2}' | cut -d'<' -f1 | head -1)
         deb_kernel_url="http://kernel.ubuntu.com/~kernel-ppa/mainline/v${latest_version}/${deb_name}"
@@ -48,7 +50,7 @@ get_latest_version() {
         deb_kernel_name="linux-image-${latest_version}-i386.deb"
     fi
 
-    [ ! -z ${latest_version} ] && return 0 || return 1
+    [ ! -z ${deb_name} ] && return 0 || return 1
 }
 
 get_opsy() {
