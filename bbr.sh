@@ -111,18 +111,22 @@ check_bbr_status() {
 }
 
 install_elrepo() {
-    rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org
+
     if centosversion 5; then
         echo -e "${red}Error:${plain} not supported CentOS 5."
         exit 1
-    elif centosversion 6; then
+    fi
+
+    rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org
+
+    if centosversion 6; then
         rpm -Uvh http://www.elrepo.org/elrepo-release-6-6.el6.elrepo.noarch.rpm
     elif centosversion 7; then
         rpm -Uvh http://www.elrepo.org/elrepo-release-7.0-2.el7.elrepo.noarch.rpm
     fi
 
     if [ ! -f /etc/yum.repos.d/elrepo.repo ]; then
-        echo -e "${red}Error:${plain} Install ELRepo failed, please check it."
+        echo -e "${red}Error:${plain} Install elrepo failed, please check it."
         exit 1
     fi
 }
