@@ -415,7 +415,6 @@ ms-dns 8.8.8.8
 ms-dns 8.8.4.4
 noccp
 auth
-crtscts
 hide-password
 idle 1800
 mtu 1410
@@ -423,7 +422,6 @@ mru 1410
 nodefaultroute
 name l2tpd
 debug
-lock
 proxyarp
 connect-delay 5000
 EOF
@@ -627,7 +625,6 @@ ms-dns 8.8.8.8
 ms-dns 8.8.4.4
 noccp
 auth
-crtscts
 hide-password
 idle 1800
 mtu 1410
@@ -635,7 +632,6 @@ mru 1410
 nodefaultroute
 name l2tpd
 debug
-lock
 proxyarp
 connect-delay 5000
 EOF
