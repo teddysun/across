@@ -296,7 +296,7 @@ install_l2tp(){
             dpkg -i ${libnss3_filename1} ${libnss3_filename2} ${libnss3_filename3} ${libnss3_filename4} ${libnss3_filename5}
             apt-get -y install wget gcc ppp flex bison make pkg-config libpam0g-dev libcap-ng-dev libcap-ng-utils libunbound-dev libevent-dev libcurl4-nss-dev libsystemd-daemon-dev
         else
-            apt-get -y install wget gcc ppp flex bison make python libnss3-dev libnspr4-dev pkg-config libpam0g-dev libcap-ng-dev libcap-ng-utils libunbound-dev libnss3-tools libevent-dev libcurl4-nss-dev libsystemd-daemon-dev
+            apt-get -y install wget gcc ppp flex bison make python libnss3-dev libnspr4-dev pkg-config libpam0g-dev libcap-ng-dev libcap-ng-utils libunbound-dev libnss3-tools libevent-dev libcurl4-nss-dev libsystemd-dev
         fi
         apt-get -y --no-install-recommends install xmlto
         apt-get -y install xl2tpd
