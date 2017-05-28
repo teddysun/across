@@ -9,8 +9,7 @@ export PATH
 #=======================================================================#
 cur_dir=`pwd`
 
-libevent2_src_filename="libevent-2.0.22-stable"
-libreswan_filename="libreswan-3.19"
+libreswan_filename="libreswan-3.20"
 
 rootness(){
     if [[ $EUID -ne 0 ]]; then
@@ -42,6 +41,7 @@ get_opsy(){
 get_os_info(){
     IP=$( ip addr | egrep -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | egrep -v "^192\.168|^172\.1[6-9]\.|^172\.2[0-9]\.|^172\.3[0-2]\.|^10\.|^127\.|^255\.|^0\." | head -n 1 )
     [ -z ${IP} ] && IP=$( wget -qO- -t1 -T2 ipv4.icanhazip.com )
+
     local cname=$( awk -F: '/model name/ {name=$2} END {print name}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
     local cores=$( awk -F: '/model name/ {core++} END {print core}' /proc/cpuinfo )
     local freq=$( awk -F: '/cpu MHz/ {freq=$2} END {print freq}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
@@ -80,25 +80,25 @@ check_sys(){
     local release=''
     local systemPackage=''
 
-    if [[ -f /etc/redhat-release ]];then
+    if [[ -f /etc/redhat-release ]]; then
         release="centos"
         systemPackage="yum"
-    elif cat /etc/issue | grep -q -E -i "debian";then
+    elif cat /etc/issue | grep -Eqi "debian"; then
         release="debian"
         systemPackage="apt"
-    elif cat /etc/issue | grep -q -E -i "ubuntu";then
+    elif cat /etc/issue | grep -Eqi "ubuntu"; then
         release="ubuntu"
         systemPackage="apt"
-    elif cat /etc/issue | grep -q -E -i "centos|red hat|redhat";then
+    elif cat /etc/issue | grep -Eqi "centos|red hat|redhat"; then
         release="centos"
         systemPackage="yum"
-    elif cat /proc/version | grep -q -E -i "debian";then
+    elif cat /proc/version | grep -Eqi "debian"; then
         release="debian"
         systemPackage="apt"
-    elif cat /proc/version | grep -q -E -i "ubuntu";then
+    elif cat /proc/version | grep -Eqi "ubuntu"; then
         release="ubuntu"
         systemPackage="apt"
-    elif cat /proc/version | grep -q -E -i "centos|red hat|redhat";then
+    elif cat /proc/version | grep -Eqi "centos|red hat|redhat"; then
         release="centos"
         systemPackage="yum"
     fi
@@ -143,7 +143,7 @@ download_file(){
         echo "$1 [found]"
     else
         echo "$1 not found!!!download now..."
-        if ! wget -c -t3 -T60 ${download_root_url}/${1};then
+        if ! wget -c -t3 -T60 ${download_root_url}/${1}; then
             echo "Failed to download $1, please download it to ${cur_dir} directory manually and try again."
             exit 1
         fi
@@ -302,13 +302,15 @@ install_l2tp(){
         apt-get -y install xl2tpd
         compile_install
     elif check_sys packageManager yum; then
+        echo "Adding the EPEL repository..."
+        yum -y install epel-release
         if centosversion 7; then
-            yum -y install epel-release
             yum -y install ppp libreswan xl2tpd firewalld
             yum_install
         elif centosversion 6; then
-            yum -y install epel-release
-            yum -y install gcc gcc-c++ ppp iptables make gmp-devel xmlto bison flex libpcap-devel lsof
+            yum -y remove libevent-devel
+            yum -y install libevent2-devel
+            yum -y install gcc ppp iptables make gmp-devel xmlto bison flex libpcap-devel lsof
             yum -y install xl2tpd curl-devel nss-devel nspr-devel pkgconfig pam-devel unbound-devel libcap-ng-devel
             compile_install
         fi
@@ -316,60 +318,23 @@ install_l2tp(){
 
 }
 
-compile_install(){
-
-    rm -rf ${cur_dir}/l2tp
-    mkdir -p ${cur_dir}/l2tp
-    cd ${cur_dir}/l2tp
-    download_file "${libreswan_filename}.tar.gz"
-    tar -zxf ${libreswan_filename}.tar.gz
-
-    if centosversion 6; then
-        download_file "${libevent2_src_filename}.tar.gz"
-        tar -zxf ${libevent2_src_filename}.tar.gz
-        cd ${libevent2_src_filename}
-        ./configure
-        make && make install
-        if [ $? -eq 0 ]; then
-            if is_64bit;then
-                ln -sf /usr/local/lib/libevent-2.0.so.5 /usr/lib64/libevent-2.0.so.5
-                ln -sf /usr/local/lib/libevent_pthreads-2.0.so.5 /usr/lib64/libevent_pthreads-2.0.so.5
-            else
-                ln -sf /usr/local/lib/libevent-2.0.so.5 /usr/lib/libevent-2.0.so.5
-                ln -sf /usr/local/lib/libevent_pthreads-2.0.so.5 /usr/lib/libevent_pthreads-2.0.so.5
-            fi
-            echo "/usr/local/lib" > /etc/ld.so.conf.d/local.conf
-            ldconfig
-        else
-            echo "libevent2 install failed..."
-            exit 1
-        fi
-    fi
-
-    cd ${cur_dir}/l2tp/${libreswan_filename}
-    echo "WERROR_CFLAGS =" > Makefile.inc.local
-    make programs && make install
-
-    /usr/local/sbin/ipsec --version >/dev/null 2>&1
-    if [ $? -ne 0 ];then
-        echo "${libreswan_filename} install failed."
-        exit 1
-    fi
+config_install(){
 
     cat > /etc/ipsec.conf<<EOF
+version 2.0
+
 config setup
-    nat_traversal=yes
     protostack=netkey
-    oe=off
-    interfaces="%defaultroute"
-    dumpdir=/var/run/pluto/
-    virtual_private=%v4:10.0.0.0/8,%v4:192.168.0.0/16,%v4:172.16.0.0/12,%v4:25.0.0.0/8,%v4:100.64.0.0/10,%v6:fd00::/8,%v6:fe80::/10
+    nhelpers=0
+    uniqueids=no
+    interfaces=%defaultroute
+    virtual_private=%v4:10.0.0.0/8,%v4:192.168.0.0/16,%v4:172.16.0.0/12,%v4:!${iprange}.0/24
 
-conn L2TP-PSK-NAT
+conn l2tp-psk
     rightsubnet=vhost:%priv
-    also=L2TP-PSK-noNAT
+    also=l2tp-psk-nonat
 
-conn L2TP-PSK-noNAT
+conn l2tp-psk-nonat
     authby=secret
     pfs=no
     auto=add
@@ -378,7 +343,7 @@ conn L2TP-PSK-noNAT
     ikelifetime=8h
     keylife=1h
     type=transport
-    left=${IP}
+    left=%defaultroute
     leftid=${IP}
     leftprotoport=17/1701
     right=%any
@@ -389,19 +354,20 @@ conn L2TP-PSK-noNAT
 EOF
 
     cat > /etc/ipsec.secrets<<EOF
-${IP} %any: PSK "${mypsk}"
+%any %any : PSK "${mypsk}"
 EOF
 
     cat > /etc/xl2tpd/xl2tpd.conf<<EOF
 [global]
-listen-addr = ${IP}
+port = 1701
+
 [lns default]
 ip range = ${iprange}.2-${iprange}.254
 local ip = ${iprange}.1
 require chap = yes
 refuse pap = yes
 require authentication = yes
-name = LinuxVPNserver
+name = l2tpd
 ppp debug = yes
 pppoptfile = /etc/ppp/options.xl2tpd
 length bit = yes
@@ -420,7 +386,6 @@ idle 1800
 mtu 1410
 mru 1410
 nodefaultroute
-name l2tpd
 debug
 proxyarp
 connect-delay 5000
@@ -432,6 +397,28 @@ EOF
 # client    server    secret    IP addresses
 ${username}    l2tpd    ${password}       *
 EOF
+
+}
+
+compile_install(){
+
+    rm -rf ${cur_dir}/l2tp
+    mkdir -p ${cur_dir}/l2tp
+    cd ${cur_dir}/l2tp
+    download_file "${libreswan_filename}.tar.gz"
+    tar -zxf ${libreswan_filename}.tar.gz
+
+    cd ${cur_dir}/l2tp/${libreswan_filename}
+    echo "WERROR_CFLAGS =" > Makefile.inc.local
+    make programs && make install
+
+    /usr/local/sbin/ipsec --version >/dev/null 2>&1
+    if [ $? -ne 0 ];then
+        echo "${libreswan_filename} install failed."
+        exit 1
+    fi
+
+    config_install
 
     cp -pf /etc/sysctl.conf /etc/sysctl.conf.bak
 
@@ -565,82 +552,7 @@ EOF
 
 yum_install(){
 
-    rm -f /etc/ipsec.conf
-    cat > /etc/ipsec.conf<<EOF
-config setup
-    nat_traversal=yes
-    protostack=netkey
-    oe=off
-    interfaces="%defaultroute"
-    dumpdir=/var/run/pluto/
-    virtual_private=%v4:10.0.0.0/8,%v4:192.168.0.0/16,%v4:172.16.0.0/12,%v4:25.0.0.0/8,%v4:100.64.0.0/10,%v6:fd00::/8,%v6:fe80::/10
-
-conn L2TP-PSK-NAT
-    rightsubnet=vhost:%priv
-    also=L2TP-PSK-noNAT
-
-conn L2TP-PSK-noNAT
-    authby=secret
-    pfs=no
-    auto=add
-    keyingtries=3
-    rekey=no
-    ikelifetime=8h
-    keylife=1h
-    type=transport
-    left=${IP}
-    leftid=${IP}
-    leftprotoport=17/1701
-    right=%any
-    rightprotoport=17/%any
-    dpddelay=40
-    dpdtimeout=130
-    dpdaction=clear
-EOF
-    rm -f /etc/ipsec.secrets
-    cat > /etc/ipsec.secrets<<EOF
-${IP} %any: PSK "${mypsk}"
-EOF
-    rm -f /etc/xl2tpd/xl2tpd.conf
-    cat > /etc/xl2tpd/xl2tpd.conf<<EOF
-[global]
-listen-addr = ${IP}
-[lns default]
-ip range = ${iprange}.2-${iprange}.254
-local ip = ${iprange}.1
-require chap = yes
-refuse pap = yes
-require authentication = yes
-name = LinuxVPNserver
-ppp debug = yes
-pppoptfile = /etc/ppp/options.xl2tpd
-length bit = yes
-EOF
-    rm -f /etc/ppp/options.xl2tpd
-    cat > /etc/ppp/options.xl2tpd<<EOF
-ipcp-accept-local
-ipcp-accept-remote
-require-mschap-v2
-ms-dns 8.8.8.8
-ms-dns 8.8.4.4
-noccp
-auth
-hide-password
-idle 1800
-mtu 1410
-mru 1410
-nodefaultroute
-name l2tpd
-debug
-proxyarp
-connect-delay 5000
-EOF
-    rm -f /etc/ppp/chap-secrets
-    cat > /etc/ppp/chap-secrets<<EOF
-# Secrets for authentication using CHAP
-# client    server    secret    IP addresses
-${username}    l2tpd    ${password}       *
-EOF
+    config_install
 
     cp -pf /etc/sysctl.conf /etc/sysctl.conf.bak
 
@@ -659,7 +571,7 @@ EOF
     done
     sysctl -p
 
-    cat > /usr/lib/firewalld/services/xl2tpd.xml<<EOF
+    cat > /etc/firewalld/services/xl2tpd.xml<<EOF
 <?xml version="1.0" encoding="utf-8"?>
 <service>
   <short>xl2tpd</short>
@@ -668,7 +580,7 @@ EOF
   <port protocol="udp" port="1701"/>
 </service>
 EOF
-    chmod 640 /usr/lib/firewalld/services/xl2tpd.xml
+    chmod 640 /etc/firewalld/services/xl2tpd.xml
 
     systemctl enable ipsec
     systemctl enable xl2tpd
@@ -676,6 +588,7 @@ EOF
 
     systemctl status firewalld > /dev/null 2>&1
     if [ $? -eq 0 ];then
+        firewall-cmd --reload
         echo "Checking firewalld status..."
         firewall-cmd --list-all
         echo "add firewalld rules..."
@@ -688,6 +601,7 @@ EOF
         systemctl start firewalld
         if [ $? -eq 0 ];then
             echo "Firewalld start successfully..."
+            firewall-cmd --reload
             echo "Checking firewalld status..."
             firewall-cmd --list-all
             echo "adding firewalld rules..."
@@ -708,11 +622,6 @@ EOF
     systemctl -a | grep xl2tpd
     echo "Checking firewalld status..."
     firewall-cmd --list-all
-    firewall-cmd --list-all | grep xl2tpd > /dev/null 2>&1
-    if [ $? -ne 0 ];then
-        firewall-cmd --permanent --add-service=xl2tpd
-        firewall-cmd --reload
-    fi
 
 }
 
