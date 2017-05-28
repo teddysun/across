@@ -255,11 +255,11 @@ install_l2tp(){
 
     mknod /dev/random c 1 9
 
-    if check_sys packageManager apt;then
+    if check_sys packageManager apt; then
         apt-get -y update
 
-        if debianversion 7;then
-            if is_64bit;then
+        if debianversion 7; then
+            if is_64bit; then
                 local libnspr4_filename1="libnspr4_4.10.7-1_amd64.deb"
                 local libnspr4_filename2="libnspr4-0d_4.10.7-1_amd64.deb"
                 local libnspr4_filename3="libnspr4-dev_4.10.7-1_amd64.deb"
@@ -294,24 +294,34 @@ install_l2tp(){
             download_file "${libnss3_filename5}"
             dpkg -i ${libnspr4_filename1} ${libnspr4_filename2} ${libnspr4_filename3} ${libnspr4_filename4}
             dpkg -i ${libnss3_filename1} ${libnss3_filename2} ${libnss3_filename3} ${libnss3_filename4} ${libnss3_filename5}
-            apt-get -y install wget gcc ppp flex bison make pkg-config libpam0g-dev libcap-ng-dev libcap-ng-utils libunbound-dev libevent-dev libcurl4-nss-dev libsystemd-daemon-dev
+
+            apt-get -y install wget gcc ppp flex bison make pkg-config libpam0g-dev libcap-ng-dev iptables \
+                               libcap-ng-utils libunbound-dev libevent-dev libcurl4-nss-dev libsystemd-daemon-dev
         else
-            apt-get -y install wget gcc ppp flex bison make python libnss3-dev libnspr4-dev pkg-config libpam0g-dev libcap-ng-dev libcap-ng-utils libunbound-dev libnss3-tools libevent-dev libcurl4-nss-dev libsystemd-dev
+            apt-get -y install wget gcc ppp flex bison make python libnss3-dev libnss3-tools libselinux-dev iptables \
+                               libnspr4-dev pkg-config libpam0g-dev libcap-ng-dev libcap-ng-utils libunbound-dev \
+                               libevent-dev libcurl4-nss-dev libsystemd-dev
         fi
         apt-get -y --no-install-recommends install xmlto
         apt-get -y install xl2tpd
+
         compile_install
     elif check_sys packageManager yum; then
         echo "Adding the EPEL repository..."
         yum -y install epel-release
+        [ ! -f /etc/yum.repos.d/epel.repo ] && echo "Install EPEL repository failed, please check it." && exit 1
+
         if centosversion 7; then
             yum -y install ppp libreswan xl2tpd firewalld
             yum_install
         elif centosversion 6; then
             yum -y remove libevent-devel
             yum -y install libevent2-devel
-            yum -y install gcc ppp iptables make gmp-devel xmlto bison flex libpcap-devel lsof
-            yum -y install xl2tpd curl-devel nss-devel nspr-devel pkgconfig pam-devel unbound-devel libcap-ng-devel
+            yum -y install nss-devel nspr-devel pkgconfig pam-devel \
+                           libcap-ng-devel libselinux-devel lsof \
+                           curl-devel flex bison gcc ppp make iptables gmp-devel \
+                           fipscheck-devel unbound-devel xmlto libpcap-devel xl2tpd
+
             compile_install
         fi
     fi
@@ -414,7 +424,7 @@ compile_install(){
     make programs && make install
 
     /usr/local/sbin/ipsec --version >/dev/null 2>&1
-    if [ $? -ne 0 ];then
+    if [ $? -ne 0 ]; then
         echo "${libreswan_filename} install failed."
         exit 1
     fi
@@ -425,8 +435,7 @@ compile_install(){
 
     sed -i 's/net.ipv4.ip_forward = 0/net.ipv4.ip_forward = 1/g' /etc/sysctl.conf
 
-    for each in `ls /proc/sys/net/ipv4/conf/`
-    do
+    for each in `ls /proc/sys/net/ipv4/conf/`; do
         echo "net.ipv4.conf.${each}.accept_source_route=0" >> /etc/sysctl.conf
         echo "net.ipv4.conf.${each}.accept_redirects=0" >> /etc/sysctl.conf
         echo "net.ipv4.conf.${each}.send_redirects=0" >> /etc/sysctl.conf
@@ -437,7 +446,7 @@ compile_install(){
     if centosversion 6; then
         [ -f /etc/sysconfig/iptables ] && cp -pf /etc/sysconfig/iptables /etc/sysconfig/iptables.old.`date +%Y%m%d`
 
-        if [ "`/sbin/iptables-save | grep -c '^\-'`" = "0" ]; then
+        if [ "`iptables -L -n | grep -c '\-\-'`" == "0" ]; then
             cat > /etc/sysconfig/iptables <<EOF
 # Added by L2TP VPN script
 *filter
@@ -487,7 +496,7 @@ EOF
     else
         [ -f /etc/iptables.rules ] && cp -pf /etc/iptables.rules /etc/iptables.rules.old.`date +%Y%m%d`
 
-        if [ "`/sbin/iptables-save | grep -c '^\-'`" = "0" ]; then
+        if [ "`iptables -L -n | grep -c '\-\-'`" == "0" ]; then
             cat > /etc/iptables.rules <<EOF
 # Added by L2TP VPN script
 *filter
@@ -563,8 +572,7 @@ yum_install(){
     echo "net.ipv4.icmp_echo_ignore_broadcasts=1" >> /etc/sysctl.conf
     echo "net.ipv4.icmp_ignore_bogus_error_responses=1" >> /etc/sysctl.conf
 
-    for each in `ls /proc/sys/net/ipv4/conf/`
-    do
+    for each in `ls /proc/sys/net/ipv4/conf/`; do
         echo "net.ipv4.conf.${each}.accept_source_route=0" >> /etc/sysctl.conf
         echo "net.ipv4.conf.${each}.accept_redirects=0" >> /etc/sysctl.conf
         echo "net.ipv4.conf.${each}.send_redirects=0" >> /etc/sysctl.conf
@@ -588,7 +596,7 @@ EOF
     systemctl enable firewalld
 
     systemctl status firewalld > /dev/null 2>&1
-    if [ $? -eq 0 ];then
+    if [ $? -eq 0 ]; then
         firewall-cmd --reload
         echo "Checking firewalld status..."
         firewall-cmd --list-all
@@ -600,7 +608,7 @@ EOF
     else
         echo "Firewalld looks like not running, trying to start..."
         systemctl start firewalld
-        if [ $? -eq 0 ];then
+        if [ $? -eq 0 ]; then
             echo "Firewalld start successfully..."
             firewall-cmd --reload
             echo "Checking firewalld status..."
@@ -611,7 +619,7 @@ EOF
             firewall-cmd --permanent --add-masquerade
             firewall-cmd --reload
         else
-            echo "Failed to start firewalld. please enable port 500 4500 manually if necessary."
+            echo "Failed to start firewalld. please enable udp port 500 4500 1701 manually if necessary."
         fi
     fi
 
@@ -646,18 +654,18 @@ finally(){
     echo "If there is no [FAILED] above, you can connect to your L2TP "
     echo "VPN Server with the default Username/Password is below:"
     echo
-    echo "ServerIP:${IP}"
-    echo "PSK:${mypsk}"
-    echo "Username:${username}"
-    echo "Password:${password}"
+    echo "Server IP: ${IP}"
+    echo "PSK      : ${mypsk}"
+    echo "Username : ${username}"
+    echo "Password : ${password}"
     echo
-    echo "If you want to modify user settings, please use command(s):"
+    echo "If you want to modify user settings, please use below command(s):"
     echo "l2tp -a (Add a user)"
     echo "l2tp -d (Delete a user)"
     echo "l2tp -l (List all users)"
     echo "l2tp -m (Modify a user password)"
     echo
-    echo "Welcome to visit https://teddysun.com/448.html"
+    echo "Welcome to visit our website: https://teddysun.com/448.html"
     echo "Enjoy it!"
     echo
 }
@@ -769,7 +777,7 @@ fi
 
 case ${action} in
     install)
-        l2tp 2>&1 | tee /root/l2tp.log
+        l2tp 2>&1 | tee ${cur_dir}/l2tp.log
         ;;
     -l|--list)
         list_users
