@@ -82,3 +82,8 @@ pptp.sh(Deprecated)
 - Intro: https://teddysun.com/134.html
 
 Copyright (C) 2013-2017 Teddysun <i@teddysun.com>
+
+newlinux.sh
+===================
+##### 用来在新的linux上安装必要环境
+-含有screenfetch mycli speedometer shadowsocks 以及java8
