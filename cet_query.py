@@ -32,7 +32,7 @@ H = {'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,
 
 def query(id__,name):
 	s = requests.Session()
-	req = s.get(URL,headers=H)
+	req = s.get(URL)
 
 	if req.ok :
 		url = URL + data.format(id__,quote(name))
