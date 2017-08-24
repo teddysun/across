@@ -91,6 +91,7 @@ for num in range(1,11):
 				result = parse(text)
 				print(result)
 				append_file(result)
+				continue
 			else:
 				print(zkzh,xm,sep='-->')
-				sleep(30)
+			sleep(30)
