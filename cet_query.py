@@ -84,14 +84,14 @@ exit(0)'''
 ### testing end
 names = ['贺深','张旭','陈飞扬','赵昊罡','潘猛']
 for num in range(1,11):
-	for xm in names:
-		for zkzh in [ i for i in range(*number) ]:
-			text = query(zkzh,xm)
-			if check(text):
-				result = parse(text)
-				print(result)
-				append_file(result)
-				continue
-			else:
-				print(zkzh,xm,sep='-->')
-			sleep(30)
+    for zkzh in [i for i in range(*number)]:
+        for xm in names:
+            text = query(zkzh,xm)
+            if check(text):
+                result = parse(text)
+                print(result)
+                append_file(result)
+                continue
+            else:
+                print(zkzh,xm,sep='-->')
+            sleep(2)
