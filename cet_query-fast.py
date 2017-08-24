@@ -23,7 +23,7 @@ data = 'query?zkzh={}&xm={}'
 H = {'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
 'Accept-Encoding':'gzip, deflate',
 'Accept-Language':'zh-CN,zh;q=0.8',
-'Connection':'close',
+'Connection':'keep-alive',
 'Host':'www.chsi.com.cn',
 'Referer':'http://www.chsi.com.cn/cet/',
 'Upgrade-Insecure-Requests':'1',
@@ -82,15 +82,16 @@ else:
 	print('没有')
 exit(0)'''
 ### testing end
-names = ['赵昊罡','潘猛']
+names = ['贺深','张旭','陈飞扬','赵昊罡','潘猛']
 for num in range(1,11):
-    for zkzh in [i for i in range(*number)]:
-        for xm in names:
-            text = query(zkzh,xm)
-            if check(text):
-                result = parse(text)
-                print(result)
-                append_file(result)
-            else:
-                print(zkzh,xm,sep='-->')
-            sleep(2)
+	for xm in names:
+		for zkzh in [ i for i in range(*number) ]:
+			text = query(zkzh,xm)
+			if check(text):
+				result = parse(text)
+				print(result)
+				append_file(result)
+				continue
+			else:
+				print(zkzh,xm,sep='-->')
+			sleep(1)
