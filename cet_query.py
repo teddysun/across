@@ -26,17 +26,16 @@ H = {'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,
 'Connection':'keep-alive',
 'Host':'www.chsi.com.cn',
 'Referer':'http://www.chsi.com.cn/cet/',
-'Upgrade-Insecure-Requests':'0',
-'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.101 Safari/537.36',
+'Upgrade-Insecure-Requests':'1',
+'User-Agent':'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.101 Safari/537.36',
 }
 
 def query(id__,name):
 	s = requests.Session()
-	req = s.get(URL)
+	req = s.get(URL,headers=H)
 
 	if req.ok :
 		url = URL + data.format(id__,quote(name))
-		print(url)
 		req = requests.get(url,headers=H,cookies=req.cookies)
 		return req.text
 	else:
@@ -50,7 +49,7 @@ def check(html):
 	if soup.find('div',{"class":"error alignC marginT20"}):
 		return False
 	elif soup.find('div',{"class":"error alignC"}):
-		print('要求验证码')
+		print("缺少验证码")
 		return False
 	else:
 		return True
@@ -72,38 +71,27 @@ def append_file(string):
 	with open('cet.txt','a+') as f:
 		f.writelines(string + os.linesep)
 
-number = 420550171103500,420550171103600 ### 420550171103524 贺深
+number = 420550171103500,420550171103700 ### 420550171103524 贺深
 
 
 ### testing
-
-'''text = query(420550171103524,'贺深')
+text = query(420550171103524,'贺深')
 if check(text):
 	print(parse(text))
 else:
 	print('没有')
 exit(0)
 ### testing end
-names = ['贺深','张旭','尘飞杨']'''
+'''names = ['贺深','张旭','尘飞杨']
 
-'''for xm in names:
+for xm in names:
 	for zkzh in [ i for i in range(*number) ]:
-		sleep(10)
+		sleep(0.5)
 		text = query(zkzh,xm)
 		if check(text):
-			print('result has been checked')
 			result = parse(text)
 			print(result)
 			append_file(result)
 		else:
-			print('result has not been checked')
 			print(zkzh,xm,sep='-->')'''
-text = query('420550171103524','贺深')
-if check(text):
-	print('result has been checked')
-	result = parse(text)
-	print(result)
-	append_file(result)
-else:
-	print('result has not been checked')
 		
