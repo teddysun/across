@@ -27,7 +27,7 @@ H = {'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,
 'Host':'www.chsi.com.cn',
 'Referer':'http://www.chsi.com.cn/cet/',
 'Upgrade-Insecure-Requests':'0',
-'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3112.101 Safari/537.36',
+'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.101 Safari/537.36',
 }
 
 def query(id__,name):
@@ -77,14 +77,14 @@ number = 420550171103500,420550171103600 ### 420550171103524 贺深
 
 ### testing
 
-text = query(420550171103524,'贺深')
+'''text = query(420550171103524,'贺深')
 if check(text):
 	print(parse(text))
 else:
 	print('没有')
 exit(0)
 ### testing end
-names = ['贺深','张旭','尘飞杨']
+names = ['贺深','张旭','尘飞杨']'''
 
 '''for xm in names:
 	for zkzh in [ i for i in range(*number) ]:
@@ -98,12 +98,12 @@ names = ['贺深','张旭','尘飞杨']
 		else:
 			print('result has not been checked')
 			print(zkzh,xm,sep='-->')'''
-'''text = query('420550171103524','贺深')
+text = query('420550171103524','贺深')
 if check(text):
 	print('result has been checked')
 	result = parse(text)
 	print(result)
 	append_file(result)
 else:
-	print('result has not been checked')'''
+	print('result has not been checked')
 		
