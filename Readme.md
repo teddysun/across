@@ -1,10 +1,18 @@
 # Some useful scripts
 # 一些有用的脚本
 
+
+python3.5-for-spider.sh
+===================
+##### 一键运行单个的python脚本
+- 含有python3.5,requsets, beautifulsoup4
+- 运行此脚本时，接收一个参数，参数为要运行的脚本的文件名，例如"./python3.5-for-spider.sh example.py"
+- 需要docker环境的支持
+***
 newlinux.sh
 ===================
 ##### 用来在新的linux上安装必要环境
--含有screenfetch mycli speedometer shadowsocks 以及java8
+- 含有screenfetch mycli speedometer shadowsocks 以及java8
 ***
 install-docker.sh
 ===================
