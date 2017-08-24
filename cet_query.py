@@ -50,7 +50,7 @@ def check(html):
 		return False
 	elif soup.find('div',{"class":"error alignC"}):
 		print("缺少验证码")
-		return False
+		return True
 	else:
 		return True
 
