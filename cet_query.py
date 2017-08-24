@@ -27,7 +27,7 @@ H = {'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,
 'Host':'www.chsi.com.cn',
 'Referer':'http://www.chsi.com.cn/cet/',
 'Upgrade-Insecure-Requests':'0',
-'User-Agent':'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.101 Safari/537.36',
+'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3112.101 Safari/537.36',
 }
 
 def query(id__,name):
