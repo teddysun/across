@@ -50,7 +50,7 @@ def check(html):
 		return False
 	elif soup.find('div',{"class":"error alignC"}):
 		print("缺少验证码")
-		return True
+		return False
 	else:
 		return True
 
@@ -71,27 +71,26 @@ def append_file(string):
 	with open('cet.txt','a+') as f:
 		f.writelines(string + os.linesep)
 
-number = 420550171103500,420550171103700 ### 420550171103524 贺深
+number = 420550171103500,420550171103599 ### 420550171103524 贺深
 
 
 ### testing
-text = query(420550171103524,'贺深')
+'''text = query(420550171103524,'贺深')
 if check(text):
 	print(parse(text))
 else:
 	print('没有')
-exit(0)
+exit(0)'''
 ### testing end
-'''names = ['贺深','张旭','尘飞杨']
-
-for xm in names:
-	for zkzh in [ i for i in range(*number) ]:
-		sleep(0.5)
-		text = query(zkzh,xm)
-		if check(text):
-			result = parse(text)
-			print(result)
-			append_file(result)
-		else:
-			print(zkzh,xm,sep='-->')'''
-		
+names = ['贺深','张旭','陈飞扬','赵昊罡','潘猛']
+for num in range(1,11):
+	for xm in names:
+		for zkzh in [ i for i in range(*number) ]:
+			text = query(zkzh,xm)
+			if check(text):
+				result = parse(text)
+				print(result)
+				append_file(result)
+			else:
+				print(zkzh,xm,sep='-->')
+				sleep(30)
