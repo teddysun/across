@@ -16,6 +16,9 @@ from time import sleep
 from urllib.parse import quote
 from bs4 import BeautifulSoup as bs
 
+proxy = {
+	'http':'http://101.200.44.5:8888'
+}
 
 URL='http://www.chsi.com.cn/cet/'
 data = 'query?zkzh={}&xm={}'
@@ -32,11 +35,11 @@ H = {'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,
 
 def query(id__,name):
 	s = requests.Session()
-	req = s.get(URL,headers=H)
+	req = s.get(URL,headers=H,proxies=proxy)
 
 	if req.ok :
 		url = URL + data.format(id__,quote(name))
-		req = requests.get(url,headers=H,cookies=req.cookies)
+		req = requests.get(url,headers=H,cookies=req.cookies,proxies=proxy)
 		return req.text
 	else:
 		print(id__,name,'出错',sep='-->')
