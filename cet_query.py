@@ -17,7 +17,7 @@ from urllib.parse import quote
 from bs4 import BeautifulSoup as bs
 
 proxy = {
-	'http':'http://101.200.44.5:8888'
+	'http':'101.200.44.5:8888'
 }
 
 URL='http://www.chsi.com.cn/cet/'
@@ -35,7 +35,7 @@ H = {'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,
 
 def query(id__,name):
 	s = requests.Session()
-	req = s.get(URL,headers=H,proxies=proxy)
+	req = s.get(URL,headers=H)
 
 	if req.ok :
 		url = URL + data.format(id__,quote(name))
@@ -85,7 +85,7 @@ else:
 	print('没有')
 exit(0)'''
 ### testing end
-names = ['赵昊罡','潘猛']
+names = ['赵昊罡']
 for num in range(1,11):
     for zkzh in [i for i in range(*number)]:
         for xm in names:
@@ -94,8 +94,7 @@ for num in range(1,11):
                 result = parse(text)
                 print(result)
                 append_file(result)
-                names.pop(xm)
                 continue
             else:
                 print(zkzh,xm,sep='-->')
-            sleep(60)
+            sleep(0.5)
