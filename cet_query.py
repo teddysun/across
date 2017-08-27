@@ -26,7 +26,6 @@ data = 'query?zkzh={}&xm={}'
 H = {'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
 'Accept-Encoding':'gzip, deflate',
 'Accept-Language':'zh-CN,zh;q=0.8',
-'Connection':'close',
 'Host':'www.chsi.com.cn',
 'Referer':'http://www.chsi.com.cn/cet/',
 'Upgrade-Insecure-Requests':'1',
@@ -35,7 +34,7 @@ H = {'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,
 
 def query(id__,name):
 	s = requests.Session()
-	req = s.get(URL,headers=H)
+	req = s.get(URL,headers=H,proxies=proxy)
 
 	if req.ok :
 		url = URL + data.format(id__,quote(name))
@@ -74,7 +73,7 @@ def append_file(string):
 	with open('cet.txt','a+') as f:
 		f.writelines(string + os.linesep)
 
-number = 420550171103515,420550171103600 ### 420550171103524 贺深
+number = 420550171103600,420550171103700 ### 420550171103524 贺深
 
 
 ### testing
@@ -85,7 +84,7 @@ else:
 	print('没有')
 exit(0)'''
 ### testing end
-names = ['赵昊罡']
+names = ['李泽峰']
 for num in range(1,11):
     for zkzh in [i for i in range(*number)]:
         for xm in names:
