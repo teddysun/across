@@ -85,7 +85,7 @@ else:
 	print('没有')
 exit(0)'''
 ### testing end
-names = ['贺深','赵昊罡']
+names = ['赵昊罡']
 for num in range(1,11):
     for zkzh in [i for i in range(*number)]:
         for xm in names:
