@@ -71,7 +71,7 @@ def append_file(string):
 	with open('cet.txt','a+') as f:
 		f.writelines(string + os.linesep)
 
-number = 420550171103500,420550171103599 ### 420550171103524 贺深
+number = 420550171103519,420550171103699 ### 420550171103524 贺深
 
 
 ### testing
@@ -93,4 +93,4 @@ for num in range(1,11):
                 append_file(result)
             else:
                 print(zkzh,xm,sep='-->')
-            sleep(2)
+            sleep(60)
