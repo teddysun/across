@@ -4,6 +4,12 @@
 
 python3.5-for-spider.sh
 ===================
+##### 一键搭建SSR脚本
+-支持自选混淆协议，加密协议，自定义docker名字和端口 
+-来自其他人的镜像
+***
+newlinux.sh
+===================
 ##### 一键运行单个的python脚本
 - 含有python3.5,requsets, beautifulsoup4
 - 运行此脚本时，接收一个参数，参数为要运行的脚本的文件名，例如"./python3.5-for-spider.sh example.py"
