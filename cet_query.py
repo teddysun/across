@@ -34,11 +34,11 @@ H = {'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,
 
 def query(id__,name):
 	s = requests.Session()
-	req = s.get(URL,headers=H,proxies=proxy)
+	req = s.get(URL,headers=H)
 
 	if req.ok :
 		url = URL + data.format(id__,quote(name))
-		req = requests.get(url,headers=H,cookies=req.cookies,proxies=proxy)
+		req = requests.get(url,headers=H,cookies=req.cookies)
 		return req.text
 	else:
 		print(id__,name,'出错',sep='-->')
