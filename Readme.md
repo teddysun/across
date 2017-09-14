@@ -2,7 +2,13 @@
 # 一些有用的脚本
 
 
-python3.5-for-spider.sh
+setup-ssr-with-net_speeder.sh 
+===================
+##### 一键搭建SSR脚本
+- 支持自选混淆协议，加密协议，自定义docker名字和端口 
+- 来自其他人的镜像
+***
+newlinux.sh
 ===================
 ##### 一键运行单个的python脚本
 - 含有python3.5,requsets, beautifulsoup4
