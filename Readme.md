@@ -8,7 +8,7 @@ setup-ssr-with-net_speeder.sh
 - 支持自选混淆协议，加密协议，自定义docker名字和端口 
 - 来自其他人的镜像
 ***
-newlinux.sh
+python3.5-for-spider.sh
 ===================
 ##### 一键运行单个的python脚本
 - 含有python3.5,requsets, beautifulsoup4
