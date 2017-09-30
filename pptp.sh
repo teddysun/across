@@ -38,19 +38,19 @@ arch=`uname -m`
 IP=`ip addr | egrep -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | egrep -v "^192\.168|^172\.1[6-9]\.|^172\.2[0-9]\.|^172\.3[0-2]\.|^10\.|^127\.|^255\." | head -n 1`
 
 # Download pptpd
-if [ -s pptpd-1.3.4-2.el6.$arch.rpm ]; then
-  echo "pptpd-1.3.4-2.el6.$arch.rpm [found]"
+if [ -s pptpd-1.4.0-3.el6.$arch.rpm ]; then
+  echo "pptpd-1.4.0-3.el6.$arch.rpm [found]"
 else
-  echo "pptpd-1.3.4-2.el6.$arch.rpm not found!!!download now......"
-  if ! wget http://lamp.teddysun.com/files/pptpd-1.3.4-2.el6.$arch.rpm;then
-    echo "Failed to download pptpd-1.3.4-2.el6.$arch.rpm,please download it to $cur_dir directory manually and retry."
+  echo "pptpd-1.4.0-3.el6.$arch.rpm not found! download now......"
+  if ! wget http://lamp.teddysun.com/files/pptpd-1.4.0-3.el6.$arch.rpm; then
+    echo "Failed to download pptpd-1.4.0-3.el6.$arch.rpm, please download it to $cur_dir directory manually and retry."
     exit 1
   fi
 fi
 
 # Install some necessary tools
 yum -y install net-tools make libpcap iptables gcc-c++ logrotate tar cpio perl pam tcp_wrappers dkms ppp
-rpm -ivh pptpd-1.3.4-2.el6.$arch.rpm
+rpm -ivh pptpd-1.4.0-3.el6.$arch.rpm
 
 rm -f /dev/ppp
 mknod /dev/ppp c 108 0
@@ -77,12 +77,12 @@ chkconfig pptpd on
 service iptables restart
 service pptpd start
 
-echo ""
+echo
 echo "PPTP VPN service is installed."
 echo "ServerIP:${IP}"
 echo "Username:vpn"
 echo "Password:${pass}"
-echo "Welcome to visit: http://teddysun.com/134.html"
-echo ""
+echo "Welcome to visit: https://teddysun.com/134.html"
+echo
 
 exit 0
