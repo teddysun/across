@@ -9,7 +9,7 @@ export PATH
 #=======================================================================#
 cur_dir=`pwd`
 
-libreswan_filename="libreswan-3.21"
+libreswan_filename="libreswan-3.20"
 
 rootness(){
     if [[ $EUID -ne 0 ]]; then
