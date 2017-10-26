@@ -10,6 +10,7 @@ export PATH
 cur_dir=`pwd`
 
 libreswan_filename="libreswan-3.22"
+download_root_url="http://dl.teddysun.com/files"
 
 rootness(){
     if [[ $EUID -ne 0 ]]; then
@@ -137,8 +138,6 @@ is_64bit(){
 }
 
 download_file(){
-    local download_root_url="http://dl.teddysun.com/files"
-
     if [ -s ${1} ]; then
         echo "$1 [found]"
     else
