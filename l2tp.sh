@@ -9,7 +9,7 @@ export PATH
 #=======================================================================#
 cur_dir=`pwd`
 
-libreswan_filename="libreswan-3.22"
+libreswan_filename="libreswan-3.20"
 download_root_url="http://dl.teddysun.com/files"
 
 rootness(){
