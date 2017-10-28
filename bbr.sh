@@ -14,6 +14,8 @@ green='\033[0;32m'
 yellow='\033[0;33m'
 plain='\033[0m'
 
+cur_dir=$(pwd)
+
 [[ $EUID -ne 0 ]] && echo -e "${red}Error:${plain} This script must be run as root!" && exit 1
 
 [[ -d "/proc/vz" ]] && echo -e "${red}Error:${plain} Your VPS is based on OpenVZ, not be supported." && exit 1
@@ -99,12 +101,21 @@ centosversion() {
 
 check_bbr_status() {
     local param=$(sysctl net.ipv4.tcp_available_congestion_control | awk '{print $3}')
-    if uname -r | grep -Eqi "4.10."; then
-        if [[ "${param}" == "bbr" ]]; then
-            return 0
-        else
-            return 1
-        fi
+    if [[ "${param}" == "bbr" ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+version_ge(){
+    test "$(echo "$@" | tr " " "\n" | sort -rV | head -n 1)" == "$1"
+}
+
+check_kernel_version() {
+    local kernel_version=$(uname -r | cut -d- -f1)
+    if version_ge ${kernel_version} 4.9; then
+        return 0
     else
         return 1
     fi
@@ -131,6 +142,14 @@ install_elrepo() {
     fi
 }
 
+sysctl_config() {
+    sed -i '/net.core.default_qdisc/d' /etc/sysctl.conf
+    sed -i '/net.ipv4.tcp_congestion_control/d' /etc/sysctl.conf
+    echo "net.core.default_qdisc = fq" >> /etc/sysctl.conf
+    echo "net.ipv4.tcp_congestion_control = bbr" >> /etc/sysctl.conf
+    sysctl -p >/dev/null 2>&1
+}
+
 install_config() {
     if [[ "${release}" == "centos" ]]; then
         if centosversion 6; then
@@ -149,20 +168,34 @@ install_config() {
     elif [[ "${release}" == "debian" || "${release}" == "ubuntu" ]]; then
         /usr/sbin/update-grub
     fi
+}
 
-    sed -i '/net.core.default_qdisc/d' /etc/sysctl.conf
-    sed -i '/net.ipv4.tcp_congestion_control/d' /etc/sysctl.conf
-    echo "net.core.default_qdisc = fq" >> /etc/sysctl.conf
-    echo "net.ipv4.tcp_congestion_control = bbr" >> /etc/sysctl.conf
-    sysctl -p >/dev/null 2>&1
+reboot_os() {
+    echo
+    echo -e "${green}Info:${plain} The system needs to reboot."
+    read -p "Do you want to restart system? [y/n]" is_reboot
+    if [[ ${is_reboot} == "y" || ${is_reboot} == "Y" ]]; then
+        reboot
+    else
+        echo -e "${green}Info:${plain} Reboot has been canceled..."
+        exit 0
+    fi
 }
 
 install_bbr() {
     check_bbr_status
     if [ $? -eq 0 ]; then
         echo
-        echo -e "${green}Info:${plain} TCP BBR has been successfully installed. nothing to do..."
-        exit
+        echo -e "${green}Info:${plain} TCP BBR has been installed. nothing to do..."
+        exit 0
+    fi
+    check_kernel_version
+    if [ $? -eq 0 ]; then
+        echo
+        echo -e "${green}Info:${plain} Your kernel version is greater than 4.9, directly setting TCP BBR..."
+        sysctl_config
+        echo -e "${green}Info:${plain} Setting TCP BBR completed..."
+        exit 0
     fi
 
     if [[ "${release}" == "centos" ]]; then
@@ -189,7 +222,10 @@ install_bbr() {
     fi
 
     install_config
+    sysctl_config
+    reboot_os
 }
+
 
 clear
 echo "---------- System Information ----------"
@@ -205,12 +241,4 @@ echo
 echo "Press any key to start...or Press Ctrl+C to cancel"
 char=`get_char`
 
-install_bbr
-
-echo
-read -p "Info: The system needs to be restart. Do you want to reboot? [y/n]" is_reboot
-if [[ ${is_reboot} == "y" || ${is_reboot} == "Y" ]]; then
-    reboot
-else
-    exit
-fi
+install_bbr 2>&1 | tee ${cur_dir}/install_bbr.log
