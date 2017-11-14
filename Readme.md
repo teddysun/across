@@ -1,5 +1,29 @@
 # Some useful scripts
+# 一些有用的脚本
 
+
+setup-ssr-with-net_speeder.sh 
+===================
+##### 一键搭建SSR脚本
+- 支持自选混淆协议，加密协议，自定义docker名字和端口 
+- 来自其他人的镜像
+***
+python3.5-for-spider.sh
+===================
+##### 一键运行单个的python脚本
+- 含有python3.5,requsets, beautifulsoup4
+- 运行此脚本时，接收一个参数，参数为要运行的脚本的文件名，例如"./python3.5-for-spider.sh example.py"
+- 需要docker环境的支持
+***
+newlinux.sh
+===================
+##### 用来在新的linux上安装必要环境
+- 含有screenfetch mycli speedometer shadowsocks 以及java8
+***
+install-docker.sh
+===================
+##### docker安装脚本
+***
 l2tp.sh
 =======
 
@@ -16,16 +40,16 @@ Usage: l2tp [-l,--list|-a,--add|-d,--del|-m,--mod|-h,--help]
 | l2tp -m,--mod    | Modify a user password       |
 | l2tp -h,--help   | Print this help information  |
 ```
-
+***
 bbr.sh
 ======
-
+- 一键升级内核以支持谷歌bbr加速技术
 - Description: Auto install latest kernel for TCP BBR
 - Intro: https://teddysun.com/489.html
-
+***
 bench.sh
 ========
-
+- vps性能及连接速度测试
 - Description: Auto test download & I/O speed script
 - Intro: https://teddysun.com/444.html
 ```bash
@@ -38,7 +62,7 @@ Usage:
 | 3        | wget -qO- 86.re/bench.sh | bash |
 | 4        | curl -so- 86.re/bench.sh | bash |
 ```
-
+***
 backup.sh
 =========
 
@@ -61,20 +85,20 @@ For i386:
 wget -O /usr/bin/gdrive http://dl.lamp.sh/files/gdrive-linux-386
 chmod +x /usr/bin/gdrive
 ```
-
+***
 ftp_upload.sh
 =============
 
 - You must modify the config before run it
 - Upload file(s) to FTP server
 - Intro: https://teddysun.com/484.html
-
+***
 unixbench.sh
 ============
 
 - Description: Auto install unixbench and test script
 - Intro: https://teddysun.com/245.html
-
+***
 pptp.sh(Deprecated)
 ===================
 
