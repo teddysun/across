@@ -2,6 +2,11 @@
 # 一些有用的脚本
 
 
+git_this.sh 
+===================
+##### 提交当前改动到github
+***
+
 setup-ssr-with-net_speeder.sh 
 ===================
 ##### 一键搭建SSR脚本
@@ -18,7 +23,8 @@ python3.5-for-spider.sh
 newlinux.sh
 ===================
 ##### 用来在新的linux上安装必要环境
-- 含有screenfetch mycli speedometer shadowsocks 以及java8
+- 含有screenfetch mycli speedometer shadowsocks 以及java8  
+- 复制自己的ssh和bash习惯到当前环境
 ***
 install-docker.sh
 ===================
