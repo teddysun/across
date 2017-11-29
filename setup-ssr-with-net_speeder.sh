@@ -1,8 +1,16 @@
 #!/bin/bash
+
+
+getpass(){
+    stty -echo
+    read -p "输入密码:" passwd
+    stty echo
+}
+
 set -e
 
 echo "输入端口号" && read port
-echo "输入密码" && read passwd
+getpass
 echo "输入容器名" && read name
 
 method=('aes-128-ctr' 'aes-192-ctr' 'aes-256-ctr' 'aes-128-cfb' 'aes-192-cfb' 'aes-256-cfb' 'bf-cfb' 'camellia-128-cfb' 'camellia-192-cfb' 'camellia-256-cfb' 'chacha20' 'chacha20-ietf' 'rc4-md5' 'salsa20')
