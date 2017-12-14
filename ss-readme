@@ -1,0 +1,8 @@
+可以接受五个参数
+SSR_URL:用于自行指定ss的git链接，但是最好不要修改。
+SS_PORT:用于指定端口，相应的应该在运行是进行端口映射,默认为1234
+SS_PASSWD:用于指定密码，默认为your-password-here
+SS_METH:用于指定加密方式，默认为aes-256-cfb
+SS_OBFS:用于指定混淆插件，默认为http_simple
+一条完整的启动命令如下：
+docker run -d -p $PORT:$PORT --name ss-server -e SS_PORT=$PORT -e SS_PASSWD=$PASSWORD -e SS_METH=$METH -e SS_OBFS=$OBFS ddv12138/shadowsocks
