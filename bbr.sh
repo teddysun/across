@@ -4,7 +4,7 @@
 #
 # System Required:  CentOS 6+, Debian7+, Ubuntu12+
 #
-# Copyright (C) 2016-2017 Teddysun <i@teddysun.com>
+# Copyright (C) 2016-2018 Teddysun <i@teddysun.com>
 #
 # URL: https://teddysun.com/489.html
 #
@@ -34,6 +34,8 @@ elif cat /proc/version | grep -Eqi "ubuntu"; then
     release="ubuntu"
 elif cat /proc/version | grep -Eqi "centos|red hat|redhat"; then
     release="centos"
+else
+    release=""
 fi
 
 get_latest_version() {
@@ -85,7 +87,7 @@ getversion() {
 }
 
 centosversion() {
-    if [ "${release}" == "centos" ]; then
+    if [ x"${release}" == x"centos" ]; then
         local code=$1
         local version="$(getversion)"
         local main_ver=${version%%.*}
@@ -101,7 +103,7 @@ centosversion() {
 
 check_bbr_status() {
     local param=$(sysctl net.ipv4.tcp_available_congestion_control | awk '{print $3}')
-    if [[ "${param}" == "bbr" ]]; then
+    if [[ x"${param}" == x"bbr" ]]; then
         return 0
     else
         return 1
@@ -151,7 +153,7 @@ sysctl_config() {
 }
 
 install_config() {
-    if [[ "${release}" == "centos" ]]; then
+    if [[ x"${release}" == x"centos" ]]; then
         if centosversion 6; then
             if [ ! -f "/boot/grub/grub.conf" ]; then
                 echo -e "${red}Error:${plain} /boot/grub/grub.conf not found, please check it."
@@ -165,7 +167,7 @@ install_config() {
             fi
             grub2-set-default 0
         fi
-    elif [[ "${release}" == "debian" || "${release}" == "ubuntu" ]]; then
+    elif [[ x"${release}" == x"debian" || x"${release}" == x"ubuntu" ]]; then
         /usr/sbin/update-grub
     fi
 }
@@ -198,14 +200,14 @@ install_bbr() {
         exit 0
     fi
 
-    if [[ "${release}" == "centos" ]]; then
+    if [[ x"${release}" == x"centos" ]]; then
         install_elrepo
         yum --enablerepo=elrepo-kernel -y install kernel-ml kernel-ml-devel
         if [ $? -ne 0 ]; then
             echo -e "${red}Error:${plain} Install latest kernel failed, please check it."
             exit 1
         fi
-    elif [[ "${release}" == "debian" || "${release}" == "ubuntu" ]]; then
+    elif [[ x"${release}" == x"debian" || x"${release}" == x"ubuntu" ]]; then
         [[ ! -e "/usr/bin/wget" ]] && apt-get -y update && apt-get -y install wget
         get_latest_version
         [ $? -ne 0 ] && echo -e "${red}Error:${plain} Get latest kernel version failed." && exit 1
