@@ -2,7 +2,7 @@
 #
 # Upload file(s) to FTP server
 #
-# Copyright (C) 2016 Teddysun <i@teddysun.com>
+# Copyright (C) 2016 - 2018 Teddysun <i@teddysun.com>
 #
 # Argument example:
 # 1) ./ftp_upload.sh filename
