@@ -2,7 +2,7 @@
 #
 # Description: Auto test download & I/O speed script
 #
-# Copyright (C) 2015 - 2016 Teddysun <i@teddysun.com>
+# Copyright (C) 2015 - 2018 Teddysun <i@teddysun.com>
 #
 # Thanks: LookBack <admin@dwhd.org>
 #
@@ -18,6 +18,7 @@ fi
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
+BLUE='\033[0;36m'
 PLAIN='\033[0m'
 
 get_opsy() {
@@ -30,7 +31,7 @@ next() {
     printf "%-70s\n" "-" | sed 's/\s/-/g'
 }
 
-speed_test() {
+speed_test_v4() {
     local speedtest=$(wget -4O /dev/null -T300 $1 2>&1 | awk '/\/dev\/null/ {speed=$3 $4} END {gsub(/\(|\)/,"",speed); print speed}')
     local ipaddress=$(ping -c1 -n `awk -F'/' '{print $3}' <<< $1` | awk -F'[()]' '{print $2;exit}')
     local nodeName=$2
@@ -44,18 +45,18 @@ speed_test_v6() {
     printf "${YELLOW}%-32s${GREEN}%-24s${RED}%-14s${PLAIN}\n" "${nodeName}" "${ipaddress}" "${speedtest}"
 }
 
-speed() {
-    speed_test 'http://cachefly.cachefly.net/100mb.test' 'CacheFly'
-    speed_test 'http://speedtest.tokyo.linode.com/100MB-tokyo.bin' 'Linode, Tokyo, JP'
-    speed_test 'http://speedtest.singapore.linode.com/100MB-singapore.bin' 'Linode, Singapore, SG'
-    speed_test 'http://speedtest.london.linode.com/100MB-london.bin' 'Linode, London, UK'
-    speed_test 'http://speedtest.frankfurt.linode.com/100MB-frankfurt.bin' 'Linode, Frankfurt, DE'
-    speed_test 'http://speedtest.fremont.linode.com/100MB-fremont.bin' 'Linode, Fremont, CA'
-    speed_test 'http://speedtest.dal05.softlayer.com/downloads/test100.zip' 'Softlayer, Dallas, TX'
-    speed_test 'http://speedtest.sea01.softlayer.com/downloads/test100.zip' 'Softlayer, Seattle, WA'
-    speed_test 'http://speedtest.fra02.softlayer.com/downloads/test100.zip' 'Softlayer, Frankfurt, DE'
-    speed_test 'http://speedtest.sng01.softlayer.com/downloads/test100.zip' 'Softlayer, Singapore, SG'
-    speed_test 'http://speedtest.hkg02.softlayer.com/downloads/test100.zip' 'Softlayer, HongKong, CN'
+speed_v4() {
+    speed_test_v4 'http://cachefly.cachefly.net/100mb.test' 'CacheFly'
+    speed_test_v4 'http://speedtest.tokyo.linode.com/100MB-tokyo.bin' 'Linode, Tokyo, JP'
+    speed_test_v4 'http://speedtest.singapore.linode.com/100MB-singapore.bin' 'Linode, Singapore, SG'
+    speed_test_v4 'http://speedtest.london.linode.com/100MB-london.bin' 'Linode, London, UK'
+    speed_test_v4 'http://speedtest.frankfurt.linode.com/100MB-frankfurt.bin' 'Linode, Frankfurt, DE'
+    speed_test_v4 'http://speedtest.fremont.linode.com/100MB-fremont.bin' 'Linode, Fremont, CA'
+    speed_test_v4 'http://speedtest.dal05.softlayer.com/downloads/test100.zip' 'Softlayer, Dallas, TX'
+    speed_test_v4 'http://speedtest.sea01.softlayer.com/downloads/test100.zip' 'Softlayer, Seattle, WA'
+    speed_test_v4 'http://speedtest.fra02.softlayer.com/downloads/test100.zip' 'Softlayer, Frankfurt, DE'
+    speed_test_v4 'http://speedtest.sng01.softlayer.com/downloads/test100.zip' 'Softlayer, Singapore, SG'
+    speed_test_v4 'http://speedtest.hkg02.softlayer.com/downloads/test100.zip' 'Softlayer, HongKong, CN'
 }
 
 speed_v6() {
@@ -111,24 +112,24 @@ disk_used_size=$( calc_disk ${disk_size2[@]} )
 
 clear
 next
-echo "CPU model            : $cname"
-echo "Number of cores      : $cores"
-echo "CPU frequency        : $freq MHz"
-echo "Total size of Disk   : $disk_total_size GB ($disk_used_size GB Used)"
-echo "Total amount of Mem  : $tram MB ($uram MB Used)"
-echo "Total amount of Swap : $swap MB ($uswap MB Used)"
-echo "System uptime        : $up"
-echo "Load average         : $load"
-echo "OS                   : $opsy"
-echo "Arch                 : $arch ($lbit Bit)"
-echo "Kernel               : $kern"
+echo -e "CPU model            : ${BLUE}$cname${PLAIN}"
+echo -e "Number of cores      : ${BLUE}$cores${PLAIN}"
+echo -e "CPU frequency        : ${BLUE}$freq MHz${PLAIN}"
+echo -e "Total size of Disk   : ${BLUE}$disk_total_size GB ($disk_used_size GB Used)${PLAIN}"
+echo -e "Total amount of Mem  : ${BLUE}$tram MB ($uram MB Used)${PLAIN}"
+echo -e "Total amount of Swap : ${BLUE}$swap MB ($uswap MB Used)${PLAIN}"
+echo -e "System uptime        : ${BLUE}$up${PLAIN}"
+echo -e "Load average         : ${BLUE}$load${PLAIN}"
+echo -e "OS                   : ${BLUE}$opsy${PLAIN}"
+echo -e "Arch                 : ${BLUE}$arch ($lbit Bit)${PLAIN}"
+echo -e "Kernel               : ${BLUE}$kern${PLAIN}"
 next
 io1=$( io_test )
-echo "I/O speed(1st run)   : $io1"
+echo -e "I/O speed(1st run)   : ${YELLOW}$io1${PLAIN}"
 io2=$( io_test )
-echo "I/O speed(2nd run)   : $io2"
+echo -e "I/O speed(2nd run)   : ${YELLOW}$io2${PLAIN}"
 io3=$( io_test )
-echo "I/O speed(3rd run)   : $io3"
+echo -e "I/O speed(3rd run)   : ${YELLOW}$io3${PLAIN}"
 ioraw1=$( echo $io1 | awk 'NR==1 {print $1}' )
 [ "`echo $io1 | awk 'NR==1 {print $2}'`" == "GB/s" ] && ioraw1=$( awk 'BEGIN{print '$ioraw1' * 1024}' )
 ioraw2=$( echo $io2 | awk 'NR==1 {print $1}' )
@@ -137,10 +138,10 @@ ioraw3=$( echo $io3 | awk 'NR==1 {print $1}' )
 [ "`echo $io3 | awk 'NR==1 {print $2}'`" == "GB/s" ] && ioraw3=$( awk 'BEGIN{print '$ioraw3' * 1024}' )
 ioall=$( awk 'BEGIN{print '$ioraw1' + '$ioraw2' + '$ioraw3'}' )
 ioavg=$( awk 'BEGIN{printf "%.1f", '$ioall' / 3}' )
-echo "Average I/O speed    : $ioavg MB/s"
+echo -e "Average I/O speed    : ${YELLOW}$ioavg MB/s${PLAIN}"
 next
 printf "%-32s%-24s%-14s\n" "Node Name" "IPv4 address" "Download Speed"
-speed && next
+speed_v4 && next
 if [[ "$ipv6" != "" ]]; then
     printf "%-32s%-24s%-14s\n" "Node Name" "IPv6 address" "Download Speed"
     speed_v6 && next
