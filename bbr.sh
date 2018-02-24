@@ -202,7 +202,7 @@ install_bbr() {
 
     if [[ x"${release}" == x"centos" ]]; then
         install_elrepo
-        yum --enablerepo=elrepo-kernel -y install kernel-ml kernel-ml-devel
+        yum --enablerepo=elrepo-kernel -y install kernel-ml kernel-ml-devel kernel-ml-headers
         if [ $? -ne 0 ]; then
             echo -e "${red}Error:${plain} Install latest kernel failed, please check it."
             exit 1
