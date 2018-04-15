@@ -203,6 +203,8 @@ uninstall_kms() {
         boot_stop kms
         # delete kms server
         rm -f /usr/bin/vlmcsd
+        rm -f /etc/init.d/kms
+        rm -f /var/log/vlmcsd.log
         echo "KMS Server uninstall success"
     else
         echo
