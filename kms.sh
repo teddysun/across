@@ -1,12 +1,11 @@
 #!/usr/bin/env bash
 #
 # Auto install KMS Server
-#
 # System Required:  CentOS 6+, Debian7+, Ubuntu12+
-#
 # Copyright (C) 2017-2018 Teddysun <i@teddysun.com>
+# URL: https://teddysun.com/530.html
 #
-# URL: https://teddysun.com/489.html
+# Thanks: https://github.com/Wind4/vlmcsd
 #
 
 red='\033[0;31m'
@@ -53,7 +52,6 @@ boot_stop(){
         chkconfig --del ${1}
     fi
 }
-
 
 # Get version
 getversion(){
@@ -135,7 +133,7 @@ install_main() {
     echo "----------------------------------------"
     echo " Auto install KMS Server"
     echo
-    echo " URL: https://teddysun.com/489.html"
+    echo " URL: https://teddysun.com/530.html"
     echo "----------------------------------------"
     echo
     echo "Press any key to start...or Press Ctrl+C to cancel"
@@ -181,7 +179,7 @@ install_main() {
     rm -rf vlmcsd
     echo
     echo "Install KMS Server success"
-    echo "Welcome to visit:https://teddysun.com/489.html"
+    echo "Welcome to visit:https://teddysun.com/530.html"
     echo "Enjoy it!"
     echo
 }
