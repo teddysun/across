@@ -23,6 +23,12 @@ bbr.sh
 - Description: Auto install latest kernel for TCP BBR
 - Intro: https://teddysun.com/489.html
 
+kms.sh
+======
+
+- Description: Auto install KMS Server
+- Intro: https://teddysun.com/530.html
+
 bench.sh
 ========
 
