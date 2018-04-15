@@ -81,10 +81,10 @@ unixbench.sh
 - Description: Auto install unixbench and test script
 - Intro: https://teddysun.com/245.html
 
-pptp.sh(Deprecated)
+pptp.sh(Deprecated, DO NOT USE)
 ===================
 
 - Description: Auto Install PPTP for CentOS 6
 - Intro: https://teddysun.com/134.html
 
-Copyright (C) 2013-2017 Teddysun <i@teddysun.com>
+Copyright (C) 2013-2018 Teddysun <i@teddysun.com>
