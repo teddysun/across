@@ -32,7 +32,7 @@ next() {
 }
 
 speed_test_v4() {
-    local output=$(wget -4O /dev/null -T300 $1 2>&1)
+    local output=$(LANG=C wget -4O /dev/null -T300 $1 2>&1)
     local speedtest=$(printf '%s' "$output" | awk '/\/dev\/null/ {speed=$3 $4} END {gsub(/\(|\)/,"",speed); print speed}')
     local ipaddress=$(printf '%s' "$output" | awk -F'|' '/Connecting to .*\|([^\|]+)\|/ {print $2}')
     local nodeName=$2
@@ -40,7 +40,7 @@ speed_test_v4() {
 }
 
 speed_test_v6() {
-    local output=$(wget -6O /dev/null -T300 $1 2>&1)
+    local output=$(LANG=C wget -6O /dev/null -T300 $1 2>&1)
     local speedtest=$(printf '%s' "$output" | awk '/\/dev\/null/ {speed=$3 $4} END {gsub(/\(|\)/,"",speed); print speed}')
     local ipaddress=$(printf '%s' "$output" | awk -F'|' '/Connecting to .*\|([^\|]+)\|/ {print $2}')
     local nodeName=$2
