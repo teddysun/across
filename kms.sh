@@ -146,6 +146,7 @@ install_main() {
             exit 1
         fi
     elif [[ x"${release}" == x"debian" || x"${release}" == x"ubuntu" ]]; then
+        apt-get -y update
         apt-get install gcc git make
         if ! wget --no-check-certificate -O /etc/init.d/kms https://raw.githubusercontent.com/teddysun/across/master/kms-debian; then
             echo -e "[${red}Error:${plain}] Failed to download KMS Server script."
