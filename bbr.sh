@@ -38,23 +38,109 @@ else
     release=""
 fi
 
+is_digit(){
+    local input=${1}
+    if [[ "$input" =~ ^[0-9]+$ ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+get_valid_valname(){
+    local val=${1}
+    local new_val=$(eval echo $val | sed 's/[-.]/_/g')
+    echo ${new_val}
+}
+
+get_hint(){
+    local val=${1}
+    local new_val=$(get_valid_valname $val)
+    eval echo "\$hint_${new_val}"
+}
+
+#Display Memu
+display_menu(){
+    local soft=${1}
+    local default=${2}
+    eval local arr=(\${${soft}_arr[@]})
+    local default_prompt
+    if [[ "$default" != "" ]]; then
+        if [[ "$default" == "last" ]]; then
+            default=${#arr[@]}
+        fi
+        default_prompt="(default ${arr[$default-1]})"
+    fi
+    local pick
+    local hint
+    local vname
+    local prompt="which ${soft} you'd select ${default_prompt}: "
+
+    while :
+    do
+        echo -e "\n------------ ${soft} setting ------------\n"
+        for ((i=1;i<=${#arr[@]};i++ )); do
+            vname="$(get_valid_valname ${arr[$i-1]})"
+            hint="$(get_hint $vname)"
+            [[ "$hint" == "" ]] && hint="${arr[$i-1]}"
+            echo -e "${green}${i}${plain}) $hint"
+        done
+        echo
+        read -p "${prompt}" pick
+        if [[ "$pick" == "" && "$default" != "" ]]; then
+            pick=${default}
+            break
+        fi
+
+        if ! is_digit "$pick"; then
+            prompt="Input error, please input a number"
+            continue
+        fi
+
+        if [[ "$pick" -lt 1 || "$pick" -gt ${#arr[@]} ]]; then
+            prompt="Input error, please input a number between 1 and ${#arr[@]}: "
+            continue
+        fi
+
+        break
+    done
+
+    eval ${soft}=${arr[$pick-1]}
+    vname="$(get_valid_valname ${arr[$pick-1]})"
+    hint="$(get_hint $vname)"
+    [[ "$hint" == "" ]] && hint="${arr[$pick-1]}"
+    echo -e "\nyour selection: $hint\n"
+}
+
+version_ge(){
+    test "$(echo "$@" | tr " " "\n" | sort -rV | head -n 1)" == "$1"
+}
+
 get_latest_version() {
+    latest_version=($(wget -qO- http://kernel.ubuntu.com/~kernel-ppa/mainline/ | awk -F'\"v' '/v[4-9]./{print $2}' | cut -d/ -f1 | grep -v - | sort -V))
 
-    latest_version=$(wget -qO- http://kernel.ubuntu.com/~kernel-ppa/mainline/ | awk -F'\"v' '/v[4-9]./{print $2}' | cut -d/ -f1 | grep -v -  | sort -V | tail -1)
+    [ ${#latest_version[@]} -eq 0 ] && echo -e "${red}Error:${plain} Get latest kernel version failed." && exit 1
 
-    [ -z ${latest_version} ] && return 1
+    kernel_arr=()
+    for i in ${latest_version[@]}; do
+        if version_ge $i 4.14; then
+            kernel_arr+=($i);
+        fi
+    done
+
+    display_menu kernel last
 
     if [[ `getconf WORD_BIT` == "32" && `getconf LONG_BIT` == "64" ]]; then
-        deb_name=$(wget -qO- http://kernel.ubuntu.com/~kernel-ppa/mainline/v${latest_version}/ | grep "linux-image" | grep "generic" | awk -F'\">' '/amd64.deb/{print $2}' | cut -d'<' -f1 | head -1)
-        deb_kernel_url="http://kernel.ubuntu.com/~kernel-ppa/mainline/v${latest_version}/${deb_name}"
-        deb_kernel_name="linux-image-${latest_version}-amd64.deb"
+        deb_name=$(wget -qO- http://kernel.ubuntu.com/~kernel-ppa/mainline/v${kernel}/ | grep "linux-image" | grep "generic" | awk -F'\">' '/amd64.deb/{print $2}' | cut -d'<' -f1 | head -1)
+        deb_kernel_url="http://kernel.ubuntu.com/~kernel-ppa/mainline/v${kernel}/${deb_name}"
+        deb_kernel_name="linux-image-${kernel}-amd64.deb"
     else
-        deb_name=$(wget -qO- http://kernel.ubuntu.com/~kernel-ppa/mainline/v${latest_version}/ | grep "linux-image" | grep "generic" | awk -F'\">' '/i386.deb/{print $2}' | cut -d'<' -f1 | head -1)
-        deb_kernel_url="http://kernel.ubuntu.com/~kernel-ppa/mainline/v${latest_version}/${deb_name}"
-        deb_kernel_name="linux-image-${latest_version}-i386.deb"
+        deb_name=$(wget -qO- http://kernel.ubuntu.com/~kernel-ppa/mainline/v${kernel}/ | grep "linux-image" | grep "generic" | awk -F'\">' '/i386.deb/{print $2}' | cut -d'<' -f1 | head -1)
+        deb_kernel_url="http://kernel.ubuntu.com/~kernel-ppa/mainline/v${kernel}/${deb_name}"
+        deb_kernel_name="linux-image-${kernel}-i386.deb"
     fi
 
-    [ ! -z ${deb_name} ] && return 0 || return 1
+    [ -z ${deb_name} ] && echo -e "${red}Error:${plain} Getting Linux kernel binary package name failed, maybe kernel build failed. Please choose other one and try again." && exit 1
 }
 
 get_opsy() {
@@ -102,16 +188,12 @@ centosversion() {
 }
 
 check_bbr_status() {
-    local param=$(sysctl net.ipv4.tcp_available_congestion_control | awk '{print $3}')
+    local param=$(sysctl net.ipv4.tcp_congestion_control | awk '{print $3}')
     if [[ x"${param}" == x"bbr" ]]; then
         return 0
     else
         return 1
     fi
-}
-
-version_ge(){
-    test "$(echo "$@" | tr " " "\n" | sort -rV | head -n 1)" == "$1"
 }
 
 check_kernel_version() {
@@ -209,8 +291,8 @@ install_bbr() {
         fi
     elif [[ x"${release}" == x"debian" || x"${release}" == x"ubuntu" ]]; then
         [[ ! -e "/usr/bin/wget" ]] && apt-get -y update && apt-get -y install wget
+        echo -e "${green}Info:${plain} Getting latest kernel version..."
         get_latest_version
-        [ $? -ne 0 ] && echo -e "${red}Error:${plain} Get latest kernel version failed." && exit 1
         wget -c -t3 -T60 -O ${deb_kernel_name} ${deb_kernel_url}
         if [ $? -ne 0 ]; then
             echo -e "${red}Error:${plain} Download ${deb_kernel_name} failed, please check it."
