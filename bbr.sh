@@ -134,10 +134,16 @@ get_latest_version() {
         deb_name=$(wget -qO- http://kernel.ubuntu.com/~kernel-ppa/mainline/v${kernel}/ | grep "linux-image" | grep "generic" | awk -F'\">' '/amd64.deb/{print $2}' | cut -d'<' -f1 | head -1)
         deb_kernel_url="http://kernel.ubuntu.com/~kernel-ppa/mainline/v${kernel}/${deb_name}"
         deb_kernel_name="linux-image-${kernel}-amd64.deb"
+	modules_deb_name=$(wget -qO- http://kernel.ubuntu.com/~kernel-ppa/mainline/v${kernel}/ | grep "linux-modules" | grep "generic" | awk -F'\">' '/amd64.deb/{print $2}' | cut -d'<' -f1 | head -1)
+        [[ -n ${modules_deb_name} ]] && deb_kernel_modules_url="http://kernel.ubuntu.com/~kernel-ppa/mainline/v${kernel}/${modules_deb_name}"
+        [[ -n ${modules_deb_name} ]] && deb_kernel_modules_name="linux-modules-${kernel}-amd64.deb"
     else
         deb_name=$(wget -qO- http://kernel.ubuntu.com/~kernel-ppa/mainline/v${kernel}/ | grep "linux-image" | grep "generic" | awk -F'\">' '/i386.deb/{print $2}' | cut -d'<' -f1 | head -1)
         deb_kernel_url="http://kernel.ubuntu.com/~kernel-ppa/mainline/v${kernel}/${deb_name}"
         deb_kernel_name="linux-image-${kernel}-i386.deb"
+        modules_deb_name=$(wget -qO- http://kernel.ubuntu.com/~kernel-ppa/mainline/v${kernel}/ | grep "linux-modules" | grep "generic" | awk -F'\">' '/i386.deb/{print $2}' | cut -d'<' -f1 | head -1)
+        [[ -n ${modules_deb_name} ]] && deb_kernel_modules_url="http://kernel.ubuntu.com/~kernel-ppa/mainline/v${kernel}/${modules_deb_name}"
+        [[ -n ${modules_deb_name} ]] && deb_kernel_modules_name="linux-modules-${kernel}-i386.deb"
     fi
 
     [ -z ${deb_name} ] && echo -e "${red}Error:${plain} Getting Linux kernel binary package name failed, maybe kernel build failed. Please choose other one and try again." && exit 1
@@ -293,13 +299,16 @@ install_bbr() {
         [[ ! -e "/usr/bin/wget" ]] && apt-get -y update && apt-get -y install wget
         echo -e "${green}Info:${plain} Getting latest kernel version..."
         get_latest_version
+        [[ -n ${modules_deb_name} ]] && wget -c -t3 -T60 -O ${deb_kernel_modules_name} ${deb_kernel_modules_url}
         wget -c -t3 -T60 -O ${deb_kernel_name} ${deb_kernel_url}
         if [ $? -ne 0 ]; then
             echo -e "${red}Error:${plain} Download ${deb_kernel_name} failed, please check it."
             exit 1
         fi
+        [[ -n ${modules_deb_name} ]] && dpkg -i ${deb_kernel_modules_name}
         dpkg -i ${deb_kernel_name}
         rm -fv ${deb_kernel_name}
+        [[ -n ${modules_deb_name} ]] && rm -fv ${deb_kernel_modules_name}
     else
         echo -e "${red}Error:${plain} OS is not be supported, please change to CentOS/Debian/Ubuntu and try again."
         exit 1
