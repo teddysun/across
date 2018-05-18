@@ -134,7 +134,7 @@ get_latest_version() {
         deb_name=$(wget -qO- http://kernel.ubuntu.com/~kernel-ppa/mainline/v${kernel}/ | grep "linux-image" | grep "generic" | awk -F'\">' '/amd64.deb/{print $2}' | cut -d'<' -f1 | head -1)
         deb_kernel_url="http://kernel.ubuntu.com/~kernel-ppa/mainline/v${kernel}/${deb_name}"
         deb_kernel_name="linux-image-${kernel}-amd64.deb"
-		modules_deb_name=$(wget -qO- http://kernel.ubuntu.com/~kernel-ppa/mainline/v${kernel}/ | grep "linux-modules" | grep "generic" | awk -F'\">' '/amd64.deb/{print $2}' | cut -d'<' -f1 | head -1)
+	modules_deb_name=$(wget -qO- http://kernel.ubuntu.com/~kernel-ppa/mainline/v${kernel}/ | grep "linux-modules" | grep "generic" | awk -F'\">' '/amd64.deb/{print $2}' | cut -d'<' -f1 | head -1)
         [[ -n ${modules_deb_name} ]] && deb_kernel_modules_url="http://kernel.ubuntu.com/~kernel-ppa/mainline/v${kernel}/${modules_deb_name}"
         [[ -n ${modules_deb_name} ]] && deb_kernel_modules_name="linux-modules-${kernel}-amd64.deb"
     else
