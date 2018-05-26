@@ -1,1 +1,3 @@
-git add . && git commit -m "2017年 11月 25日 星期六 14:10:23 CST" && git push origin master
+git config --global user.email "644077730@qq.com"
+git config --global user.name "ddv12138"
+git add . && git commit -m 'date' && git push origin master
