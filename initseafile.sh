@@ -1,6 +1,5 @@
 docker run -d --name seafile \
-  -e SEAFILE_SERVER_LETSENCRYPT=true \
-  -e SEAFILE_SERVER_HOSTNAME=proxy.ddvudo.cf \
+  -e SEAFILE_SERVER_HOSTNAME=127.0.0.1 \
   -e SEAFILE_ADMIN_EMAIL=644077730@qq.com \
   -e SEAFILE_ADMIN_PASSWORD=liukang951006 \
   -v /seafile-data:/shared \
