@@ -140,14 +140,14 @@ install_main() {
     char=$(get_char)
 
     if [[ x"${release}" == x"centos" ]]; then
-        yum -y install gcc git make
+        yum -y install gcc git make nss curl libcurl
         if ! wget --no-check-certificate -O /etc/init.d/kms https://raw.githubusercontent.com/teddysun/across/master/kms; then
             echo -e "[${red}Error:${plain}] Failed to download KMS Server script."
             exit 1
         fi
     elif [[ x"${release}" == x"debian" || x"${release}" == x"ubuntu" ]]; then
         apt-get -y update
-        apt-get install gcc git make
+        apt-get install gcc git make libnss3 curl libcurl3-nss
         if ! wget --no-check-certificate -O /etc/init.d/kms https://raw.githubusercontent.com/teddysun/across/master/kms-debian; then
             echo -e "[${red}Error:${plain}] Failed to download KMS Server script."
             exit 1
@@ -159,7 +159,7 @@ install_main() {
 
     cd ${cur_dir}
     git clone https://github.com/teddysun/vlmcsd.git > /dev/null 2>&1
-    cd vlmcsd
+    [ -d vlmcsd ] && cd vlmcsd || echo -e "[${red}Error:${plain}] Failed to git clone vlmcsd."
     make
     if [ $? -ne 0 ]; then
         echo -e "${red}Error:${plain} Install KMS Server failed, please check it and try again."
