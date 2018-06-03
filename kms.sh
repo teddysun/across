@@ -19,17 +19,17 @@ cur_dir=$(pwd)
 
 if [ -f /etc/redhat-release ]; then
     release="centos"
-elif cat /etc/issue | grep -Eqi "debian"; then
+elif grep -Eqi "debian" /etc/issue; then
     release="debian"
-elif cat /etc/issue | grep -Eqi "ubuntu"; then
+elif grep -Eqi "ubuntu" /etc/issue; then
     release="ubuntu"
-elif cat /etc/issue | grep -Eqi "centos|red hat|redhat"; then
+elif grep -Eqi "centos|red hat|redhat" /etc/issue; then
     release="centos"
-elif cat /proc/version | grep -Eqi "debian"; then
+elif grep -Eqi "debian" /proc/version; then
     release="debian"
-elif cat /proc/version | grep -Eqi "ubuntu"; then
+elif grep -Eqi "ubuntu" /proc/version; then
     release="ubuntu"
-elif cat /proc/version | grep -Eqi "centos|red hat|redhat"; then
+elif grep -Eqi "centos|red hat|redhat" /proc/version; then
     release="centos"
 else
     release=""
@@ -37,19 +37,19 @@ fi
 
 boot_start(){
     if [[ x"${release}" == x"debian" || x"${release}" == x"ubuntu" ]]; then
-        update-rc.d -f ${1} defaults
+        update-rc.d -f "${1}" defaults
     elif [[ x"${release}" == x"centos" ]]; then
-        chkconfig --add ${1}
-        chkconfig ${1} on
+        chkconfig --add "${1}"
+        chkconfig "${1}" on
     fi
 }
 
 boot_stop(){
     if [[ x"${release}" == x"debian" || x"${release}" == x"ubuntu" ]]; then
-        update-rc.d -f ${1} remove
+        update-rc.d -f "${1}" remove
     elif [[ x"${release}" == x"centos" ]]; then
-        chkconfig ${1} off
-        chkconfig --del ${1}
+        chkconfig "${1}" off
+        chkconfig --del "${1}"
     fi
 }
 
@@ -85,13 +85,13 @@ get_opsy() {
 }
 
 get_char() {
-    SAVEDSTTY=`stty -g`
+    SAVEDSTTY=$(stty -g)
     stty -echo
     stty cbreak
     dd if=/dev/tty bs=1 count=1 2> /dev/null
     stty -raw
     stty echo
-    stty $SAVEDSTTY
+    stty "$SAVEDSTTY"
 }
 
 set_firewall() {
@@ -157,7 +157,7 @@ install_main() {
         exit 1
     fi
 
-    cd ${cur_dir}
+    cd "${cur_dir}" || exit
     git clone https://github.com/teddysun/vlmcsd.git > /dev/null 2>&1
     [ -d vlmcsd ] && cd vlmcsd || echo -e "[${red}Error:${plain}] Failed to git clone vlmcsd."
     make
@@ -176,7 +176,7 @@ install_main() {
     if [[ x"${release}" == x"centos" ]]; then
         set_firewall
     fi
-    cd ${cur_dir}
+    cd "${cur_dir}" || exit
     rm -rf vlmcsd
     echo
     echo "Install KMS Server success"
@@ -187,7 +187,7 @@ install_main() {
 
 
 install_kms() {
-    install_main 2>&1 | tee ${cur_dir}/install_kms.log
+    install_main 2>&1 | tee "${cur_dir}"/install_kms.log
 }
 
 # Uninstall KMS Server
@@ -195,7 +195,7 @@ uninstall_kms() {
     printf "Are you sure uninstall KMS Server? (y/n) "
     printf "\n"
     read -p "(Default: n):" answer
-    [ -z ${answer} ] && answer="n"
+    [ -z "${answer}" ] && answer="n"
     if [ "${answer}" == "y" ] || [ "${answer}" == "Y" ]; then
         /etc/init.d/kms status > /dev/null 2>&1
         if [ $? -eq 0 ]; then
@@ -216,14 +216,13 @@ uninstall_kms() {
 
 # Initialization step
 action=$1
-[ -z $1 ] && action=install
+[ -z "$1" ] && action=install
 case "$action" in
     install|uninstall)
         ${action}_kms
         ;;
     *)
         echo "Arguments error! [${action}]"
-        echo "Usage: `basename $0` [install|uninstall]"
+        echo "Usage: $(basename $0) [install|uninstall]"
         ;;
 esac
-

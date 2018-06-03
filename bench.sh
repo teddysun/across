@@ -81,7 +81,7 @@ io_test() {
 calc_disk() {
     local total_size=0
     local array=$@
-    for size in ${array[@]}
+    for size in "${array[@]}"
     do
         [ "${size}" == "0" ] && size_t=0 || size_t=`echo ${size:0:${#size}-1}`
         [ "`echo ${size:(-1)}`" == "K" ] && size=0
@@ -109,8 +109,8 @@ kern=$( uname -r )
 ipv6=$( wget -qO- -t1 -T2 ipv6.icanhazip.com )
 disk_size1=($( LANG=C df -hPl | grep -wvE '\-|none|tmpfs|devtmpfs|by-uuid|chroot|Filesystem' | awk '{print $2}' ))
 disk_size2=($( LANG=C df -hPl | grep -wvE '\-|none|tmpfs|devtmpfs|by-uuid|chroot|Filesystem' | awk '{print $3}' ))
-disk_total_size=$( calc_disk ${disk_size1[@]} )
-disk_used_size=$( calc_disk ${disk_size2[@]} )
+disk_total_size=$( calc_disk "${disk_size1[@]}" )
+disk_used_size=$( calc_disk "${disk_size2[@]}" )
 
 clear
 next
