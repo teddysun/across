@@ -276,7 +276,7 @@ install_bbr() {
     check_bbr_status
     if [ $? -eq 0 ]; then
         echo
-        echo -e "${green}Info:${plain} TCP BBR has been installed. nothing to do..."
+        echo -e "${green}Info:${plain} TCP BBR has already been installed. nothing to do..."
         exit 0
     fi
     check_kernel_version
@@ -290,7 +290,9 @@ install_bbr() {
 
     if [[ x"${release}" == x"centos" ]]; then
         install_elrepo
-        yum --enablerepo=elrepo-kernel -y install kernel-ml kernel-ml-devel
+        [ ! "$(command -v yum-config-manager)" ] && yum install -y yum-utils > /dev/null 2>&1
+        [ x"$(yum-config-manager elrepo-kernel | grep -w enabled | awk '{print $3}')" != x"True" ] && yum-config-manager --enable elrepo-kernel > /dev/null 2>&1
+        yum -y install kernel-ml kernel-ml-devel
         if [ $? -ne 0 ]; then
             echo -e "${red}Error:${plain} Install latest kernel failed, please check it."
             exit 1
