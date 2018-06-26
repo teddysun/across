@@ -81,7 +81,7 @@ io_test() {
 calc_disk() {
     local total_size=0
     local array=$@
-    for size in "${array[@]}"
+    for size in ${array[@]}
     do
         [ "${size}" == "0" ] && size_t=0 || size_t=`echo ${size:0:${#size}-1}`
         [ "`echo ${size:(-1)}`" == "K" ] && size=0
