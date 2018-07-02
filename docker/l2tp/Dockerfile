@@ -2,7 +2,7 @@
 # Copyright (C) 2018 Teddysun <i@teddysun.com>
 
 FROM debian:stretch
-MAINTAINER Teddysun <i@teddysun.com>
+LABEL maintainer="Teddysun <i@teddysun.com>"
 
 RUN set -ex \
     && printf "deb http://deb.debian.org/debian sid main" > /etc/apt/sources.list.d/sid.list \
