@@ -19,7 +19,7 @@ If you need to install docker by yourself, follow the [official installation gui
 $ docker pull teddysun/kms
 ```
 
-This pulls the latest release of shadowsocks-libev.
+This pulls the latest release of KMS Server.
 It can be found at [Docker Hub][3].
 
 ## Start a container
