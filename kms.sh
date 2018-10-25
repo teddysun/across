@@ -158,7 +158,7 @@ install_main() {
     fi
 
     cd "${cur_dir}" || exit
-    git clone https://github.com/teddysun/vlmcsd.git > /dev/null 2>&1
+    git clone https://github.com/Wind4/vlmcsd.git > /dev/null 2>&1
     [ -d vlmcsd ] && cd vlmcsd || echo -e "[${red}Error:${plain}] Failed to git clone vlmcsd."
     make
     if [ $? -ne 0 ]; then
