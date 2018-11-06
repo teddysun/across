@@ -4,7 +4,7 @@
 # https://github.com/Wind4/vlmcsd
 
 FROM alpine:latest
-MAINTAINER Teddysun <i@teddysun.com>
+LABEL maintainer="Teddysun <i@teddysun.com>"
 
 ENV KMS_RELEASE https://github.com/Wind4/vlmcsd/archive/master.zip
 
