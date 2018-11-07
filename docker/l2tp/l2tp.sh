@@ -28,7 +28,7 @@ rand(){
 }
 
 is_64bit(){
-    if [ "$(getconf WORD_BIT)" == "32" ] && [ "$(getconf LONG_BIT)" == "64" ]; then
+    if [ "$(getconf WORD_BIT)" = "32" ] && [ "$(getconf LONG_BIT)" = "64" ]; then
         return 0
     else
         return 1
