@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
 export PATH
 #
@@ -23,12 +23,7 @@ fi
 ip link delete dummy0 >/dev/null 2>&1
 
 rand(){
-    index=0
-    str=""
-    for i in {a..z}; do arr[index]=${i}; index=$(expr ${index} + 1); done
-    for i in {A..Z}; do arr[index]=${i}; index=$(expr ${index} + 1); done
-    for i in {0..9}; do arr[index]=${i}; index=$(expr ${index} + 1); done
-    for i in {1..10}; do str="$str${arr[$RANDOM%$index]}"; done
+    str=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 10 | head -n 1)
     echo ${str}
 }
 
