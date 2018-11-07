@@ -1,9 +1,13 @@
 ## L2TP/IPsec VPN Server Docker Image by Teddysun
 
 Docker image to run a L2TP/IPsec VPN Server, with both `L2TP/IPsec PSK` and `IPSec Xauth PSK`.
-Based on Debian 9 (Stretch) with latest libreswan (IPsec VPN software) and xl2tpd (L2TP daemon).
+
+Based on Debian 9 (Stretch) with libreswan-3.27 (IPsec VPN software) and xl2tpd-1.3.12 (L2TP daemon).
+
+Based on alpine with libreswan-3.21 (IPsec VPN software) and xl2tpd-1.3.10 (L2TP daemon).
 
 Docker images are built for quick deployment in various computing cloud providers.
+
 For more information on docker and containerization technologies, refer to [official document][1].
 
 ## Prepare the host
@@ -16,7 +20,13 @@ If you need to install docker by yourself, follow the [official installation gui
 $ docker pull teddysun/l2tp
 ```
 
-This pulls the latest release of shadowsocks-libev.
+or pull image based **alpine**
+
+```bash
+$ docker pull teddysun/l2tp:alpine
+```
+
+This pulls the latest release of L2TP/IPsec VPN Server.
 It can be found at [Docker Hub][3].
 
 ## Start a container
@@ -47,6 +57,12 @@ There is an example to start a container:
 
 ```bash
 $ docker run -d --privileged -p 500:500/udp -p 4500:4500/udp --name l2tp --env-file /etc/l2tp.env -v /lib/modules:/lib/modules teddysun/l2tp
+```
+
+or start a container with tag **alpine**
+
+```bash
+$ docker run -d --privileged -p 500:500/udp -p 4500:4500/udp --name l2tp --env-file /etc/l2tp.env -v /lib/modules:/lib/modules teddysun/l2tp:alpine
 ```
 
 **Note**: The UDP port number `500` and `4500` must be opened in firewall.
