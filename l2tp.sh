@@ -9,7 +9,7 @@ export PATH
 #=======================================================================#
 cur_dir=`pwd`
 
-libreswan_filename="libreswan-3.20"
+libreswan_filename="libreswan-3.27"
 download_root_url="http://dl.teddysun.com/files"
 
 rootness(){
@@ -421,7 +421,12 @@ compile_install(){
     tar -zxf ${libreswan_filename}.tar.gz
 
     cd ${cur_dir}/l2tp/${libreswan_filename}
-    echo "WERROR_CFLAGS =" > Makefile.inc.local
+        cat > Makefile.inc.local <<'EOF'
+WERROR_CFLAGS =
+USE_DNSSEC = false
+USE_DH31 = false
+USE_GLIBC_KERN_FLIP_HEADERS = true
+EOF
     make programs && make install
 
     /usr/local/sbin/ipsec --version >/dev/null 2>&1
