@@ -241,7 +241,7 @@ ftp_upload() {
 
         local FTP_OUT_FILE=$(basename ${OUT_FILE})
         log "Tranferring backup file to FTP server"
-        ftp -in ${FTP_HOST} 2>&1 >> ${LOGFILE} <<EOF
+        ftp -inp ${FTP_HOST} 2>&1 >> ${LOGFILE} <<EOF
 user $FTP_USER $FTP_PASS
 binary
 lcd $LOCALDIR
