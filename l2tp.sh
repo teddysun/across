@@ -10,7 +10,7 @@ export PATH
 cur_dir=`pwd`
 
 libreswan_filename="libreswan-3.27"
-download_root_url="http://dl.teddysun.com/files"
+download_root_url="https://dl.lamp.sh/files"
 
 rootness(){
     if [[ $EUID -ne 0 ]]; then
