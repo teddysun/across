@@ -321,8 +321,18 @@ install_bbr() {
                 rm -rf ${rpm_kernel_devel_name}
                 wget -c -t3 -T60 -O ${rpm_kernel_devel_name} ${rpm_kernel_url_2}${rpm_kernel_devel_name}
             fi
-            [ -f ${rpm_kernel_name} ] && rpm -ivh ${rpm_kernel_name} || echo -e "${red}Error:${plain} Download ${rpm_kernel_name} failed, please check it."; exit 1
-            [ -f ${rpm_kernel_devel_name} ] && rpm -ivh ${rpm_kernel_devel_name} || echo -e "${red}Error:${plain} Download ${rpm_kernel_devel_name} failed, please check it."; exit 1
+            if [ -f "${rpm_kernel_name}" ]; then
+                rpm -ivh ${rpm_kernel_name}
+            else
+                echo -e "${red}Error:${plain} Download ${rpm_kernel_name} failed, please check it."
+                exit 1
+            fi
+            if [ -f "${rpm_kernel_devel_name}" ]; then
+                rpm -ivh ${rpm_kernel_devel_name}
+            else
+                echo -e "${red}Error:${plain} Download ${rpm_kernel_devel_name} failed, please check it."
+                exit 1
+            fi
             rm -f ${rpm_kernel_name} ${rpm_kernel_devel_name}
         elif centosversion 7; then
             yum -y install kernel-ml kernel-ml-devel
