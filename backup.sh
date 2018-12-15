@@ -36,6 +36,10 @@ TEMPDIR="/root/backups/temp/"
 # File to log the outcome of backups
 LOGFILE="/root/backups/backup.log"
 
+# Remote gdrive directory to save backups
+# Notice: You need to ensure that this name is the only one in your gdrive space. 
+REMOTEDIR="site-backups"
+
 # OPTIONAL: If you want backup MySQL database, enter the MySQL root password below
 MYSQL_ROOT_PASSWORD=""
 
@@ -222,7 +226,8 @@ start_backup() {
 gdrive_upload() {
     if ${GDRIVE_COMMAND}; then
         log "Tranferring backup file to Google Drive"
-        gdrive upload --no-progress ${OUT_FILE} >> ${LOGFILE}
+        local REMOTE_GDRIVE_DIR_ID=$(gdrive list -q "name = '${REMOTEDIR}'" --no-header  | awk '{print $1}' )
+        gdrive upload --no-progress -p "${REMOTE_GDRIVE_DIR_ID}" ${OUT_FILE}  >> ${LOGFILE}
         if [ $? -ne 0 ]; then
             log "Error: Tranferring backup file to Google Drive failed"
             exit 1
