@@ -2,9 +2,9 @@
 
 Docker image to run a L2TP/IPsec VPN Server, with both `L2TP/IPsec PSK` and `IPSec Xauth PSK`.
 
-1. Based on Debian 9 (Stretch) with [libreswan-3.27 (IPsec VPN software)](https://github.com/libreswan/libreswan) and [xl2tpd-1.3.12 (L2TP daemon)](https://github.com/xelerance/xl2tpd).
+1. Based on Debian 9 (Stretch) with [libreswan-3.27 (IPsec VPN software)](https://packages.debian.org/sid/libreswan) and [xl2tpd-1.3.12 (L2TP daemon)](https://packages.debian.org/sid/xl2tpd).
 
-2. Based on alpine with [libreswan-3.21 (IPsec VPN software)](https://pkgs.alpinelinux.org/package/v3.8/community/x86_64/libreswan) and [xl2tpd-1.3.10 (L2TP daemon)](https://pkgs.alpinelinux.org/package/v3.8/main/x86_64/xl2tpd).
+2. Based on alpine with [libreswan-3.27 (IPsec VPN software)](https://pkgs.alpinelinux.org/package/edge/community/x86_64/libreswan) and [xl2tpd-1.3.10.1 (L2TP daemon)](https://pkgs.alpinelinux.org/package/edge/main/x86_64/xl2tpd).
 
 Docker images are built for quick deployment in various computing cloud providers.
 
