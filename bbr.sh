@@ -393,14 +393,14 @@ install_bbr() {
         fi
         if [ $(ubuntuversion) -le 18 ]; then
             echo "Install libssl for ubuntu version older than 18.04"
-            wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.0g-2ubuntu4_amd64.deb
-            dpkg -i libssl1.1_1.1.0g-2ubuntu4_amd64.deb
+            wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.0g-2ubuntu4_amd64.deb && \
+            dpkg -i libssl1.1_1.1.0g-2ubuntu4_amd64.deb && rm libssl1.1_1.1.0g-2ubuntu4_amd64.deb
         fi
         [ -f ${deb_kernel_modules_name} ] && dpkg -i ${deb_kernel_modules_name}
         [ -f ${deb_kernel_headers_all_name} ] && dpkg -i ${deb_kernel_headers_all_name}
         [ -f ${deb_kernel_headers_generic_name} ] && dpkg -i ${deb_kernel_headers_generic_name}
         dpkg -i ${deb_kernel_name}
-        rm -f ${deb_kernel_name} ${deb_kernel_modules_name} ${deb_kernel_headers_all_modules_name} ${deb_kernel_headers_generic_modules_name}
+        rm -f ${deb_kernel_name} ${deb_kernel_modules_name} ${deb_kernel_headers_all_name} ${deb_kernel_headers_generic_name}
     else
         echo -e "${red}Error:${plain} OS is not be supported, please change to CentOS/Debian/Ubuntu and try again."
         exit 1
