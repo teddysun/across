@@ -145,6 +145,12 @@ get_latest_version() {
         modules_deb_name=$(wget -qO- https://kernel.ubuntu.com/~kernel-ppa/mainline/v${kernel}/ | grep "linux-modules" | grep "generic" | awk -F'\">' '/amd64.deb/{print $2}' | cut -d'<' -f1 | head -1)
         deb_kernel_modules_url="https://kernel.ubuntu.com/~kernel-ppa/mainline/v${kernel}/${modules_deb_name}"
         deb_kernel_modules_name="linux-modules-${kernel}-amd64.deb"
+        headers_all_deb_name=$(wget -qO- https://kernel.ubuntu.com/~kernel-ppa/mainline/v${kernel}/ | grep "linux-headers" | grep "all" | awk -F'\">' '/amd64.deb/{print $2}' | cut -d'<' -f1 | head -1)
+        deb_kernel_headers_all_url="https://kernel.ubuntu.com/~kernel-ppa/mainline/v${kernel}/${headers_all_deb_name}"
+        deb_kernel_headers_all_name="linux-headers_all-${kernel}-amd64.deb"
+        headers_generic_deb_name=$(wget -qO- https://kernel.ubuntu.com/~kernel-ppa/mainline/v${kernel}/ | grep "linux-headers" | grep "generic" | awk -F'\">' '/amd64.deb/{print $2}' | cut -d'<' -f1 | head -1)
+        deb_kernel_headers_generic_url="https://kernel.ubuntu.com/~kernel-ppa/mainline/v${kernel}/${headers_generic_deb_name}"
+        deb_kernel_headers_generic_name="linux-headers_generic-${kernel}-amd64.deb"
     else
         deb_name=$(wget -qO- https://kernel.ubuntu.com/~kernel-ppa/mainline/v${kernel}/ | grep "linux-image" | grep "generic" | awk -F'\">' '/i386.deb/{print $2}' | cut -d'<' -f1 | head -1)
         deb_kernel_url="https://kernel.ubuntu.com/~kernel-ppa/mainline/v${kernel}/${deb_name}"
@@ -152,6 +158,12 @@ get_latest_version() {
         modules_deb_name=$(wget -qO- https://kernel.ubuntu.com/~kernel-ppa/mainline/v${kernel}/ | grep "linux-modules" | grep "generic" | awk -F'\">' '/i386.deb/{print $2}' | cut -d'<' -f1 | head -1)
         deb_kernel_modules_url="https://kernel.ubuntu.com/~kernel-ppa/mainline/v${kernel}/${modules_deb_name}"
         deb_kernel_modules_name="linux-modules-${kernel}-i386.deb"
+        headers_all_deb_name=$(wget -qO- https://kernel.ubuntu.com/~kernel-ppa/mainline/v${kernel}/ | grep "linux-headers" | grep "all" | awk -F'\">' '/i386.deb/{print $2}' | cut -d'<' -f1 | head -1)
+        deb_kernel_headers_all_url="https://kernel.ubuntu.com/~kernel-ppa/mainline/v${kernel}/${headers_all_deb_name}"
+        deb_kernel_headers_all_name="linux-headers_all-${kernel}-i386.deb"
+        headers_generic_deb_name=$(wget -qO- https://kernel.ubuntu.com/~kernel-ppa/mainline/v${kernel}/ | grep "linux-headers" | grep "generic" | awk -F'\">' '/i386.deb/{print $2}' | cut -d'<' -f1 | head -1)
+        deb_kernel_headers_generic_url="https://kernel.ubuntu.com/~kernel-ppa/mainline/v${kernel}/${headers_generic_deb_name}"
+        deb_kernel_headers_generic_name="linux-headers_generic-${kernel}-i386.deb"
     fi
 
     [ -z ${deb_name} ] && echo -e "${red}Error:${plain} Getting Linux kernel binary package name failed, maybe kernel build failed. Please choose other one and try again." && exit 1
@@ -199,6 +211,13 @@ centosversion() {
     else
         return 1
     fi
+}
+
+ubuntuversion() {
+    local code=$1
+    local version="$(lsb_release -r | awk '{print $NF}')"
+    local main_ver=${version%.*}
+    echo $main_ver
 }
 
 check_bbr_status() {
@@ -357,9 +376,31 @@ install_bbr() {
             echo -e "${red}Error:${plain} Download ${deb_kernel_name} failed, please check it."
             exit 1
         fi
+        wget -c -t3 -T60 -O ${deb_kernel_name} ${deb_kernel_url}
+        if [ $? -ne 0 ]; then
+            echo -e "${red}Error:${plain} Download ${deb_kernel_name} failed, please check it."
+            exit 1
+        fi
+        wget -c -t3 -T60 -O ${deb_kernel_headers_all_name} ${deb_kernel_headers_all_url}
+        if [ $? -ne 0 ]; then
+            echo -e "${red}Error:${plain} Download ${deb_kernel_headers_all_name} failed, please check it."
+            exit 1
+        fi
+        wget -c -t3 -T60 -O ${deb_kernel_headers_generic_name} ${deb_kernel_headers_generic_url}
+        if [ $? -ne 0 ]; then
+            echo -e "${red}Error:${plain} Download ${deb_kernel_headers_generic_name} failed, please check it."
+            exit 1
+        fi
+        if [ $(ubuntuversion) -le 18 ]; then
+            echo "Install libssl for ubuntu version older than 18.04"
+            wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.0g-2ubuntu4_amd64.deb
+            dpkg -i libssl1.1_1.1.0g-2ubuntu4_amd64.deb
+        fi
         [ -f ${deb_kernel_modules_name} ] && dpkg -i ${deb_kernel_modules_name}
+        [ -f ${deb_kernel_headers_all_name} ] && dpkg -i ${deb_kernel_headers_all_name}
+        [ -f ${deb_kernel_headers_generic_name} ] && dpkg -i ${deb_kernel_headers_generic_name}
         dpkg -i ${deb_kernel_name}
-        rm -f ${deb_kernel_name} ${deb_kernel_modules_name}
+        rm -f ${deb_kernel_name} ${deb_kernel_modules_name} ${deb_kernel_headers_all_modules_name} ${deb_kernel_headers_generic_modules_name}
     else
         echo -e "${red}Error:${plain} OS is not be supported, please change to CentOS/Debian/Ubuntu and try again."
         exit 1
