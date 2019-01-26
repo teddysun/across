@@ -137,8 +137,7 @@ conn xauth-psk
     auto=add
     leftsubnet=0.0.0.0/0
     rightaddresspool=${XAUTH_REMOTE}
-    modecfgdns1=${DNS1}
-    modecfgdns2=${DNS2}
+    modecfgdns=${DNS1},${DNS2}
     leftxauthserver=yes
     rightxauthclient=yes
     leftmodecfgserver=yes
