@@ -2,7 +2,7 @@
 #
 # Description: Auto test download & I/O speed script
 #
-# Copyright (C) 2015 - 2018 Teddysun <i@teddysun.com>
+# Copyright (C) 2015 - 2019 Teddysun <i@teddysun.com>
 #
 # Thanks: LookBack <admin@dwhd.org>
 #
@@ -95,7 +95,7 @@ calc_disk() {
 
 cname=$( awk -F: '/model name/ {name=$2} END {print name}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
 cores=$( awk -F: '/model name/ {core++} END {print core}' /proc/cpuinfo )
-freq=$( awk -F: '/cpu MHz/ {freq=$2} END {print freq}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
+freq=$( awk -F'[ :]' '/cpu MHz/ {print $4;exit}' /proc/cpuinfo )
 tram=$( free -m | awk '/Mem/ {print $2}' )
 uram=$( free -m | awk '/Mem/ {print $3}' )
 swap=$( free -m | awk '/Swap/ {print $2}' )
