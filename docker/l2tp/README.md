@@ -47,22 +47,26 @@ VPN_DNS1=
 VPN_DNS2=
 ```
 
-This will create a default user account for L2TP/IPsec VPN login, which can be used by your **multiple devices**. 
+This will create a default user account for L2TP/IPsec VPN login, which can be used by your **multiple devices**.
+
 The IPSec PSK (pre-shared key) is specified by the `VPN_IPSEC_PSK` environment variable. 
+
 The username is specified in `VPN_USER` environment variable.
+
 and password is specified in `VPN_PASSWORD` environment variable.
+
 If your VPS has multiple public IP addresses, maybe public IP need to specified in `VPN_PUBLIC_IP` environment variable.
 
 There is an example to start a container:
 
 ```bash
-$ docker run -d --privileged -p 500:500/udp -p 4500:4500/udp --name l2tp --env-file /etc/l2tp.env -v /lib/modules:/lib/modules teddysun/l2tp
+$ docker run -d --privileged -p 500:500/udp -p 4500:4500/udp --name l2tp --restart=always --env-file /etc/l2tp.env -v /lib/modules:/lib/modules teddysun/l2tp
 ```
 
 or start a container with tag **alpine**
 
 ```bash
-$ docker run -d --privileged -p 500:500/udp -p 4500:4500/udp --name l2tp --env-file /etc/l2tp.env -v /lib/modules:/lib/modules teddysun/l2tp:alpine
+$ docker run -d --privileged -p 500:500/udp -p 4500:4500/udp --name l2tp --restart=always --env-file /etc/l2tp.env -v /lib/modules:/lib/modules teddysun/l2tp:alpine
 ```
 
 **Note**: The UDP port number `500` and `4500` must be opened in firewall.
@@ -130,6 +134,12 @@ $ docker exec -it l2tp l2tpctl -d
 
 ```bash
 $ docker exec -it l2tp l2tpctl -m
+```
+
+### Print Libreswan & xl2tpd version
+
+```bash
+$ docker exec -it l2tp l2tpctl -v
 ```
 
 ### Print help information
