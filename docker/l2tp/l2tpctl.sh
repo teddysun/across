@@ -99,6 +99,11 @@ mod_user(){
     echo "Username ${user}'s password has been changed."
 }
 
+get_version(){
+    ipsec --version
+    xl2tpd --version
+}
+
 action=$1
 case ${action} in
     -l|--list)
@@ -113,14 +118,18 @@ case ${action} in
     -m|--mod)
         mod_user
         ;;
+    -v|--version)
+        get_version
+        ;;
     -h|--help)
-        echo "Usage: `basename $0` -l,--list   List all users"
-        echo "       `basename $0` -a,--add    Add a user"
-        echo "       `basename $0` -d,--del    Delete a user"
-        echo "       `basename $0` -m,--mod    Modify a user password"
-        echo "       `basename $0` -h,--help   Print this help information"
+        echo "Usage: `basename $0` -l,--list     List all users"
+        echo "       `basename $0` -a,--add      Add a user"
+        echo "       `basename $0` -d,--del      Delete a user"
+        echo "       `basename $0` -m,--mod      Modify a user password"
+        echo "       `basename $0` -v,--version  Print program version"
+        echo "       `basename $0` -h,--help     Print this help information"
         ;;
     *)
-        echo "Usage: `basename $0` [-l,--list|-a,--add|-d,--del|-m,--mod|-h,--help]" && exit
+        echo "Usage: `basename $0` [-l,--list|-a,--add|-d,--del|-m,--mod|-v,--version|-h,--help]" && exit
         ;;
 esac
