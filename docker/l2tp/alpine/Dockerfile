@@ -1,5 +1,5 @@
 # Dockerfile for L2TP/IPSec VPN Server based alpine
-# Copyright (C) 2019 Teddysun <i@teddysun.com>
+# Copyright (C) 2018 - 2019 Teddysun <i@teddysun.com>
 
 FROM alpine:edge
 LABEL maintainer="Teddysun <i@teddysun.com>"

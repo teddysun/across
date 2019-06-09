@@ -1,5 +1,5 @@
 # Dockerfile for L2TP/IPSec VPN Server
-# Copyright (C) 2018 Teddysun <i@teddysun.com>
+# Copyright (C) 2018 - 2019 Teddysun <i@teddysun.com>
 
 FROM debian:stretch
 LABEL maintainer="Teddysun <i@teddysun.com>"
