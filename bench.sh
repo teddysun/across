@@ -106,7 +106,7 @@ opsy=$( get_opsy )
 arch=$( uname -m )
 lbit=$( getconf LONG_BIT )
 kern=$( uname -r )
-ipv6=$( wget -qO- -t1 -T2 ipv6.icanhazip.com )
+#ipv6=$( wget -qO- -t1 -T2 ipv6.icanhazip.com )
 disk_size1=($( LANG=C df -hPl | grep -wvE '\-|none|tmpfs|devtmpfs|by-uuid|chroot|Filesystem|udev|docker' | awk '{print $2}' ))
 disk_size2=($( LANG=C df -hPl | grep -wvE '\-|none|tmpfs|devtmpfs|by-uuid|chroot|Filesystem|udev|docker' | awk '{print $3}' ))
 disk_total_size=$( calc_disk "${disk_size1[@]}" )
@@ -144,7 +144,7 @@ echo -e "Average I/O speed    : ${YELLOW}$ioavg MB/s${PLAIN}"
 next
 printf "%-32s%-24s%-14s\n" "Node Name" "IPv4 address" "Download Speed"
 speed_v4 && next
-if [[ "$ipv6" != "" ]]; then
-    printf "%-32s%-24s%-14s\n" "Node Name" "IPv6 address" "Download Speed"
-    speed_v6 && next
-fi
+#if [[ "$ipv6" != "" ]]; then
+#    printf "%-32s%-24s%-14s\n" "Node Name" "IPv6 address" "Download Speed"
+#    speed_v6 && next
+#fi
