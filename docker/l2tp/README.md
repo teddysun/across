@@ -2,7 +2,7 @@
 
 Docker image to run a L2TP/IPsec VPN Server, with both `L2TP/IPsec PSK` and `IPSec Xauth PSK`.
 
-1. Based on Debian 9 (Stretch) with [libreswan-3.27 (IPsec VPN software)](https://packages.debian.org/sid/libreswan) and [xl2tpd-1.3.12 (L2TP daemon)](https://packages.debian.org/sid/xl2tpd).
+1. Based on Debian 10 (Buster) with [libreswan-3.27 (IPsec VPN software)](https://packages.debian.org/sid/libreswan) and [xl2tpd-1.3.12 (L2TP daemon)](https://packages.debian.org/sid/xl2tpd).
 
 2. Based on alpine with [libreswan-3.27 (IPsec VPN software)](https://pkgs.alpinelinux.org/package/edge/community/x86_64/libreswan) and [xl2tpd-1.3.10.1 (L2TP daemon)](https://pkgs.alpinelinux.org/package/edge/main/x86_64/xl2tpd).
 
@@ -69,7 +69,7 @@ or start a container with tag **alpine**
 $ docker run -d --privileged -p 500:500/udp -p 4500:4500/udp --name l2tp --restart=always --env-file /etc/l2tp.env -v /lib/modules:/lib/modules teddysun/l2tp:alpine
 ```
 
-**Note**: The UDP port number `500` and `4500` must be opened in firewall.
+**Warning**: The UDP port number `500` and `4500` must be opened in firewall.
 
 ## Check container details
 
