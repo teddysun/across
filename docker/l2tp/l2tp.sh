@@ -185,14 +185,14 @@ cat > /etc/ipsec.secrets <<EOF
 %any  %any  : PSK "${VPN_IPSEC_PSK}"
 EOF
 
-if ! grep -qw "${VPN_USER}" /etc/ppp/chap-secrets; then
+if ! grep -qw "${VPN_USER}" /etc/ppp/chap-secrets 2>/dev/null; then
     cat > /etc/ppp/chap-secrets <<EOF
 ${VPN_USER} l2tpd ${VPN_PASSWORD} *
 EOF
 fi
 
 VPN_PASSWORD_ENC=$(openssl passwd -1 "${VPN_PASSWORD}")
-if ! grep -qw "${VPN_USER}" /etc/ipsec.d/passwd; then
+if ! grep -qw "${VPN_USER}" /etc/ipsec.d/passwd 2>/dev/null; then
     cat > /etc/ipsec.d/passwd <<EOF
 ${VPN_USER}:${VPN_PASSWORD_ENC}:xauth-psk
 EOF
