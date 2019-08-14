@@ -1,7 +1,7 @@
 # Dockerfile for L2TP/IPSec VPN Server
 # Copyright (C) 2018 - 2019 Teddysun <i@teddysun.com>
 
-FROM debian:stretch
+FROM debian:buster
 LABEL maintainer="Teddysun <i@teddysun.com>"
 
 RUN set -ex \
