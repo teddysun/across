@@ -49,13 +49,25 @@ VPN_DNS2=
 
 This will create a default user account for L2TP/IPsec VPN login, which can be used by your **multiple devices**.
 
-The IPSec PSK (pre-shared key) is specified by the `VPN_IPSEC_PSK` environment variable. 
+The IPSec PSK (pre-shared key) is specified by the `VPN_IPSEC_PSK`. 
 
-The username is specified in `VPN_USER` environment variable.
+The **default username** is specified in `VPN_USER`.
 
-and password is specified in `VPN_PASSWORD` environment variable.
+The **default password** is specified in `VPN_PASSWORD`.
 
-If your VPS has multiple public IP addresses, maybe public IP need to specified in `VPN_PUBLIC_IP` environment variable.
+If your VPS has multiple public IP addresses, maybe public IP need to specified in `VPN_PUBLIC_IP`.
+
+If you want to specify a other private network, maybe need to specified in `VPN_L2TP_NET` (default `192.168.18.0/24`).
+
+If you want to specify a other private network, maybe need to specified in `VPN_XAUTH_NET` (default `192.168.20.0/24`).
+
+If you want to specify a `local ip` for `xl2tpd.conf`, maybe need to specified in `VPN_L2TP_LOCAL` (default `192.168.18.1`).
+
+If you want to specify a `ip range` for `xl2tpd.conf`, maybe need to specified in `VPN_L2TP_REMOTE` (default `192.168.18.10-192.168.18.250`).
+
+If you want to specify a `rightaddresspool` for `ipsec.conf`, maybe need to specified in `VPN_XAUTH_REMOTE` (default `192.168.20.10-192.168.20.250`).
+
+If you want to specify a other DNS servers, maybe need to specified in `VPN_DNS1` and `VPN_DNS2` (default `8.8.8.8`, `8.8.4.4`).
 
 There is an example to start a container:
 
