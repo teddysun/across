@@ -31,6 +31,11 @@ next() {
     printf "%-70s\n" "-" | sed 's/\s/-/g'
 }
 
+confirm() {
+    printf "${YELLOW}# ${GREEN}Press any key to continue...${PLAIN}"
+    read xxx
+}
+
 speed_test_v4() {
     local output=$(LANG=C wget -4O /dev/null -T300 $1 2>&1)
     local speedtest=$(printf '%s' "$output" | awk '/\/dev\/null/ {speed=$3 $4} END {gsub(/\(|\)/,"",speed); print speed}')
@@ -114,6 +119,7 @@ disk_used_size=$( calc_disk "${disk_size2[@]}" )
 
 clear
 next
+
 echo -e "CPU model            : ${BLUE}$cname${PLAIN}"
 echo -e "Number of cores      : ${BLUE}$cores${PLAIN}"
 echo -e "CPU frequency        : ${BLUE}$freq MHz${PLAIN}"
@@ -125,7 +131,11 @@ echo -e "Load average         : ${BLUE}$load${PLAIN}"
 echo -e "OS                   : ${BLUE}$opsy${PLAIN}"
 echo -e "Arch                 : ${BLUE}$arch ($lbit Bit)${PLAIN}"
 echo -e "Kernel               : ${BLUE}$kern${PLAIN}"
+
 next
+confirm
+next
+
 io1=$( io_test )
 echo -e "I/O speed(1st run)   : ${YELLOW}$io1${PLAIN}"
 io2=$( io_test )
@@ -141,7 +151,11 @@ ioraw3=$( echo $io3 | awk 'NR==1 {print $1}' )
 ioall=$( awk 'BEGIN{print '$ioraw1' + '$ioraw2' + '$ioraw3'}' )
 ioavg=$( awk 'BEGIN{printf "%.1f", '$ioall' / 3}' )
 echo -e "Average I/O speed    : ${YELLOW}$ioavg MB/s${PLAIN}"
+
 next
+confirm
+next
+
 printf "%-32s%-24s%-14s\n" "Node Name" "IPv4 address" "Download Speed"
 speed_v4 && next
 #if [[ "$ipv6" != "" ]]; then
