@@ -125,6 +125,31 @@ _error_detect() {
     fi
 }
 
+_version_gt(){
+    test "$(echo "$@" | tr " " "\n" | sort -V | head -n 1)" != "$1"
+}
+
+_is_installed() {
+    if _exists "wg" && _exists "wg-quick"; then
+        if [ -s "/lib/modules/$(uname -r)/extra/wireguard.ko" ] || [ -s "/lib/modules/$(uname -r)/extra/wireguard.ko.xz" ] \
+           || [ -s "/lib/modules/$(uname -r)/updates/dkms/wireguard.ko" ]; then
+            return 0
+        else
+            return 1
+        fi
+    else
+        return 2
+    fi
+}
+
+_get_latest_ver() {
+    wireguard_ver="$(wget --no-check-certificate -qO- https://api.github.com/repos/WireGuard/WireGuard/tags | grep 'name' | head -1 | cut -d\" -f4)"
+    if [ -z "${wireguard_ver}" ]; then
+        wireguard_ver="$(curl -Lso- https://api.github.com/repos/WireGuard/WireGuard/tags | grep 'name' | head -1 | cut -d\" -f4)"
+    fi
+    [ -z "${wireguard_ver}" ] && _error "Failed to get wireguard latest version from github"
+}
+
 # Check OS version
 check_os() {
     _info "Check OS version"
@@ -197,18 +222,14 @@ install_wg_1() {
         *)
             ;; # do nothing
     esac
+    if ! _is_installed; then
+        _error "Failed to install wireguard, the kernel is most likely not configured correctly"
+    fi
 }
 
 # Install from source
 install_wg_2() {
     _info "Install wireguard from source"
-    wireguard_ver="$(wget --no-check-certificate -qO- https://api.github.com/repos/WireGuard/WireGuard/tags | grep 'name' | head -1 | cut -d\" -f4)"
-    if [ -z "${wireguard_ver}" ]; then
-        wireguard_ver="$(curl -Lso- https://api.github.com/repos/WireGuard/WireGuard/tags | grep 'name' | head -1 | cut -d\" -f4)"
-    fi
-    [ -z "${wireguard_ver}" ] && _error "Failed to get wireguard latest version from github."
-    wireguard_name="WireGuard-${wireguard_ver}"
-    wireguard_url="https://github.com/WireGuard/WireGuard/archive/${wireguard_ver}.tar.gz"
     case "$(_os)" in
         ubuntu|debian)
             _error_detect "apt-get update"
@@ -240,6 +261,9 @@ install_wg_2() {
         *)
             ;; # do nothing
     esac
+    _get_latest_ver
+    wireguard_name="WireGuard-${wireguard_ver}"
+    wireguard_url="https://github.com/WireGuard/WireGuard/archive/${wireguard_ver}.tar.gz"
     _error_detect "wget --no-check-certificate -qO ${wireguard_name}.tar.gz ${wireguard_url}"
     _error_detect "tar zxf ${wireguard_name}.tar.gz"
     _error_detect "cd ${wireguard_name}/src"
@@ -247,6 +271,9 @@ install_wg_2() {
     _error_detect "make module"
     _error_detect "make install"
     _error_detect "cd ${cur_dir} && rm -fr ${wireguard_name}.tar.gz ${wireguard_name}"
+    if ! _is_installed; then
+        _error "Failed to install wireguard, the kernel is most likely not configured correctly"
+    fi
 }
 
 # Create server interface
@@ -550,17 +577,16 @@ list_clients() {
     printf ${line}
 }
 
-version() {
-    if _exists "wg" && _exists "wg-quick"; then
-        if [ -s "/lib/modules/$(uname -r)/extra/wireguard.ko" ] || [ -s "/lib/modules/$(uname -r)/extra/wireguard.ko.xz" ] \
-           || [ -s "/lib/modules/$(uname -r)/updates/dkms/" ]; then
-            _exists "modinfo" && installed_wg_ver="$(modinfo -F version wireguard)"
-            [ -n "${installed_wg_ver}" ] && echo "WireGuard version: $(_green ${installed_wg_ver})"
-        else
-            _red "WireGuard kernel module does not exists\n"
-        fi
-    else
-        _red "WireGuard is not installed\n"
+check_version() {
+    _is_installed
+    rt=$?
+    if [ ${rt} -eq 0 ]; then
+        _exists "modinfo" && installed_wg_ver="$(modinfo -F version wireguard)"
+        [ -n "${installed_wg_ver}" ] && echo "WireGuard version: $(_green ${installed_wg_ver})" && return 0
+    elif [ ${rt} -eq 1 ]; then
+        _red "WireGuard kernel module does not exists\n" && return 1
+    elif [ ${rt} -eq 2 ]; then
+        _red "WireGuard is not installed\n" && return 2
     fi
 }
 
@@ -571,6 +597,7 @@ Options:
 -h, --help       Print this help text and exit
 -r, --repo       Install WireGuard from repository
 -s, --source     Install WireGuard from source
+-u, --update     Upgrade WireGuard from source
 -v, --version    Print WireGuard version if installed
 -a, --add        Add a WireGuard client
 -d, --del        Delete a WireGuard client
@@ -599,6 +626,27 @@ install_from_source() {
     enable_ip_forward
     set_firewall
     install_completed
+}
+
+update_from_source() {
+    if check_version; then
+        _get_latest_ver
+        echo "WireGuard latest version: $(_green ${wireguard_ver})"
+        if _version_gt "${wireguard_ver}" "${installed_wg_ver}"; then
+            echo "Do you want to upgrade WireGuard? (y/n)"
+            read -p "(Default: n):" update_wg
+            [ -z "${update_wg}" ] && update_wg="n"
+            if [ "${update_wg}" = "y" -o "${update_wg}" = "Y" ]; then
+                install_wg_2
+                systemctl restart wg-quick@${SERVER_WG_NIC}
+                echo "Update WireGuard completed"
+            else
+                echo "Update WireGuard canceled"
+            fi
+        else
+            echo "No updates needed to update WireGuard"
+        fi
+    fi
 }
 
 cur_dir="$(pwd)"
@@ -630,8 +678,11 @@ main() {
         -s|--source)
             install_from_source
             ;;
+        -u|--update)
+            update_from_source
+            ;;
         -v|--version)
-            version
+            check_version
             ;;
         -a|--add)
             add_client
