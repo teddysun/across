@@ -1,7 +1,7 @@
 # Dockerfile for L2TP/IPSec VPN Server based alpine
-# Copyright (C) 2018 Teddysun <i@teddysun.com>
+# Copyright (C) 2018 - 2019 Teddysun <i@teddysun.com>
 
-FROM alpine:latest
+FROM alpine:edge
 LABEL maintainer="Teddysun <i@teddysun.com>"
 
 RUN apk add -U openssl libreswan xl2tpd ppp-l2tp \

@@ -2,9 +2,9 @@
 
 Docker image to run a L2TP/IPsec VPN Server, with both `L2TP/IPsec PSK` and `IPSec Xauth PSK`.
 
-1. Based on Debian 9 (Stretch) with [libreswan-3.27 (IPsec VPN software)](https://github.com/libreswan/libreswan) and [xl2tpd-1.3.12 (L2TP daemon)](https://github.com/xelerance/xl2tpd).
+1. Based on Debian 10 (Buster) with [libreswan-3.29 (IPsec VPN software)](https://packages.debian.org/sid/libreswan) and [xl2tpd-1.3.12 (L2TP daemon)](https://packages.debian.org/sid/xl2tpd).
 
-2. Based on alpine with [libreswan-3.21 (IPsec VPN software)](https://pkgs.alpinelinux.org/package/v3.8/community/x86_64/libreswan) and [xl2tpd-1.3.10 (L2TP daemon)](https://pkgs.alpinelinux.org/package/v3.8/main/x86_64/xl2tpd).
+2. Based on Alpine with [libreswan-3.29 (IPsec VPN software)](https://pkgs.alpinelinux.org/package/edge/community/x86_64/libreswan) and [xl2tpd-1.3.14 (L2TP daemon)](https://pkgs.alpinelinux.org/package/edge/main/x86_64/xl2tpd).
 
 Docker images are built for quick deployment in various computing cloud providers.
 
@@ -47,25 +47,41 @@ VPN_DNS1=
 VPN_DNS2=
 ```
 
-This will create a default user account for L2TP/IPsec VPN login, which can be used by your **multiple devices**. 
-The IPSec PSK (pre-shared key) is specified by the `VPN_IPSEC_PSK` environment variable. 
-The username is specified in `VPN_USER` environment variable.
-and password is specified in `VPN_PASSWORD` environment variable.
-If your VPS has multiple public IP addresses, maybe public IP need to specified in `VPN_PUBLIC_IP` environment variable.
+This will create a default user account for L2TP/IPsec VPN login, which can be used by your **multiple devices**.
+
+The IPSec PSK (pre-shared key) is specified by the `VPN_IPSEC_PSK`. 
+
+The **default username** is specified in `VPN_USER`.
+
+The **default password** is specified in `VPN_PASSWORD`.
+
+If your VPS has multiple public IP addresses, maybe public IP need to specified in `VPN_PUBLIC_IP`.
+
+If you want to specify a other private network, maybe need to specified in `VPN_L2TP_NET` (default `192.168.18.0/24`).
+
+If you want to specify a other private network, maybe need to specified in `VPN_XAUTH_NET` (default `192.168.20.0/24`).
+
+If you want to specify a `local ip` for `xl2tpd.conf`, maybe need to specified in `VPN_L2TP_LOCAL` (default `192.168.18.1`).
+
+If you want to specify a `ip range` for `xl2tpd.conf`, maybe need to specified in `VPN_L2TP_REMOTE` (default `192.168.18.10-192.168.18.250`).
+
+If you want to specify a `rightaddresspool` for `ipsec.conf`, maybe need to specified in `VPN_XAUTH_REMOTE` (default `192.168.20.10-192.168.20.250`).
+
+If you want to specify a other DNS servers, maybe need to specified in `VPN_DNS1` and `VPN_DNS2` (default `8.8.8.8`, `8.8.4.4`).
 
 There is an example to start a container:
 
 ```bash
-$ docker run -d --privileged -p 500:500/udp -p 4500:4500/udp --name l2tp --env-file /etc/l2tp.env -v /lib/modules:/lib/modules teddysun/l2tp
+$ docker run -d --privileged -p 500:500/udp -p 4500:4500/udp --name l2tp --restart=always --env-file /etc/l2tp.env -v /lib/modules:/lib/modules teddysun/l2tp
 ```
 
 or start a container with tag **alpine**
 
 ```bash
-$ docker run -d --privileged -p 500:500/udp -p 4500:4500/udp --name l2tp --env-file /etc/l2tp.env -v /lib/modules:/lib/modules teddysun/l2tp:alpine
+$ docker run -d --privileged -p 500:500/udp -p 4500:4500/udp --name l2tp --restart=always --env-file /etc/l2tp.env -v /lib/modules:/lib/modules teddysun/l2tp:alpine
 ```
 
-**Note**: The UDP port number `500` and `4500` must be opened in firewall.
+**Warning**: The UDP port number `500` and `4500` must be opened in firewall.
 
 ## Check container details
 
@@ -130,6 +146,12 @@ $ docker exec -it l2tp l2tpctl -d
 
 ```bash
 $ docker exec -it l2tp l2tpctl -m
+```
+
+### Print Libreswan & xl2tpd version
+
+```bash
+$ docker exec -it l2tp l2tpctl -v
 ```
 
 ### Print help information

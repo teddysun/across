@@ -25,7 +25,7 @@ It can be found at [Docker Hub][3].
 ## Start a container
 
 ```bash
-$ docker run -d -p 1688:1688 --name kms teddysun/kms
+$ docker run -d -p 1688:1688 --name kms --restart=always teddysun/kms
 ```
 
 **Note**: The TCP port number `1688` must be opened in firewall.
