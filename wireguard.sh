@@ -423,7 +423,7 @@ install_completed() {
 }
 
 add_client() {
-    if ! _exists "wg" || ! _exists "wg-quick"; then
+    if ! _is_installed; then
         _red "WireGuard looks like not installed, please installed it try again\n" && exit 1
     fi
     default_server_if="/etc/wireguard/${SERVER_WG_NIC}.conf"
@@ -530,6 +530,9 @@ EOF
 }
 
 remove_client() {
+    if ! _is_installed; then
+        _red "WireGuard looks like not installed, please installed it try again\n" && exit 1
+    fi
     default_server_if="/etc/wireguard/${SERVER_WG_NIC}.conf"
     [ ! -s "${default_server_if}" ] && echo "The default server interface ($(_red ${default_server_if})) does not exists" && exit 1
     while true
@@ -557,6 +560,9 @@ remove_client() {
 }
 
 list_clients() {
+    if ! _is_installed; then
+        _red "WireGuard looks like not installed, please installed it try again\n" && exit 1
+    fi
     default_server_if="/etc/wireguard/${SERVER_WG_NIC}.conf"
     [ ! -s "${default_server_if}" ] && echo "The default server interface ($(_red ${default_server_if})) does not exists" && exit 1
     local line="+-------------------------------------------------------------------------+\n"
