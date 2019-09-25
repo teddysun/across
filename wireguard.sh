@@ -613,6 +613,7 @@ Options:
 }
 
 install_from_repo() {
+    _is_installed && check_version && _red "WireGuard was already installed\n" && exit 0
     check_os
     install_wg_1
     create_server_if
@@ -624,6 +625,7 @@ install_from_repo() {
 }
 
 install_from_source() {
+    _is_installed && check_version && _red "WireGuard was already installed\n" && exit 0
     check_os
     install_wg_2
     create_server_if
