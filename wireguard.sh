@@ -424,7 +424,7 @@ install_completed() {
 
 add_client() {
     if ! _is_installed; then
-        _red "WireGuard looks like not installed, please installed it try again\n" && exit 1
+        _red "WireGuard was not installed, please install it and try again\n" && exit 1
     fi
     default_server_if="/etc/wireguard/${SERVER_WG_NIC}.conf"
     default_client_if="/etc/wireguard/${SERVER_WG_NIC}_client"
@@ -531,7 +531,7 @@ EOF
 
 remove_client() {
     if ! _is_installed; then
-        _red "WireGuard looks like not installed, please installed it try again\n" && exit 1
+        _red "WireGuard was not installed, please install it and try again\n" && exit 1
     fi
     default_server_if="/etc/wireguard/${SERVER_WG_NIC}.conf"
     [ ! -s "${default_server_if}" ] && echo "The default server interface ($(_red ${default_server_if})) does not exists" && exit 1
@@ -561,7 +561,7 @@ remove_client() {
 
 list_clients() {
     if ! _is_installed; then
-        _red "WireGuard looks like not installed, please installed it try again\n" && exit 1
+        _red "WireGuard was not installed, please install it and try again\n" && exit 1
     fi
     default_server_if="/etc/wireguard/${SERVER_WG_NIC}.conf"
     [ ! -s "${default_server_if}" ] && echo "The default server interface ($(_red ${default_server_if})) does not exists" && exit 1
@@ -592,7 +592,7 @@ check_version() {
     elif [ ${rt} -eq 1 ]; then
         _red "WireGuard kernel module does not exists\n" && return 1
     elif [ ${rt} -eq 2 ]; then
-        _red "WireGuard is not installed\n" && return 2
+        _red "WireGuard was not installed\n" && return 2
     fi
 }
 
