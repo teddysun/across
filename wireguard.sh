@@ -637,23 +637,20 @@ install_from_source() {
 }
 
 update_from_source() {
-    if check_version; then
+    if check_version > /dev/null 2>&1; then
         _get_latest_ver
-        echo "WireGuard latest version: $(_green ${wireguard_ver})"
+        _info "WireGuard version: $(_green ${installed_wg_ver})"
+        _info "WireGuard latest version: $(_green ${wireguard_ver})"
         if _version_gt "${wireguard_ver}" "${installed_wg_ver}"; then
-            echo "Do you want to upgrade WireGuard? (y/n)"
-            read -p "(Default: n):" update_wg
-            [ -z "${update_wg}" ] && update_wg="n"
-            if [ "${update_wg}" = "y" -o "${update_wg}" = "Y" ]; then
-                install_wg_2
-                systemctl restart wg-quick@${SERVER_WG_NIC}
-                echo "Update WireGuard completed"
-            else
-                echo "Update WireGuard canceled"
-            fi
+            _info "Starting upgrade WireGuard"
+            install_wg_2
+            _error_detect "systemctl restart wg-quick@${SERVER_WG_NIC}"
+            _info "Update WireGuard completed"
         else
-            echo "No updates needed to update WireGuard"
+            _info "There is no update available for WireGuard"
         fi
+    else
+        _red "WireGuard was not installed, maybe you need to install it at first\n"
     fi
 }
 
