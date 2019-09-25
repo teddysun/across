@@ -598,16 +598,16 @@ check_version() {
 
 show_help() {
     printf "
-Usage: $0 [Options]
+Usage  : $0 [Options]
 Options:
--h, --help       Print this help text and exit
--r, --repo       Install WireGuard from repository
--s, --source     Install WireGuard from source
--u, --update     Upgrade WireGuard from source
--v, --version    Print WireGuard version if installed
--a, --add        Add a WireGuard client
--d, --del        Delete a WireGuard client
--l, --list       List all WireGuard client's IP
+        -h, --help       Print this help text and exit
+        -r, --repo       Install WireGuard from repository
+        -s, --source     Install WireGuard from source
+        -u, --update     Upgrade WireGuard from source
+        -v, --version    Print WireGuard version if installed
+        -a, --add        Add a WireGuard client
+        -d, --del        Delete a WireGuard client
+        -l, --list       List all WireGuard client's IP
 
 "
 }
@@ -659,7 +659,7 @@ update_from_source() {
 
 cur_dir="$(pwd)"
 
-[ ${EUID} -ne 0 ] && _error "This script must be run as root"
+[ ${EUID} -ne 0 ] && _red "This script must be run as root\n" && exit 1
 
 SERVER_PUB_IPV4="${VPN_SERVER_PUB_IPV4:-$(_ipv4)}"
 SERVER_PUB_IPV6="${VPN_SERVER_PUB_IPV6:-$(_ipv6)}"
