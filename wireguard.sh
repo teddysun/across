@@ -369,7 +369,7 @@ set_firewall() {
         if [ "$(firewall-cmd --state | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g")" = "running" ]; then
             default_zone="$(firewall-cmd --get-default-zone)"
             if [ "$(firewall-cmd --zone=${default_zone} --query-masquerade)" = "no" ]; then
-                _error_detect "firewall-cmd --zone=${default_zone} --add-masquerade"
+                _error_detect "firewall-cmd --permanent --zone=${default_zone} --add-masquerade"
             fi
             if ! firewall-cmd --list-ports | grep -qw "${SERVER_WG_PORT}/udp"; then
                 _error_detect "firewall-cmd --permanent --zone=${default_zone} --add-port=${SERVER_WG_PORT}/udp"
