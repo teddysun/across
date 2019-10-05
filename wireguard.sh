@@ -67,7 +67,7 @@ _exists() {
 
 _ipv4() {
     local ipv4="$( ip addr | egrep -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | \
-                   egrep -v "^192\.168|^172\.1[6-9]\.|^172\.2[0-9]\.|^172\.3[0-2]\.|^10\.|^127\.|^255\.|^0\." | head -n 1 )"
+                   egrep -v "^192\.168|^172\.1[6-9]\.|^172\.2[0-9]\.|^172\.3[0-2]\.|^10\.|^127\.|^255\.|^0\.|^169\.254\." | head -n 1 )"
     [ -z "${ipv4}" ] && ipv4="$( wget -qO- -t1 -T2 ipv4.icanhazip.com )"
     [ -z "${ipv4}" ] && ipv4="$( wget -qO- -t1 -T2 ipinfo.io/ip )"
     printf -- "%s" "${ipv4}"
@@ -164,13 +164,13 @@ check_os() {
     if [ -n "${virt}" -a "${virt}" = "openvz" ] || [ -d "/proc/vz" ]; then
         _error "Virtualization method is OpenVZ, which is not supported."
     fi
-    [ -z "$(_os)" ] && _error "Not supported OS."
+    [ -z "$(_os)" ] && _error "Not supported OS"
     case "$(_os)" in
         ubuntu)
             [ -n "$(_os_ver)" -a "$(_os_ver)" -lt 16 ] && _error "Not supported OS, please change to Ubuntu 16+ and try again."
             ;;
-        debian)
-            [ -n "$(_os_ver)" -a "$(_os_ver)" -lt 8 ] &&  _error "Not supported OS, please change to Debian 8+ and try again."
+        debian|raspbian)
+            [ -n "$(_os_ver)" -a "$(_os_ver)" -lt 8 ] &&  _error "Not supported OS, please change to De(Rasp)bian 8+ and try again."
             ;;
         fedora)
             [ -n "$(_os_ver)" -a "$(_os_ver)" -lt 29 ] && _error "Not supported OS, please change to Fedora 29+ and try again."
@@ -179,7 +179,8 @@ check_os() {
             [ -n "$(_os_ver)" -a "$(_os_ver)" -lt 7 ] &&  _error "Not supported OS, please change to CentOS 7+ and try again."
             ;;
         *)
-            ;; # do nothing
+            _error "Not supported OS"
+            ;;
     esac
 }
 
@@ -231,9 +232,15 @@ install_wg_1() {
 install_wg_2() {
     _info "Install wireguard from source"
     case "$(_os)" in
-        ubuntu|debian)
+        ubuntu|debian|raspbian)
             _error_detect "apt-get update"
-            [ ! -d "/usr/src/linux-headers-$(uname -r)" ] && _error_detect "apt-get -y install linux-headers-$(uname -r)"
+            if [ ! -d "/usr/src/linux-headers-$(uname -r)" ]; then
+                if [ "$(_os)" = "raspbian" ]; then
+                    _error_detect "apt-get -y install raspberrypi-kernel-headers"
+                else
+                    _error_detect "apt-get -y install linux-headers-$(uname -r)"
+                fi
+            fi
             _error_detect "apt-get -y install qrencode"
             _error_detect "apt-get -y install iptables"
             _error_detect "apt-get -y install bc"
