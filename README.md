@@ -14,6 +14,7 @@
 
 - Description: Auto install KMS Server
 - Intro: https://teddysun.com/530.html
+- **KMS Server Docker Image**: https://hub.docker.com/r/teddysun/kms
 
 ## bench.sh
 
