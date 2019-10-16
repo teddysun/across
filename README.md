@@ -1,5 +1,11 @@
 # Some useful scripts
 
+wireguard.sh
+============
+
+- Description: This is a shell script for configure and start WireGuard VPN server.
+- Intro: https://teddysun.com/554.html
+
 l2tp.sh
 =======
 
