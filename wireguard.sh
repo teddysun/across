@@ -651,6 +651,7 @@ update_from_source() {
         if _version_gt "${wireguard_ver}" "${installed_wg_ver}"; then
             _info "Starting upgrade WireGuard"
             install_wg_2
+            _error_detect "systemctl daemon-reload"
             _error_detect "systemctl restart wg-quick@${SERVER_WG_NIC}"
             _info "Update WireGuard completed"
         else
