@@ -260,6 +260,7 @@ install_wg_2() {
             _error_detect "dnf -y install gcc"
             _error_detect "dnf -y install make"
             _error_detect "dnf -y install libmnl-devel"
+            _error_detect "dnf -y install elfutils-libelf-devel"
             ;;
         centos)
             _error_detect "yum -y install epel-release"
@@ -268,7 +269,10 @@ install_wg_2() {
             _error_detect "yum -y install bc"
             _error_detect "yum -y install gcc"
             _error_detect "yum -y install make"
+            _error_detect "yum -y install yum-utils"
+            [ -n "$(_os_ver)" -a "$(_os_ver)" -eq 8 ] && _error_detect "yum-config-manager --enable PowerTools"
             _error_detect "yum -y install libmnl-devel"
+            _error_detect "yum -y install elfutils-libelf-devel"
             ;;
         *)
             ;; # do nothing
