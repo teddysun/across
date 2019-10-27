@@ -283,6 +283,37 @@ install_wg_2() {
     fi
 }
 
+# Uninstall WireGuard
+uninstall_wg() {
+    if ! _is_installed; then
+        _error "WireGuard is not installed"
+    fi
+    _info "Uninstall WireGuard start"
+    # stop wireguard at first
+    _error_detect "systemctl stop wg-quick@${SERVER_WG_NIC}"
+    _error_detect "systemctl disable wg-quick@${SERVER_WG_NIC}"
+    # if wireguard has been installed from repository
+    if _exists "yum" && _exists "rpm"; then
+        if rpm -qa | grep -q wireguard; then
+            _error_detect "yum -y remove wireguard-dkms wireguard-tools"
+        fi
+    elif _exists "apt" && _exists "apt-get"; then
+        if apt list --installed | grep -q wireguard; then
+            _error_detect "apt-get -y remove wireguard"
+        fi
+    fi
+    # if wireguard has been installed from source
+    if _is_installed; then
+        _error_detect "rm -f /usr/bin/wg"
+        _error_detect "rm -f /usr/bin/wg-quick"
+        _error_detect "rm -f /usr/share/man/man8/wg.8"
+        _error_detect "rm -f /usr/share/man/man8/wg-quick.8"
+        _exists "modprobe" && _error_detect "modprobe -r wireguard"
+    fi
+    [ -d "/etc/wireguard" ] && _error_detect "rm -fr /etc/wireguard"
+    _info "Uninstall WireGuard completed"
+}
+
 # Create server interface
 create_server_if() {
     SERVER_PRIVATE_KEY="$(wg genkey)"
@@ -615,6 +646,7 @@ Options:
         -a, --add        Add a WireGuard client
         -d, --del        Delete a WireGuard client
         -l, --list       List all WireGuard client's IP
+        -n, --uninstall  Uninstall WireGuard
 
 "
 }
@@ -705,6 +737,9 @@ main() {
             ;;
         -l|--list)
             list_clients
+            ;;
+        -n|--uninstall)
+            uninstall_wg
             ;;
         *)
             show_help
