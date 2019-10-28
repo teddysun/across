@@ -3,6 +3,7 @@
 [Brook][1] is a cross-platform proxy/VPN software which can help you get through firewalls.
 
 Docker images are built for quick deployment in various computing cloud providers.
+
 For more information on docker and containerization technologies, refer to [official document][2].
 
 ## Prepare the host
