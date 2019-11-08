@@ -5,7 +5,7 @@
 
 FROM golang:alpine AS builder
 RUN set -ex \
-	&& apk add --no-cache git build-base \
+	&& apk add --no-cache git \
 	&& mkdir -p /go/src/github.com/v2ray \
 	&& cd /go/src/github.com/v2ray \
 	&& git clone https://github.com/v2ray/v2ray-core.git \
@@ -21,11 +21,14 @@ LABEL maintainer="Teddysun <i@teddysun.com>"
 
 RUN set -ex \
 	&& apk add --no-cache tzdata ca-certificates \
+	&& rm -rf /var/cache/apk/* \
 	&& mkdir -p /etc/v2ray \
 	&& mkdir -p /var/log/v2ray
 
 COPY --from=builder /go/bin/v2ray /usr/bin
 COPY --from=builder /go/bin/v2ctl /usr/bin
+COPY --from=builder /go/src/github.com/v2ray/v2ray-core/release/config/geoip.dat /usr/bin
+COPY --from=builder /go/src/github.com/v2ray/v2ray-core/release/config/geosite.dat /usr/bin
 COPY config.json /etc/v2ray/config.json
 VOLUME /etc/v2ray
 
