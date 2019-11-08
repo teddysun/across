@@ -34,11 +34,6 @@ A sample in JSON like below:
 
 ```
 {
-  "log" : {
-    "access": "/var/log/v2ray/access.log",
-    "error": "/var/log/v2ray/error.log",
-    "loglevel": "warning"
-  },
   "inbounds": [{
     "port": 9000,
     "protocol": "vmess",
