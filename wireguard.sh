@@ -7,6 +7,7 @@
 # Reference URL:
 # https://www.wireguard.com
 # https://git.zx2c4.com/WireGuard
+# https://teddysun.com/554.html
 
 trap _exit INT QUIT TERM
 
@@ -366,28 +367,28 @@ create_client_if() {
     if [ -n "${SERVER_PUB_IPV6}" ]; then
         cat > /etc/wireguard/${SERVER_WG_NIC}_client <<EOF
 [Interface]
-Address = ${CLIENT_WG_IPV4}/24,${CLIENT_WG_IPV6}/64
 PrivateKey = ${CLIENT_PRIVATE_KEY}
+Address = ${CLIENT_WG_IPV4}/24,${CLIENT_WG_IPV6}/64
 DNS = ${CLIENT_DNS_1},${CLIENT_DNS_2}
 
 [Peer]
 PublicKey = ${SERVER_PUBLIC_KEY}
-Endpoint = ${SERVER_PUB_IPV4}:${SERVER_WG_PORT}
-AllowedIPs = 0.0.0.0/0,::/0
 PresharedKey = ${CLIENT_PRE_SHARED_KEY}
+AllowedIPs = 0.0.0.0/0,::/0
+Endpoint = ${SERVER_PUB_IPV4}:${SERVER_WG_PORT}
 EOF
     else
         cat > /etc/wireguard/${SERVER_WG_NIC}_client <<EOF
 [Interface]
-Address = ${CLIENT_WG_IPV4}/24
 PrivateKey = ${CLIENT_PRIVATE_KEY}
+Address = ${CLIENT_WG_IPV4}/24
 DNS = ${CLIENT_DNS_1},${CLIENT_DNS_2}
 
 [Peer]
 PublicKey = ${SERVER_PUBLIC_KEY}
-Endpoint = ${SERVER_PUB_IPV4}:${SERVER_WG_PORT}
-AllowedIPs = 0.0.0.0/0
 PresharedKey = ${CLIENT_PRE_SHARED_KEY}
+AllowedIPs = 0.0.0.0/0
+Endpoint = ${SERVER_PUB_IPV4}:${SERVER_WG_PORT}
 EOF
     fi
     chmod 600 /etc/wireguard/${SERVER_WG_NIC}_client
@@ -466,7 +467,9 @@ install_completed() {
     _info "$(_green "/etc/wireguard/${SERVER_WG_NIC}_client")"
     _info "WireGuard VPN default client QR Code is below:"
     _info "$(_green "/etc/wireguard/${SERVER_WG_NIC}_client.png")"
-    _info "Download and scan this QR Code with your phone, enjoy it"
+    _info "Download and scan this QR Code with your phone"
+    _info "Welcome to visit: https://teddysun.com/554.html"
+    _info "Enjoy it"
 }
 
 add_client() {
@@ -522,15 +525,15 @@ add_client() {
     if [ -n "${SERVER_PUB_IPV6}" ]; then
         cat > ${new_client_if} <<EOF
 [Interface]
-Address = ${CLIENT_WG_IPV4}/24,${CLIENT_WG_IPV6}/64
 PrivateKey = ${CLIENT_PRIVATE_KEY}
+Address = ${CLIENT_WG_IPV4}/24,${CLIENT_WG_IPV6}/64
 DNS = ${CLIENT_DNS_1},${CLIENT_DNS_2}
 
 [Peer]
 PublicKey = ${SERVER_PUBLIC_KEY}
-Endpoint = ${CLIENT_ENDPOINT}
-AllowedIPs = 0.0.0.0/0,::/0
 PresharedKey = ${CLIENT_PRE_SHARED_KEY}
+AllowedIPs = 0.0.0.0/0,::/0
+Endpoint = ${CLIENT_ENDPOINT}
 EOF
         # Add a new client to default server interface
         cat >> ${default_server_if} <<EOF
@@ -543,15 +546,15 @@ EOF
     else
         cat > ${new_client_if} <<EOF
 [Interface]
-Address = ${CLIENT_WG_IPV4}/24
 PrivateKey = ${CLIENT_PRIVATE_KEY}
+Address = ${CLIENT_WG_IPV4}/24
 DNS = ${CLIENT_DNS_1},${CLIENT_DNS_2}
 
 [Peer]
 PublicKey = ${SERVER_PUBLIC_KEY}
-Endpoint = ${CLIENT_ENDPOINT}
-AllowedIPs = 0.0.0.0/0
 PresharedKey = ${CLIENT_PRE_SHARED_KEY}
+AllowedIPs = 0.0.0.0/0
+Endpoint = ${CLIENT_ENDPOINT}
 EOF
         cat >> ${default_server_if} <<EOF
 
