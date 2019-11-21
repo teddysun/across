@@ -19,7 +19,7 @@ RUN set -ex \
 	&& cd geoip \
 	&& go get -d \
 	&& go build -o /go/bin/geoip \
-	&& GEOSITE_TAG="$(wget -qO- "https://api.github.com/repos/v2ray/domain-list-community/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')" \
+	&& GEOSITE_TAG="$(wget -qO- https://api.github.com/repos/v2ray/domain-list-community/releases/latest | grep 'tag_name' | sed -E 's/.*"([^"]+)".*/\1/')" \
 	&& wget -O /go/bin/geosite.dat "https://github.com/v2ray/domain-list-community/releases/download/${GEOSITE_TAG}/dlc.dat" \
 	&& cd /tmp \
 	&& wget -O GeoLite2-Country-CSV.zip http://geolite.maxmind.com/download/geoip/database/GeoLite2-Country-CSV.zip \
