@@ -18,12 +18,6 @@ If you need to install docker by yourself, follow the [official installation gui
 $ docker pull teddysun/l2tp
 ```
 
-or pull image based **alpine**
-
-```bash
-$ docker pull teddysun/l2tp:alpine
-```
-
 This pulls the latest release of L2TP/IPsec VPN Server.
 It can be found at [Docker Hub][3].
 
