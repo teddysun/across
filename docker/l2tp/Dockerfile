@@ -1,21 +1,16 @@
-# Dockerfile for L2TP/IPSec VPN Server
+# Dockerfile for L2TP/IPSec VPN Server based alpine
 # Copyright (C) 2018 - 2019 Teddysun <i@teddysun.com>
 
-FROM debian:buster
+FROM alpine:edge
 LABEL maintainer="Teddysun <i@teddysun.com>"
 
-RUN set -ex \
-	&& printf "deb http://deb.debian.org/debian sid main" > /etc/apt/sources.list.d/sid.list \
-	&& apt-get update \
-	&& apt-get -t sid install -y --no-install-recommends libreswan xl2tpd \
-	&& apt-get install -y --no-install-recommends wget iproute2 openssl ca-certificates kmod net-tools iptables \
-	&& apt-get -y autoremove \
-	&& apt-get -y clean \
-	&& rm -rf /var/lib/apt/lists/*
+RUN apk add -U openssl libreswan xl2tpd ppp-l2tp \
+	&& ipsec initnss \
+	&& rm -rf /var/cache/apk/*
 
-COPY ./ipsec /etc/init.d/ipsec
-COPY ./l2tp.sh /usr/bin/l2tp
-COPY ./l2tpctl.sh /usr/bin/l2tpctl
+COPY ipsec /etc/init.d/ipsec
+COPY l2tp.sh /usr/bin/l2tp
+COPY l2tpctl.sh /usr/bin/l2tpctl
 RUN chmod 755 /etc/init.d/ipsec /usr/bin/l2tp /usr/bin/l2tpctl
 
 VOLUME /lib/modules

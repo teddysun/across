@@ -90,6 +90,7 @@ PUBLIC_IP=${VPN_PUBLIC_IP:-''}
 # VPN_XAUTH_REMOTE
 # VPN_DNS1
 # VPN_DNS2
+# VPN_SHA2_TRUNCBUG
 L2TP_NET=${VPN_L2TP_NET:-'192.168.18.0/24'}
 L2TP_LOCAL=${VPN_L2TP_LOCAL:-'192.168.18.1'}
 L2TP_REMOTE=${VPN_L2TP_REMOTE:-'192.168.18.10-192.168.18.250'}
@@ -98,13 +99,21 @@ XAUTH_REMOTE=${VPN_XAUTH_REMOTE:-'192.168.20.10-192.168.20.250'}
 DNS1=${VPN_DNS1:-'8.8.8.8'}
 DNS2=${VPN_DNS2:-'8.8.4.4'}
 
+case ${VPN_SHA2_TRUNCBUG} in
+  [yY][eE][sS])
+    SHA2_TRUNCBUG=yes
+    ;;
+  *)
+    SHA2_TRUNCBUG=no
+    ;;
+esac
+
 # Create IPSec config
 cat > /etc/ipsec.conf <<EOF
 version 2.0
 
 config setup
     protostack=netkey
-    nhelpers=0
     uniqueids=no
     interfaces=%defaultroute
     virtual-private=%v4:10.0.0.0/8,%v4:192.168.0.0/16,%v4:172.16.0.0/12,%v4:!${L2TP_NET},%v4:!${XAUTH_NET}
@@ -121,9 +130,10 @@ conn shared
     dpddelay=30
     dpdtimeout=120
     dpdaction=clear
-    ike=3des-sha1,3des-sha2,aes-sha1,aes-sha1;modp1024,aes-sha2,aes-sha2;modp1024
-    phase2alg=3des-sha1,3des-sha2,aes-sha1,aes-sha2,aes256-sha2_512
-    sha2-truncbug=yes
+    ikev2=never
+    ike=aes256-sha2,aes128-sha2,aes256-sha1,aes128-sha1,aes256-sha2;modp1024,aes128-sha1;modp1024
+    phase2alg=aes_gcm-null,aes128-sha1,aes256-sha1,aes256-sha2_512,aes128-sha2,aes256-sha2
+    sha2-truncbug=${SHA2_TRUNCBUG}
 
 conn l2tp-psk
     auto=add
@@ -145,7 +155,6 @@ conn xauth-psk
     modecfgpull=yes
     xauthby=file
     ike-frag=yes
-    ikev2=never
     cisco-unity=yes
     also=shared
 EOF

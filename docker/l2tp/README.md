@@ -2,9 +2,7 @@
 
 Docker image to run a L2TP/IPsec VPN Server, with both `L2TP/IPsec PSK` and `IPSec Xauth PSK`.
 
-1. Based on Debian 10 (Buster) with [libreswan-3.29 (IPsec VPN software)](https://packages.debian.org/sid/libreswan) and [xl2tpd-1.3.12 (L2TP daemon)](https://packages.debian.org/sid/xl2tpd).
-
-2. Based on Alpine with [libreswan-3.29 (IPsec VPN software)](https://pkgs.alpinelinux.org/package/edge/community/x86_64/libreswan) and [xl2tpd-1.3.15 (L2TP daemon)](https://pkgs.alpinelinux.org/package/edge/main/x86_64/xl2tpd).
+Based on Alpine with [libreswan-3.29 (IPsec VPN software)](https://pkgs.alpinelinux.org/package/edge/community/x86_64/libreswan) and [xl2tpd-1.3.15 (L2TP daemon)](https://pkgs.alpinelinux.org/package/edge/main/x86_64/xl2tpd).
 
 Docker images are built for quick deployment in various computing cloud providers.
 
@@ -45,6 +43,7 @@ VPN_XAUTH_NET=
 VPN_XAUTH_REMOTE=
 VPN_DNS1=
 VPN_DNS2=
+VPN_SHA2_TRUNCBUG=
 ```
 
 This will create a default user account for L2TP/IPsec VPN login, which can be used by your **multiple devices**.
@@ -69,16 +68,12 @@ If you want to specify a `rightaddresspool` for `ipsec.conf`, maybe need to spec
 
 If you want to specify a other DNS servers, maybe need to specified in `VPN_DNS1` and `VPN_DNS2` (default `8.8.8.8`, `8.8.4.4`).
 
+**Android 6 and 7 users**: If you encounter connection issues, you may set `sha2-truncbug=yes` (default is no) in `/etc/ipsec.conf` by adding `VPN_SHA2_TRUNCBUG=yes` to `/etc/l2tp.env` file, then re-create the Docker container.
+
 There is an example to start a container:
 
 ```bash
 $ docker run -d --privileged -p 500:500/udp -p 4500:4500/udp --name l2tp --restart=always --env-file /etc/l2tp.env -v /lib/modules:/lib/modules teddysun/l2tp
-```
-
-or start a container with tag **alpine**
-
-```bash
-$ docker run -d --privileged -p 500:500/udp -p 4500:4500/udp --name l2tp --restart=always --env-file /etc/l2tp.env -v /lib/modules:/lib/modules teddysun/l2tp:alpine
 ```
 
 **Warning**: The UDP port number `500` and `4500` must be opened in firewall.
@@ -106,7 +101,7 @@ Starting pluto IKE daemon for IPsec: Initializing NSS database
 
 xl2tpd[1]: Not looking for kernel SAref support.
 xl2tpd[1]: Using l2tp kernel support.
-xl2tpd[1]: xl2tpd version xl2tpd-1.3.12 started on 1d20eaecd9f2 PID:1
+xl2tpd[1]: xl2tpd version xl2tpd-1.3.15 started on 1d20eaecd9f2 PID:1
 xl2tpd[1]: Written by Mark Spencer, Copyright (C) 1998, Adtran, Inc.
 xl2tpd[1]: Forked by Scott Balmos and David Stipp, (C) 2001
 xl2tpd[1]: Inherited by Jeff McAdams, (C) 2002
