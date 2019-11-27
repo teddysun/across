@@ -253,6 +253,7 @@ install_wg_2() {
             _error_detect "apt-get -y install gcc"
             _error_detect "apt-get -y install make"
             _error_detect "apt-get -y install libmnl-dev"
+            _error_detect "apt-get -y install libelf-dev"
             ;;
         fedora)
             [ ! -d "/usr/src/kernels/$(uname -r)" ] && _error_detect "dnf -y install kernel-headers" && _error_detect "dnf -y install kernel-devel"
