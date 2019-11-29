@@ -2,6 +2,8 @@
 # Copyright (C) 2019 Teddysun <i@teddysun.com>
 # Reference URL:
 # https://github.com/v2ray/v2ray-core
+# https://github.com/v2ray/geoip
+# https://github.com/v2ray/domain-list-community
 
 FROM golang:alpine AS builder
 RUN set -ex \
@@ -19,8 +21,8 @@ RUN set -ex \
 	&& cd geoip \
 	&& go get -d \
 	&& go build -o /go/bin/geoip \
-	&& GEOSITE_TAG="$(wget -qO- https://api.github.com/repos/v2ray/domain-list-community/releases/latest | grep 'tag_name' | sed -E 's/.*"([^"]+)".*/\1/')" \
-	&& wget -O /go/bin/geosite.dat "https://github.com/v2ray/domain-list-community/releases/download/${GEOSITE_TAG}/dlc.dat" \
+	&& GEOSITE_TAG=$(wget -qO- https://api.github.com/repos/v2ray/domain-list-community/releases/latest | grep 'tag_name' | sed -E 's/.*"([^"]+)".*/\1/') \
+	&& wget -O /go/bin/geosite.dat https://github.com/v2ray/domain-list-community/releases/download/${GEOSITE_TAG}/dlc.dat \
 	&& cd /tmp \
 	&& wget -O GeoLite2-Country-CSV.zip http://geolite.maxmind.com/download/geoip/database/GeoLite2-Country-CSV.zip \
 	&& unzip GeoLite2-Country-CSV.zip \
