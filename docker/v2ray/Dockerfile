@@ -6,6 +6,8 @@
 # https://github.com/v2ray/domain-list-community
 
 FROM golang:alpine AS builder
+ARG maxmind_key
+ENV MAXMIND_LICENSE_KEY ${maxmind_key}
 RUN set -ex \
 	&& apk add --no-cache git unzip \
 	&& mkdir -p /go/src/github.com/v2ray \
@@ -24,7 +26,7 @@ RUN set -ex \
 	&& GEOSITE_TAG=$(wget -qO- https://api.github.com/repos/v2ray/domain-list-community/releases/latest | grep 'tag_name' | sed -E 's/.*"([^"]+)".*/\1/') \
 	&& wget -O /go/bin/geosite.dat https://github.com/v2ray/domain-list-community/releases/download/${GEOSITE_TAG}/dlc.dat \
 	&& cd /tmp \
-	&& wget -O GeoLite2-Country-CSV.zip http://geolite.maxmind.com/download/geoip/database/GeoLite2-Country-CSV.zip \
+	&& wget -O GeoLite2-Country-CSV.zip "https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-Country-CSV&suffix=zip&license_key=${MAXMIND_LICENSE_KEY}" \
 	&& unzip GeoLite2-Country-CSV.zip \
 	&& rm -fv GeoLite2-Country-CSV.zip \
 	&& mv GeoLite2* geoip \
