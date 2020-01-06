@@ -2,7 +2,7 @@
 #
 # This is a Shell script for configure and start WireGuard VPN server.
 #
-# Copyright (C) 2019 Teddysun <i@teddysun.com>
+# Copyright (C) 2019 - 2020 Teddysun <i@teddysun.com>
 #
 # Reference URL:
 # https://www.wireguard.com
@@ -144,11 +144,17 @@ _is_installed() {
 }
 
 _get_latest_ver() {
-    wireguard_ver="$(wget --no-check-certificate -qO- https://api.github.com/repos/WireGuard/WireGuard/tags | grep 'name' | head -1 | cut -d\" -f4)"
+    wireguard_ver="$(wget --no-check-certificate -qO- https://api.github.com/repos/WireGuard/wireguard-linux-compat/tags | grep 'name' | head -1 | cut -d\" -f4)"
     if [ -z "${wireguard_ver}" ]; then
-        wireguard_ver="$(curl -Lso- https://api.github.com/repos/WireGuard/WireGuard/tags | grep 'name' | head -1 | cut -d\" -f4)"
+        wireguard_ver="$(curl -Lso- https://api.github.com/repos/WireGuard/wireguard-linux-compat/tags | grep 'name' | head -1 | cut -d\" -f4)"
     fi
-    [ -z "${wireguard_ver}" ] && _error "Failed to get wireguard latest version from github"
+    wireguard_tools_ver="$(wget --no-check-certificate -qO- https://api.github.com/repos/WireGuard/wireguard-tools/tags | grep 'name' | head -1 | cut -d\" -f4)"
+    if [ -z "${wireguard_tools_ver}" ]; then
+        wireguard_tools_ver="$(curl -Lso- https://api.github.com/repos/WireGuard/wireguard-tools/tags | grep 'name' | head -1 | cut -d\" -f4)"
+    fi
+    if [ -z "${wireguard_ver}" ] || [ -z "${wireguard_tools_ver}" ]; then
+        _error "Failed to get wireguard latest version from github"
+    fi
 }
 
 # Check OS version
@@ -280,15 +286,22 @@ install_wg_2() {
             ;; # do nothing
     esac
     _get_latest_ver
-    wireguard_name="WireGuard-${wireguard_ver}"
-    wireguard_url="https://github.com/WireGuard/WireGuard/archive/${wireguard_ver}.tar.gz"
+    wireguard_name="wireguard-linux-compat-$(echo ${wireguard_ver} | grep -oE '[0-9.]+')"
+    wireguard_url="https://github.com/WireGuard/wireguard-linux-compat/archive/${wireguard_ver}.tar.gz"
+    wireguard_tools_name="wireguard-tools-$(echo ${wireguard_tools_ver} | grep -oE '[0-9.]+')"
+    wireguard_tools_url="https://github.com/WireGuard/wireguard-tools/archive/${wireguard_tools_ver}.tar.gz"
     _error_detect "wget --no-check-certificate -qO ${wireguard_name}.tar.gz ${wireguard_url}"
     _error_detect "tar zxf ${wireguard_name}.tar.gz"
     _error_detect "cd ${wireguard_name}/src"
-    _error_detect "make tools"
-    _error_detect "make module"
+    _error_detect "make"
+    _error_detect "make install"
+    _error_detect "wget --no-check-certificate -qO ${wireguard_tools_name}.tar.gz ${wireguard_tools_url}"
+    _error_detect "tar zxf ${wireguard_tools_name}.tar.gz"
+    _error_detect "cd ${wireguard_tools_name}/src"
+    _error_detect "make"
     _error_detect "make install"
     _error_detect "cd ${cur_dir} && rm -fr ${wireguard_name}.tar.gz ${wireguard_name}"
+    _error_detect "rm -fr ${wireguard_tools_name}.tar.gz ${wireguard_tools_name}"
     if ! _is_installed; then
         _error "Failed to install wireguard, the kernel is most likely not configured correctly"
     fi
@@ -691,9 +704,10 @@ install_from_source() {
 update_from_source() {
     if check_version > /dev/null 2>&1; then
         _get_latest_ver
+        wg_ver="$(echo ${wireguard_ver} | grep -oE '[0-9.]+')"
         _info "WireGuard version: $(_green ${installed_wg_ver})"
-        _info "WireGuard latest version: $(_green ${wireguard_ver})"
-        if _version_gt "${wireguard_ver}" "${installed_wg_ver}"; then
+        _info "WireGuard latest version: $(_green ${wg_ver})"
+        if _version_gt "${wg_ver}" "${installed_wg_ver}"; then
             _info "Starting upgrade WireGuard"
             install_wg_2
             _error_detect "systemctl daemon-reload"
