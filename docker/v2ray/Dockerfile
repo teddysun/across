@@ -1,5 +1,5 @@
 # Dockerfile for v2ray based alpine
-# Copyright (C) 2019 Teddysun <i@teddysun.com>
+# Copyright (C) 2019 - 2020 Teddysun <i@teddysun.com>
 # Reference URL:
 # https://github.com/v2ray/v2ray-core
 # https://github.com/v2ray/geoip
@@ -17,19 +17,8 @@ RUN set -ex \
 	&& go build -o /go/bin/v2ray \
 	&& cd ../infra/control/main \
 	&& go build -o /go/bin/v2ctl \
-	&& git clone https://github.com/v2ray/geoip.git \
-	&& cd geoip \
-	&& go get -d \
-	&& go build -o /go/bin/geoip \
-	&& GEOSITE_TAG=$(wget -qO- https://api.github.com/repos/v2ray/domain-list-community/releases/latest | grep 'tag_name' | sed -E 's/.*"([^"]+)".*/\1/') \
-	&& wget -O /go/bin/geosite.dat https://github.com/v2ray/domain-list-community/releases/download/${GEOSITE_TAG}/dlc.dat \
-	&& cd /tmp \
-	&& wget -O GeoLite2-Country-CSV.zip https://dl.lamp.sh/files/GeoLite2-Country-CSV.zip \
-	&& unzip GeoLite2-Country-CSV.zip \
-	&& rm -fv GeoLite2-Country-CSV.zip \
-	&& mv GeoLite2* geoip \
-	&& /go/bin/geoip --country=./geoip/GeoLite2-Country-Locations-en.csv --ipv4=./geoip/GeoLite2-Country-Blocks-IPv4.csv --ipv6=./geoip/GeoLite2-Country-Blocks-IPv6.csv \
-	&& mv geoip.dat /go/bin/
+	&& wget -O /go/bin/geosite.dat https://github.com/v2ray/domain-list-community/releases/latest/download/dlc.dat \
+	&& wget -O /go/bin/geoip.dat https://github.com/v2ray/geoip/releases/latest/download/geoip.dat
 
 FROM alpine:latest
 LABEL maintainer="Teddysun <i@teddysun.com>"
