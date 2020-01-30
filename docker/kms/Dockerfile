@@ -1,32 +1,18 @@
 # Dockerfile for KMS Server
-# Copyright (C) 2018 - 2019 Teddysun <i@teddysun.com>
+# Copyright (C) 2018 - 2020 Teddysun <i@teddysun.com>
 # Reference URL:
 # https://github.com/Wind4/vlmcsd
+
+FROM alpine:latest AS builder
+WORKDIR /root
+RUN apk add --no-cache git make build-base && \
+    git clone --branch master --single-branch https://github.com/Wind4/vlmcsd.git && \
+    cd vlmcsd/ && \
+    make
 
 FROM alpine:latest
 LABEL maintainer="Teddysun <i@teddysun.com>"
 
-ENV KMS_RELEASE https://github.com/Wind4/vlmcsd/archive/master.zip
-
-RUN runDeps="\
-		g++ \
-		gcc \
-		wget \
-		make \
-		unzip \
-	"; \
-	set -ex \
-	&& apk add --no-cache --virtual .build-deps ${runDeps} \
-	&& cd /tmp \
-	&& wget -O vlmcsd.zip ${KMS_RELEASE} \
-	&& unzip vlmcsd.zip \
-	&& cd vlmcsd-master \
-	&& make \
-	&& cp -p bin/vlmcsd /usr/bin/ \
-	&& chmod 755 /usr/bin/vlmcsd \
-	&& rm -rf /tmp/vlmcsd.zip /tmp/vlmcsd-master \
-	&& apk del .build-deps
-
+COPY --from=builder /root/vlmcsd/bin/vlmcsd /usr/bin/vlmcsd
 EXPOSE 1688
-
 CMD [ "vlmcsd", "-D" ]
