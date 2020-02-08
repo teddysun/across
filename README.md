@@ -26,7 +26,7 @@
 - You must modify the config before run it
 - Backup MySQL/MariaDB/Percona datebases, files and directories
 - Backup file is encrypted with AES256-cbc with SHA1 message-digest (option)
-- Auto transfer backup file to Google Drive (need install `gdrive` command) (option)
+- Auto transfer backup file to Google Drive (need install `rclone` command) (option)
 - Auto transfer backup file to FTP server (option)
 - Auto delete Google Drive's or FTP server's remote file (option)
 - Intro: https://teddysun.com/469.html
@@ -50,4 +50,4 @@
 
 ## pptp.sh(Deprecated, DO NOT USE)
 
-Copyright (C) 2013-2019 Teddysun <i@teddysun.com>
+Copyright (C) 2013-2020 Teddysun <i@teddysun.com>
