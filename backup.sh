@@ -1,18 +1,26 @@
 #!/usr/bin/env bash
+# Copyright (C) 2013 - 2020 Teddysun <i@teddysun.com>
+# 
+# This file is part of the LAMP script.
 #
-# Auto backup script
+# LAMP is a powerful bash script for the installation of 
+# Apache + PHP + MySQL/MariaDB/Percona and so on.
+# You can install Apache + PHP + MySQL/MariaDB/Percona in an very easy way.
+# Just need to input numbers to choose what you want to install before installation.
+# And all things will be done in a few minutes.
 #
-# Copyright (C) 2016 Teddysun <i@teddysun.com>
+# Description:      Auto backup shell script
+# Description URL:  https://teddysun.com/469.html
 #
-# URL: https://teddysun.com/469.html
+# Website:  https://lamp.sh
+# Github:   https://github.com/teddysun/lamp
 #
 # You must to modify the config before run it!!!
 # Backup MySQL/MariaDB/Percona datebases, files and directories
 # Backup file is encrypted with AES256-cbc with SHA1 message-digest (option)
-# Auto transfer backup file to Google Drive (need install gdrive command) (option)
+# Auto transfer backup file to Google Drive (need install rclone command) (option)
 # Auto transfer backup file to FTP server (option)
 # Auto delete Google Drive's or FTP server's remote file (option)
-#
 
 [[ $EUID -ne 0 ]] && echo "Error: This script must be run as root!" && exit 1
 
@@ -28,13 +36,13 @@ ENCRYPTFLG=true
 BACKUPPASS="mypassword"
 
 # Directory to store backups
-LOCALDIR="/root/backups/"
+LOCALDIR="/opt/backups/"
 
 # Temporary directory used during backup creation
-TEMPDIR="/root/backups/temp/"
+TEMPDIR="/opt/backups/temp/"
 
 # File to log the outcome of backups
-LOGFILE="/root/backups/backup.log"
+LOGFILE="/opt/backups/backup.log"
 
 # OPTIONAL: If you want backup MySQL database, enter the MySQL root password below
 MYSQL_ROOT_PASSWORD=""
@@ -54,6 +62,12 @@ LOCALAGEDAILIES="7"
 
 # Delete Googole Drive's & FTP server's remote file flag (true: delete, false: not delete)
 DELETE_REMOTE_FILE_FLG=false
+
+# Rclone remote name
+RCLONE_NAME=""
+
+# Rclone remote folder name (default "")
+RCLONE_FOLDER=""
 
 # Upload to FTP server flag (true: upload, false: not upload)
 FTP_FLG=false
@@ -76,8 +90,6 @@ FTP_PASS=""
 FTP_DIR=""
 
 ########## END OF CONFIG ##########
-
-
 
 # Date & Time
 DAY=$(date +%d)
@@ -109,10 +121,10 @@ check_commands() {
         fi
     done
 
-    # check gdrive command
-    GDRIVE_COMMAND=false
-    if [ "$(command -v "gdrive")" ]; then
-        GDRIVE_COMMAND=true
+    # check rclone command
+    RCLONE_COMMAND=false
+    if [ "$(command -v "rclone")" ]; then
+        RCLONE_COMMAND=true
     fi
 
     # check ftp command
@@ -136,7 +148,7 @@ calculate_size() {
 
 # Backup MySQL databases
 mysql_backup() {
-    if [ -z ${MYSQL_ROOT_PASSWORD} ]; then
+    if [ -z "${MYSQL_ROOT_PASSWORD}" ]; then
         log "MySQL root password not set, MySQL backup skipped"
     else
         log "MySQL dump start"
@@ -199,7 +211,7 @@ start_backup() {
     fi
 
     # Delete MySQL temporary dump file
-    for sql in `ls ${TEMPDIR}*.sql`
+    for sql in $(ls ${TEMPDIR}*.sql)
     do
         log "Delete MySQL temporary dump file: ${sql}"
         rm -f ${sql}
@@ -210,19 +222,24 @@ start_backup() {
     else
         OUT_FILE="${TARFILE}"
     fi
-    log "File name: ${OUT_FILE}, File size: `calculate_size ${OUT_FILE}`"
+    log "File name: ${OUT_FILE}, File size: $(calculate_size ${OUT_FILE})"
 }
 
 # Transfer backup file to Google Drive
-# If you want to install gdrive command, please visit website:
-# https://github.com/prasmussen/gdrive
-# of cause, you can use below command to install it
-# For x86_64: wget -O /usr/bin/gdrive http://dl.lamp.sh/files/gdrive-linux-x64; chmod +x /usr/bin/gdrive
-# For i386: wget -O /usr/bin/gdrive http://dl.lamp.sh/files/gdrive-linux-386; chmod +x /usr/bin/gdrive
-gdrive_upload() {
-    if ${GDRIVE_COMMAND}; then
+# If you want to install rclone command, please visit website:
+# https://rclone.org/downloads/
+rclone_upload() {
+    if ${RCLONE_COMMAND}; then
+        [ -z "${RCLONE_NAME}" ] && log "Error: RCLONE_NAME can not be empty!" && exit 1
+        if [ -n "${RCLONE_FOLDER}" ]; then
+            rclone ls ${RCLONE_NAME}:${RCLONE_FOLDER} 2>&1 > /dev/null
+            if [ $? -ne 0 ]; then
+                log "Create the path ${RCLONE_NAME}:${RCLONE_FOLDER}"
+                rclone mkdir ${RCLONE_NAME}:${RCLONE_FOLDER}
+            fi
+        fi
         log "Tranferring backup file to Google Drive"
-        gdrive upload --no-progress ${OUT_FILE} >> ${LOGFILE}
+        rclone copy ${OUT_FILE} ${RCLONE_NAME}:${RCLONE_FOLDER} >> ${LOGFILE}
         if [ $? -ne 0 ]; then
             log "Error: Tranferring backup file to Google Drive failed"
             exit 1
@@ -234,14 +251,14 @@ gdrive_upload() {
 # Tranferring backup file to FTP server
 ftp_upload() {
     if ${FTP_FLG}; then
-        [ -z ${FTP_HOST} ] && log "Error: FTP_HOST can not be empty!" && exit 1
-        [ -z ${FTP_USER} ] && log "Error: FTP_USER can not be empty!" && exit 1
-        [ -z ${FTP_PASS} ] && log "Error: FTP_PASS can not be empty!" && exit 1
-        [ -z ${FTP_DIR} ] && log "Error: FTP_DIR can not be empty!" && exit 1
+        [ -z "${FTP_HOST}" ] && log "Error: FTP_HOST can not be empty!" && exit 1
+        [ -z "${FTP_USER}" ] && log "Error: FTP_USER can not be empty!" && exit 1
+        [ -z "${FTP_PASS}" ] && log "Error: FTP_PASS can not be empty!" && exit 1
+        [ -z "${FTP_DIR}" ] && log "Error: FTP_DIR can not be empty!" && exit 1
 
         local FTP_OUT_FILE=$(basename ${OUT_FILE})
         log "Tranferring backup file to FTP server"
-        ftp -inp ${FTP_HOST} 2>&1 >> ${LOGFILE} <<EOF
+        ftp -in ${FTP_HOST} 2>&1 >> ${LOGFILE} <<EOF
 user $FTP_USER $FTP_PASS
 binary
 lcd $LOCALDIR
@@ -276,11 +293,17 @@ get_file_date() {
 # Delete Google Drive's old backup file
 delete_gdrive_file() {
     local FILENAME=$1
-    if ${DELETE_REMOTE_FILE_FLG} && ${GDRIVE_COMMAND}; then
-        local FILEID=$(gdrive list -q "name = '${FILENAME}'" --no-header | awk '{print $1}')
-        if [ -n ${FILEID} ]; then
-            gdrive delete ${FILEID} >> ${LOGFILE}
-            log "Google Drive's old backup file name: ${FILENAME} has been deleted"
+    if ${DELETE_REMOTE_FILE_FLG} && ${RCLONE_COMMAND}; then
+        rclone ls ${RCLONE_NAME}:${RCLONE_FOLDER}/${FILENAME} 2>&1 > /dev/null
+        if [ $? -eq 0 ]; then
+            rclone delete ${RCLONE_NAME}:${RCLONE_FOLDER}/${FILENAME} >> ${LOGFILE}
+            if [ $? -eq 0 ]; then
+                log "Google Drive's old backup file name: ${FILENAME} has been deleted"
+            else
+                log "Failed to delete Google Drive's old backup file name: ${FILENAME}"
+            fi
+        else
+            log "Google Drive's old backup file name: ${FILENAME} is not exist"
         fi
     fi
 }
@@ -312,7 +335,7 @@ clean_up_files() {
     for f in ${LS[@]}
     do
         get_file_date ${f}
-        if [ $? == 0 ]; then
+        if [ $? -eq 0 ]; then
             if [[ ${FILEAGE} -gt ${LOCALAGEDAILIES} ]]; then
                 rm -f ${f}
                 log "Old backup file name: ${f} has been deleted"
@@ -341,7 +364,7 @@ start_backup
 log "Backup progress complete"
 
 log "Upload progress start"
-gdrive_upload
+rclone_upload
 ftp_upload
 log "Upload progress complete"
 
