@@ -521,7 +521,7 @@ add_client() {
         client_ipv6=(${client_ipv6[@]} ${tmp_ipv6})
     done
     # Sort array
-    client_ipv4_sorted=($(printf '%s\n' "${client_ipv4[@]}" | sort))
+    client_ipv4_sorted=($(printf '%s\n' "${client_ipv4[@]}" | sort -V))
     index=$(expr ${#client_ipv4[@]} - 1)
     last_ip=$(echo ${client_ipv4_sorted[$index]} | cut -d. -f4)
     issue_ip_last=$(expr ${last_ip} + 1)
