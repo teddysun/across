@@ -16,12 +16,12 @@ RUN set -ex \
 FROM alpine:latest
 LABEL maintainer="Teddysun <i@teddysun.com>"
 
-RUN set -ex \
-	&& apk add --no-cache curl tzdata
-
 COPY entrypoint.sh /
 COPY --from=builder /root/MTProxy/objs/bin/mtproto-proxy /usr/bin
 
+RUN set -ex \
+	&& apk add --no-cache curl tzdata \
+	&& chmod 755 /entrypoint.sh
 ENV TZ=Asia/Shanghai
 EXPOSE 443 2398
 VOLUME /data
