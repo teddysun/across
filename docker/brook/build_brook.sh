@@ -37,7 +37,6 @@ for ARCH in ${ARCHS[@]}; do
         echo "Building brook_linux_${ARCH}"
         env CGO_ENABLED=0 GOOS=linux GOARCH=${ARCH} go build -v -ldflags "${LDFLAGS}" -o ${cur_dir}/brook_linux_${ARCH}
     fi
-    echo "Build brook_linux_${ARCH} completed"
 done
 
 chmod +x ${cur_dir}/brook_linux_*
