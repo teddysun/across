@@ -3,15 +3,19 @@
 # Reference URL:
 # https://github.com/txthinking/brook
 
-FROM --platform=$TARGETPLATFORM golang:alpine as builder
-RUN set -ex && apk add --update git \
-	&& go get -u -v github.com/txthinking/brook/cli/brook
-
-FROM --platform=$TARGETPLATFORM alpine:latest
+FROM --platform=${TARGETPLATFORM} alpine:latest
 LABEL maintainer="Teddysun <i@teddysun.com>"
 
-COPY --from=builder /go/bin/brook /usr/bin
+ARG TARGETPLATFORM
+WORKDIR /root
+COPY brook.sh /root/brook.sh
+RUN set -ex \
+	&& apk add --no-cache tzdata \
+	&& chmod +x /root/brook.sh \
+	&& /root/brook.sh "${TARGETPLATFORM}" \
+	&& rm -fv /root/brook.sh
 
+ENV TZ=Asia/Shanghai
 ENV ARGS="server -l :9000 -p password0"
 
 CMD brook $ARGS
