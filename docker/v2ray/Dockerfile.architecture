@@ -5,37 +5,22 @@
 # https://github.com/v2ray/geoip
 # https://github.com/v2ray/domain-list-community
 
-FROM --platform=$TARGETPLATFORM golang:alpine AS builder
-RUN set -ex \
-	&& apk add --no-cache git unzip \
-	&& mkdir -p /go/src/github.com/v2ray \
-	&& cd /go/src/github.com/v2ray \
-	&& git clone https://github.com/v2ray/v2ray-core.git \
-	&& cd v2ray-core \
-	&& go get -d \
-	&& cd main \
-	&& go build -o /go/bin/v2ray \
-	&& cd ../infra/control/main \
-	&& go build -o /go/bin/v2ctl \
-	&& wget -O /go/bin/geosite.dat https://github.com/v2ray/domain-list-community/releases/latest/download/dlc.dat \
-	&& wget -O /go/bin/geoip.dat https://github.com/v2ray/geoip/releases/latest/download/geoip.dat
-
-FROM --platform=$TARGETPLATFORM alpine:latest
+FROM --platform=${TARGETPLATFORM} alpine:latest
 LABEL maintainer="Teddysun <i@teddysun.com>"
 
+ARG TARGETPLATFORM
+WORKDIR /root
+COPY v2ray.sh /root/v2ray.sh
+COPY config.json /etc/v2ray/config.json
 RUN set -ex \
 	&& apk add --no-cache tzdata ca-certificates \
-	&& rm -rf /var/cache/apk/* \
-	&& mkdir -p /etc/v2ray \
-	&& mkdir -p /var/log/v2ray
+	&& mkdir -p /var/log/v2ray \
+	&& chmod +x /root/v2ray.sh \
+	&& /root/v2ray.sh "${TARGETPLATFORM}" \
+	&& rm -fv /root/v2ray.sh \
+	&& wget -O /usr/bin/geosite.dat https://github.com/v2ray/domain-list-community/releases/latest/download/dlc.dat \
+	&& wget -O /usr/bin/geoip.dat https://github.com/v2ray/geoip/releases/latest/download/geoip.dat
 
-COPY --from=builder /go/bin/v2ray /usr/bin
-COPY --from=builder /go/bin/v2ctl /usr/bin
-COPY --from=builder /go/bin/geoip.dat /usr/bin
-COPY --from=builder /go/bin/geosite.dat /usr/bin
-COPY config.json /etc/v2ray/config.json
 VOLUME /etc/v2ray
-
 ENV TZ=Asia/Shanghai
-
 CMD [ "v2ray", "-config", "/etc/v2ray/config.json" ]
