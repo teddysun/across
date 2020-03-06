@@ -72,6 +72,9 @@ RCLONE_FOLDER=""
 # Upload to FTP server flag (true: upload, false: not upload)
 FTP_FLG=false
 
+# Upload to RCLONE server flag (true: upload, false: not upload)
+RCLONE_FLG=false
+
 # FTP server
 # OPTIONAL: If you want upload to FTP server, enter the Hostname or IP address below
 FTP_HOST=""
@@ -229,7 +232,7 @@ start_backup() {
 # If you want to install rclone command, please visit website:
 # https://rclone.org/downloads/
 rclone_upload() {
-    if ${RCLONE_COMMAND}; then
+    if ${RCLONE_FLG} && ${RCLONE_COMMAND}; then
         [ -z "${RCLONE_NAME}" ] && log "Error: RCLONE_NAME can not be empty!" && exit 1
         if [ -n "${RCLONE_FOLDER}" ]; then
             rclone ls ${RCLONE_NAME}:${RCLONE_FOLDER} 2>&1 > /dev/null
