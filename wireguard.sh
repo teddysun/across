@@ -428,7 +428,7 @@ enable_ip_forward() {
 set_firewall() {
     _info "Setting firewall rules"
     if _exists "firewall-cmd"; then
-        if [ "$(firewall-cmd --state | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g")" = "running" ]; then
+        if firewall-cmd --state > /dev/null 2>&1; then
             default_zone="$(firewall-cmd --get-default-zone)"
             if [ "$(firewall-cmd --zone=${default_zone} --query-masquerade)" = "no" ]; then
                 _error_detect "firewall-cmd --permanent --zone=${default_zone} --add-masquerade"
@@ -438,7 +438,11 @@ set_firewall() {
             fi
             _error_detect "firewall-cmd --reload"
         else
-            _warn "Firewalld looks like not running, please start it and manually set"
+            _warn "Firewalld service unit is not running, please start it and manually set"
+            _warn "Maybe you need to run these commands like below:"
+            _warn "systemctl start firewalld"
+            _warn "firewall-cmd --permanent --zone=public --add-masquerade"
+            _warn "firewall-cmd --permanent --zone=public --add-port=${SERVER_WG_PORT}/udp"
         fi
     else
         if _exists "iptables"; then
@@ -477,11 +481,14 @@ install_completed() {
     _error_detect "systemctl start wg-quick@${SERVER_WG_NIC}"
     _error_detect "systemctl enable wg-quick@${SERVER_WG_NIC}"
     _info "WireGuard VPN Server installation completed"
+    echo
     _info "WireGuard VPN default client file is below:"
     _info "$(_green "/etc/wireguard/${SERVER_WG_NIC}_client")"
+    echo
     _info "WireGuard VPN default client QR Code is below:"
     _info "$(_green "/etc/wireguard/${SERVER_WG_NIC}_client.png")"
-    _info "Download and scan this QR Code with your phone"
+    echo
+    _info "Download and scan this QR Code with your device"
     _info "Welcome to visit: https://teddysun.com/554.html"
     _info "Enjoy it"
 }
@@ -525,7 +532,7 @@ add_client() {
     index=$(expr ${#client_ipv4[@]} - 1)
     last_ip=$(echo ${client_ipv4_sorted[$index]} | cut -d. -f4)
     issue_ip_last=$(expr ${last_ip} + 1)
-    [ ${issue_ip_last} -gt 254 ] && _red "Too many client, IP addresses might not be enough\n" && exit 1
+    [ ${issue_ip_last} -gt 254 ] && _red "Too many clients, IP addresses might be not enough\n" && exit 1
     ipv4_comm=$(echo ${client_ipv4[$index]} | cut -d. -f1-3)
     ipv6_comm=$(echo ${client_ipv6[$index]} | awk -F: '{print $1":"$2":"$3":"$4}')
     CLIENT_PRIVATE_KEY="$(wg genkey)"
@@ -590,7 +597,7 @@ EOF
     echo
     echo "WireGuard VPN new client ($(_green ${client})) QR Code is below:"
     _green "/etc/wireguard/${client}_client.png\n"
-    echo "Download and scan this QR Code with your phone, enjoy it"
+    echo "Download and scan this QR Code with your device, enjoy it"
 }
 
 remove_client() {
