@@ -7,7 +7,7 @@
 FROM alpine:latest AS builder
 WORKDIR /root
 RUN set -ex \
-	&& VERSION="v1.15.0" \
+	&& VERSION="v1.15.1" \
 	&& apk add --no-cache git build-base make cmake boost-dev openssl-dev mariadb-connector-c-dev \
 	&& git clone --branch ${VERSION} --single-branch https://github.com/trojan-gfw/trojan.git \
 	&& cd trojan \
