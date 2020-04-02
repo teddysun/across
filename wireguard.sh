@@ -232,6 +232,7 @@ install_wg_module() {
     get_latest_module_ver
     wireguard_name="wireguard-linux-compat-$(echo ${wireguard_ver} | grep -oE '[0-9.]+')"
     wireguard_url="https://github.com/WireGuard/wireguard-linux-compat/archive/${wireguard_ver}.tar.gz"
+    cd ${cur_dir}
     _error_detect "wget --no-check-certificate -qO ${wireguard_name}.tar.gz ${wireguard_url}"
     _error_detect "tar zxf ${wireguard_name}.tar.gz"
     _error_detect "cd ${wireguard_name}/src"
@@ -245,6 +246,7 @@ install_wg_tools() {
     get_latest_tools_ver
     wireguard_tools_name="wireguard-tools-$(echo ${wireguard_tools_ver} | grep -oE '[0-9.]+')"
     wireguard_tools_url="https://github.com/WireGuard/wireguard-tools/archive/${wireguard_tools_ver}.tar.gz"
+    cd ${cur_dir}
     _error_detect "wget --no-check-certificate -qO ${wireguard_tools_name}.tar.gz ${wireguard_tools_url}"
     _error_detect "tar zxf ${wireguard_tools_name}.tar.gz"
     _error_detect "cd ${wireguard_tools_name}/src"
