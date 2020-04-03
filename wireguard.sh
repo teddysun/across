@@ -547,6 +547,7 @@ set_firewall() {
             _warn "systemctl start firewalld"
             _warn "firewall-cmd --permanent --zone=public --add-masquerade"
             _warn "firewall-cmd --permanent --zone=public --add-port=${SERVER_WG_PORT}/udp"
+            _warn "firewall-cmd --reload"
         fi
     else
         if _exists "iptables"; then
@@ -585,13 +586,13 @@ install_completed() {
     _error_detect "systemctl start wg-quick@${SERVER_WG_NIC}"
     _error_detect "systemctl enable wg-quick@${SERVER_WG_NIC}"
     _info "WireGuard VPN Server installation completed"
-    echo
+    _info ""
     _info "WireGuard VPN default client file is below:"
     _info "$(_green "/etc/wireguard/${SERVER_WG_NIC}_client")"
-    echo
+    _info ""
     _info "WireGuard VPN default client QR Code is below:"
     _info "$(_green "/etc/wireguard/${SERVER_WG_NIC}_client.png")"
-    echo
+    _info ""
     _info "Download and scan this QR Code with your device"
     _info "Welcome to visit: https://teddysun.com/554.html"
     _info "Enjoy it"
@@ -797,8 +798,12 @@ install_from_repo() {
     if [ ${rt} -eq 0 ]; then
         _red "WireGuard was already installed\n" && exit 0
     fi
-    if check_kernel_version && [ ${rt} -eq 2 ]; then
-        install_wg_3
+    if check_kernel_version; then
+        if [ ${rt} -eq 2 ]; then
+            install_wg_3
+        else
+            _error "WireGuard module does not exists, please check your kernel"
+        fi
     else
         install_wg_1
     fi
@@ -817,8 +822,12 @@ install_from_source() {
     if [ ${rt} -eq 0 ]; then
         _red "WireGuard was already installed\n" && exit 0
     fi
-    if check_kernel_version && [ ${rt} -eq 2 ]; then
-        install_wg_4
+    if check_kernel_version; then
+        if [ ${rt} -eq 2 ]; then
+            install_wg_4
+        else
+            _error "WireGuard module does not exists, please check your kernel"
+        fi
     else
         install_wg_2
     fi
