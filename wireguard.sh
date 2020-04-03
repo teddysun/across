@@ -220,7 +220,7 @@ check_os() {
 # Check linux kernel version
 check_kernel_version() {
     kernel_version="$(uname -r | cut -d- -f1)"
-    if _version_ge ${kernel_version} 5.6; then
+    if _version_ge ${kernel_version} 5.6.0; then
         return 0
     else
         return 1
@@ -791,10 +791,12 @@ Options:
 }
 
 install_from_repo() {
-    _is_installed && check_version && _red "WireGuard was already installed\n" && exit 0
     check_os
     _is_installed
     rt=$?
+    if [ ${rt} -eq 0 ]; then
+        _red "WireGuard was already installed\n" && exit 0
+    fi
     if check_kernel_version && [ ${rt} -eq 2 ]; then
         install_wg_3
     else
@@ -809,10 +811,12 @@ install_from_repo() {
 }
 
 install_from_source() {
-    _is_installed && check_version && _red "WireGuard was already installed\n" && exit 0
     check_os
     _is_installed
     rt=$?
+    if [ ${rt} -eq 0 ]; then
+        _red "WireGuard was already installed\n" && exit 0
+    fi
     if check_kernel_version && [ ${rt} -eq 2 ]; then
         install_wg_4
     else
