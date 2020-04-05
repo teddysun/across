@@ -793,12 +793,12 @@ Options:
 }
 
 install_from_repo() {
-    check_os
     _is_installed
     rt=$?
     if [ ${rt} -eq 0 ]; then
         _red "WireGuard was already installed\n" && exit 0
     fi
+    check_os
     if check_kernel_version; then
         if [ ${rt} -eq 2 ]; then
             install_wg_3
@@ -817,12 +817,12 @@ install_from_repo() {
 }
 
 install_from_source() {
-    check_os
     _is_installed
     rt=$?
     if [ ${rt} -eq 0 ]; then
         _red "WireGuard was already installed\n" && exit 0
     fi
+    check_os
     if check_kernel_version; then
         if [ ${rt} -eq 2 ]; then
             install_wg_4
