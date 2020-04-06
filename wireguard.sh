@@ -764,11 +764,14 @@ check_version() {
     rt=$?
     if [ ${rt} -eq 0 ]; then
         _exists "modinfo" && installed_wg_ver="$(modinfo -F version wireguard)"
-        [ -n "${installed_wg_ver}" ] && echo "WireGuard version: $(_green ${installed_wg_ver})" && return 0
+        [ -n "${installed_wg_ver}" ] && echo "wireguard-dkms version : $(_green ${installed_wg_ver})"
+        installed_wg_tools_ver="$(wg --version | awk '{print $2}' | grep -oE '[0-9.]+')"
+        [ -n "${installed_wg_tools_ver}" ] && echo "wireguard-tools version: $(_green ${installed_wg_tools_ver})"
+        return 0
     elif [ ${rt} -eq 1 ]; then
-        _red "WireGuard tools is exist, but WireGuard kernel module does not exists\n" && return 1
+        _red "WireGuard tools is exist, but WireGuard module does not exists\n" && return 1
     elif [ ${rt} -eq 2 ]; then
-        _red "WireGuard kernel module is exist, but WireGuard tools does not exists\n" && return 2
+        _red "WireGuard module is exist, but WireGuard tools does not exists\n" && return 2
     elif [ ${rt} -eq 3 ]; then
         _red "WireGuard was not installed\n" && return 3
     fi
@@ -841,23 +844,38 @@ install_from_source() {
 
 update_from_source() {
     if check_version > /dev/null 2>&1; then
+        restart_flg=0
         get_latest_module_ver
         wg_ver="$(echo ${wireguard_ver} | grep -oE '[0-9.]+')"
-        _info "WireGuard version: $(_green ${installed_wg_ver})"
-        _info "WireGuard latest version: $(_green ${wg_ver})"
+        _info "wireguard-dkms version: $(_green ${installed_wg_ver})"
+        _info "wireguard-dkms latest version: $(_green ${wg_ver})"
         if check_kernel_version; then
-            _info "WireGuard has been merged into Linux >= 5.6 and therefore this compatibility module is no longer required"
-            exit 0
+            _info "wireguard-dkms has been merged into Linux >= 5.6 and therefore this compatibility module is no longer required"
+        else
+            if _version_gt "${wg_ver}" "${installed_wg_ver}"; then
+                _info "Starting upgrade wireguard-dkms"
+                install_wg_module
+                _info "Update wireguard-dkms completed"
+                restart_flg=1
+            else
+                _info "There is no update available for wireguard-dkms"
+            fi
         fi
-        if _version_gt "${wg_ver}" "${installed_wg_ver}"; then
-            _info "Starting upgrade WireGuard"
-            install_wg_module
+        get_latest_tools_ver
+        wg_tools_ver="$(echo ${wireguard_tools_ver} | grep -oE '[0-9.]+')"
+        _info "wireguard-tools version: $(_green ${installed_wg_tools_ver})"
+        _info "wireguard-tools latest version: $(_green ${wg_tools_ver})"
+        if _version_gt "${wg_tools_ver}" "${installed_wg_tools_ver}"; then
+            _info "Starting upgrade wireguard-tools"
             install_wg_tools
+            _info "Update wireguard-tools completed"
+            restart_flg=1
+        else
+            _info "There is no update available for wireguard-tools"
+        fi
+        if [ ${restart_flg} -eq 1 ]; then
             _error_detect "systemctl daemon-reload"
             _error_detect "systemctl restart wg-quick@${SERVER_WG_NIC}"
-            _info "Update WireGuard completed"
-        else
-            _info "There is no update available for WireGuard"
         fi
     else
         _red "WireGuard was not installed, maybe you need to install it at first\n"
