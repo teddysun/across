@@ -343,7 +343,6 @@ install_wg_2() {
     _info "Install wireguard from source"
     case "$(_os)" in
         ubuntu|debian|raspbian)
-            _error_detect "apt-get update"
             if [ ! -d "/usr/src/linux-headers-$(uname -r)" ]; then
                 if [ "$(_os)" = "raspbian" ]; then
                     _error_detect "apt-get -y install raspberrypi-kernel-headers"
