@@ -60,7 +60,7 @@ BACKUP[0]=""
 # Number of days to store daily local backups (default 7 days)
 LOCALAGEDAILIES="7"
 
-# Delete Googole Drive's & FTP server's remote file flag (true: delete, false: not delete)
+# Delete remote file from Googole Drive or FTP server flag (true: delete, false: not delete)
 DELETE_REMOTE_FILE_FLG=false
 
 # Rclone remote name
@@ -69,10 +69,10 @@ RCLONE_NAME=""
 # Rclone remote folder name (default "")
 RCLONE_FOLDER=""
 
-# Upload to FTP server flag (true: upload, false: not upload)
+# Upload local file to FTP server flag (true: upload, false: not upload)
 FTP_FLG=false
 
-# Upload to RCLONE server flag (true: upload, false: not upload)
+# Upload local file to Google Drive flag (true: upload, false: not upload)
 RCLONE_FLG=false
 
 # FTP server
@@ -162,7 +162,6 @@ EOF
             log "MySQL root password is incorrect. Please check it and try again"
             exit 1
         fi
-    
         if [ "${MYSQL_DATABASE_NAME[*]}" == "" ]; then
             mysqldump -u root -p"${MYSQL_ROOT_PASSWORD}" --all-databases > "${SQLFILE}" 2>/dev/null
             if [ $? -ne 0 ]; then
@@ -173,8 +172,7 @@ EOF
             #Add MySQL backup dump file to BACKUP list
             BACKUP=(${BACKUP[*]} ${SQLFILE})
         else
-            for db in ${MYSQL_DATABASE_NAME[*]}
-            do
+            for db in ${MYSQL_DATABASE_NAME[*]}; do
                 unset DBFILE
                 DBFILE="${TEMPDIR}${db}_${BACKUPDATE}.sql"
                 mysqldump -u root -p"${MYSQL_ROOT_PASSWORD}" ${db} > "${DBFILE}" 2>/dev/null
@@ -214,8 +212,7 @@ start_backup() {
     fi
 
     # Delete MySQL temporary dump file
-    for sql in $(ls ${TEMPDIR}*.sql)
-    do
+    for sql in $(ls ${TEMPDIR}*.sql); do
         log "Delete MySQL temporary dump file: ${sql}"
         rm -f ${sql}
     done
@@ -233,7 +230,7 @@ start_backup() {
 # https://rclone.org/downloads/
 rclone_upload() {
     if ${RCLONE_FLG} && ${RCLONE_COMMAND}; then
-        [ -z "${RCLONE_NAME}" ] && log "Error: RCLONE_NAME can not be empty!" && exit 1
+        [ -z "${RCLONE_NAME}" ] && log "Error: RCLONE_NAME can not be empty!" && return 1
         if [ -n "${RCLONE_FOLDER}" ]; then
             rclone ls ${RCLONE_NAME}:${RCLONE_FOLDER} 2>&1 > /dev/null
             if [ $? -ne 0 ]; then
@@ -241,26 +238,25 @@ rclone_upload() {
                 rclone mkdir ${RCLONE_NAME}:${RCLONE_FOLDER}
             fi
         fi
-        log "Tranferring backup file to Google Drive"
+        log "Tranferring backup file: ${OUT_FILE} to Google Drive"
         rclone copy ${OUT_FILE} ${RCLONE_NAME}:${RCLONE_FOLDER} >> ${LOGFILE}
         if [ $? -ne 0 ]; then
-            log "Error: Tranferring backup file to Google Drive failed"
-            exit 1
+            log "Error: Tranferring backup file: ${OUT_FILE} to Google Drive failed"
+            return 1
         fi
-        log "Tranferring backup file to Google Drive completed"
+        log "Tranferring backup file: ${OUT_FILE} to Google Drive completed"
     fi
 }
 
 # Tranferring backup file to FTP server
 ftp_upload() {
     if ${FTP_FLG}; then
-        [ -z "${FTP_HOST}" ] && log "Error: FTP_HOST can not be empty!" && exit 1
-        [ -z "${FTP_USER}" ] && log "Error: FTP_USER can not be empty!" && exit 1
-        [ -z "${FTP_PASS}" ] && log "Error: FTP_PASS can not be empty!" && exit 1
-        [ -z "${FTP_DIR}" ] && log "Error: FTP_DIR can not be empty!" && exit 1
-
+        [ -z "${FTP_HOST}" ] && log "Error: FTP_HOST can not be empty!" && return 1
+        [ -z "${FTP_USER}" ] && log "Error: FTP_USER can not be empty!" && return 1
+        [ -z "${FTP_PASS}" ] && log "Error: FTP_PASS can not be empty!" && return 1
+        [ -z "${FTP_DIR}" ] && log "Error: FTP_DIR can not be empty!" && return 1
         local FTP_OUT_FILE=$(basename ${OUT_FILE})
-        log "Tranferring backup file to FTP server"
+        log "Tranferring backup file: ${FTP_OUT_FILE} to FTP server"
         ftp -in ${FTP_HOST} 2>&1 >> ${LOGFILE} <<EOF
 user $FTP_USER $FTP_PASS
 binary
@@ -269,7 +265,11 @@ cd $FTP_DIR
 put $FTP_OUT_FILE
 quit
 EOF
-        log "Tranferring backup file to FTP server completed"
+        if [ $? -ne 0 ]; then
+            log "Error: Tranferring backup file: ${FTP_OUT_FILE} to FTP server failed"
+            return 1
+        fi
+        log "Tranferring backup file: ${FTP_OUT_FILE} to FTP server completed"
     fi
 }
 
@@ -277,19 +277,16 @@ EOF
 get_file_date() {
     #Approximate a 30-day month and 365-day year
     DAYS=$(( $((10#${YEAR}*365)) + $((10#${MONTH}*30)) + $((10#${DAY})) ))
-
     unset FILEYEAR FILEMONTH FILEDAY FILEDAYS FILEAGE
     FILEYEAR=$(echo "$1" | cut -d_ -f2 | cut -c 1-4)
     FILEMONTH=$(echo "$1" | cut -d_ -f2 | cut -c 5-6)
     FILEDAY=$(echo "$1" | cut -d_ -f2 | cut -c 7-8)
-
     if [[ "${FILEYEAR}" && "${FILEMONTH}" && "${FILEDAY}" ]]; then
         #Approximate a 30-day month and 365-day year
         FILEDAYS=$(( $((10#${FILEYEAR}*365)) + $((10#${FILEMONTH}*30)) + $((10#${FILEDAY})) ))
         FILEAGE=$(( 10#${DAYS} - 10#${FILEDAYS} ))
         return 0
     fi
-
     return 1
 }
 
@@ -301,12 +298,12 @@ delete_gdrive_file() {
         if [ $? -eq 0 ]; then
             rclone delete ${RCLONE_NAME}:${RCLONE_FOLDER}/${FILENAME} >> ${LOGFILE}
             if [ $? -eq 0 ]; then
-                log "Google Drive's old backup file name: ${FILENAME} has been deleted"
+                log "Google Drive's old backup file: ${FILENAME} has been deleted"
             else
-                log "Failed to delete Google Drive's old backup file name: ${FILENAME}"
+                log "Failed to delete Google Drive's old backup file: ${FILENAME}"
             fi
         else
-            log "Google Drive's old backup file name: ${FILENAME} is not exist"
+            log "Google Drive's old backup file: ${FILENAME} is not exist"
         fi
     fi
 }
@@ -321,22 +318,23 @@ cd $FTP_DIR
 del $FILENAME
 quit
 EOF
-        log "FTP server's old backup file name: ${FILENAME} has been deleted"
+        if [ $? -eq 0 ]; then
+            log "FTP server's old backup file: ${FILENAME} has been deleted"
+        else
+            log "Failed to delete FTP server's old backup file: ${FILENAME}"
+        fi
     fi
 }
 
 # Clean up old file
 clean_up_files() {
     cd ${LOCALDIR} || exit
-
     if ${ENCRYPTFLG}; then
         LS=($(ls *.enc))
     else
         LS=($(ls *.tgz))
     fi
-
-    for f in ${LS[@]}
-    do
+    for f in ${LS[@]}; do
         get_file_date ${f}
         if [ $? -eq 0 ]; then
             if [[ ${FILEAGE} -gt ${LOCALAGEDAILIES} ]]; then
@@ -353,12 +351,8 @@ clean_up_files() {
 STARTTIME=$(date +%s)
 
 # Check if the backup folders exist and are writeable
-if [ ! -d "${LOCALDIR}" ]; then
-    mkdir -p ${LOCALDIR}
-fi
-if [ ! -d "${TEMPDIR}" ]; then
-    mkdir -p ${TEMPDIR}
-fi
+[ ! -d "${LOCALDIR}" ] && mkdir -p ${LOCALDIR}
+[ ! -d "${TEMPDIR}" ] && mkdir -p ${TEMPDIR}
 
 log "Backup progress start"
 check_commands
@@ -371,8 +365,8 @@ rclone_upload
 ftp_upload
 log "Upload progress complete"
 
+log "Cleaning up"
 clean_up_files
-
 ENDTIME=$(date +%s)
 DURATION=$((ENDTIME - STARTTIME))
 log "All done"
