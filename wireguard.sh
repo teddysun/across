@@ -66,7 +66,7 @@ _exists() {
     else
         which "$cmd" > /dev/null 2>&1
     fi
-    rt="$?"
+    local rt=$?
     return ${rt}
 }
 
