@@ -15,4 +15,4 @@ LABEL maintainer="Teddysun <i@teddysun.com>"
 
 COPY --from=builder /root/vlmcsd/bin/vlmcsd /usr/bin/vlmcsd
 EXPOSE 1688
-CMD [ "vlmcsd", "-D" ]
+CMD [ "vlmcsd", "-D", "-e" ]
