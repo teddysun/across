@@ -4,7 +4,7 @@
 FROM alpine:edge
 LABEL maintainer="Teddysun <i@teddysun.com>"
 
-RUN apk add -U ca-certificates openssl libreswan xl2tpd \
+RUN apk add --no-cache ca-certificates bash openssl libreswan xl2tpd \
 	&& ipsec initnss \
 	&& rm -rf /var/cache/apk/*
 
