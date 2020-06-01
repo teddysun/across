@@ -51,9 +51,9 @@ A sample in JSON like below:
 }
 ```
 
-An online documentation can be found [here](https://p4gefau1t.github.io/trojan-go/basic/config/)
+An online documentation can be found [here](https://p4gefau1t.github.io/trojan-go/)
 
-There is an example to start a container that listen on port `443`, run as a Trojan server like below:
+There is an example to start a container that use host network, run as a trojan-go server like below:
 
 ```bash
 $ docker run -d --network host --name trojan-go --restart=always -v /etc/trojan-go:/etc/trojan-go teddysun/trojan-go
