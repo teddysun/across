@@ -19,7 +19,7 @@ for CMD in "${COMMANDS[@]}"; do
 done
 
 cd ${cur_dir}
-git clone https://github.com/p4gefau1t/trojan-go.git
+git clone -b dev https://github.com/p4gefau1t/trojan-go.git
 cd trojan-go || exit 2
 
 PACKAGE_NAME="github.com/p4gefau1t/trojan-go"
@@ -39,16 +39,16 @@ ARMS=( 6 7 )
 for ARCH in ${ARCHS[@]}; do
     if [ "${ARCH}" = "arm" ]; then
         for V in ${ARMS[@]}; do
-            echo "Building trojan-go_linux_${ARCH}${V}"
-            env CGO_ENABLED=0 GOOS=linux GOARCH=${ARCH} GOARM=${V} go build -v -tags "full" -ldflags "${LDFLAGS}" -o ${cur_dir}/trojan-go_linux_${ARCH}${V}
+            echo "Building trojan-go-dev_linux_${ARCH}${V}"
+            env CGO_ENABLED=0 GOOS=linux GOARCH=${ARCH} GOARM=${V} go build -v -tags "full" -ldflags "${LDFLAGS}" -o ${cur_dir}/trojan-go-dev_linux_${ARCH}${V}
         done
     else
-        echo "Building trojan-go_linux_${ARCH}"
-        env CGO_ENABLED=0 GOOS=linux GOARCH=${ARCH} go build -v -tags "full" -ldflags "${LDFLAGS}" -o ${cur_dir}/trojan-go_linux_${ARCH}
+        echo "Building trojan-go-dev_linux_${ARCH}"
+        env CGO_ENABLED=0 GOOS=linux GOARCH=${ARCH} go build -v -tags "full" -ldflags "${LDFLAGS}" -o ${cur_dir}/trojan-go-dev_linux_${ARCH}
     fi
 done
 
-chmod +x ${cur_dir}/trojan-go_linux_*
+chmod +x ${cur_dir}/trojan-go-dev_linux_*
 # clean up
 cd ${cur_dir} && rm -fr trojan-go
 
