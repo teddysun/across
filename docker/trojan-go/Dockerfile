@@ -21,4 +21,4 @@ RUN set -ex \
 
 VOLUME /etc/trojan-go
 ENV TZ=Asia/Shanghai
-CMD [ "trojan-go", "-config", "/etc/trojan-go/config.json" ]
+CMD [ "/usr/bin/trojan-go", "-config", "/etc/trojan-go/config.json" ]
