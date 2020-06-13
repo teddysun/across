@@ -9,7 +9,6 @@
 FROM alpine:latest
 LABEL maintainer="Teddysun <i@teddysun.com>"
 
-WORKDIR /root
 COPY trojan-go.sh /root/trojan-go.sh
 COPY config.json /etc/trojan-go/config.json
 RUN set -ex \
@@ -17,8 +16,8 @@ RUN set -ex \
 	&& chmod +x /root/trojan-go.sh \
 	&& /root/trojan-go.sh \
 	&& rm -fv /root/trojan-go.sh \
-	&& wget -O /root/geosite.dat https://github.com/v2ray/domain-list-community/releases/latest/download/dlc.dat \
-	&& wget -O /root/geoip.dat https://github.com/v2ray/geoip/releases/latest/download/geoip.dat
+	&& wget -O /usr/bin/geosite.dat https://github.com/v2ray/domain-list-community/releases/latest/download/dlc.dat \
+	&& wget -O /usr/bin/geoip.dat https://github.com/v2ray/geoip/releases/latest/download/geoip.dat
 
 VOLUME /etc/trojan-go
 ENV TZ=Asia/Shanghai
