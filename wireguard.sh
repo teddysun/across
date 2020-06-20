@@ -372,13 +372,13 @@ install_wg_3() {
         ubuntu)
             _error_detect "add-apt-repository ppa:wireguard/wireguard"
             _error_detect "apt-get update"
-            _error_detect "apt-get -y install wireguard-tools"
+            _error_detect "apt-get -y install --no-install-recommends wireguard-tools"
             ;;
         debian)
             echo "deb http://deb.debian.org/debian/ unstable main" > /etc/apt/sources.list.d/unstable.list
             printf 'Package: *\nPin: release a=unstable\nPin-Priority: 90\n' > /etc/apt/preferences.d/limit-unstable
             _error_detect "apt-get update"
-            _error_detect "apt-get -y install wireguard-tools"
+            _error_detect "apt-get -y install --no-install-recommends wireguard-tools"
             ;;
         fedora)
             _error_detect "dnf -y copr enable jdoss/wireguard"
