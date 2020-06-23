@@ -4,7 +4,7 @@
 #
 # System Required:  CentOS 6+, Debian7+, Ubuntu12+
 #
-# Copyright (C) 2016-2018 Teddysun <i@teddysun.com>
+# Copyright (C) 2016-2020 Teddysun <i@teddysun.com>
 #
 # URL: https://teddysun.com/489.html
 #
@@ -131,14 +131,14 @@ get_latest_version() {
 
     kernel_arr=()
     for i in ${latest_version[@]}; do
-        if version_ge $i 4.14; then
+        if version_ge $i 5.6; then
             kernel_arr+=($i);
         fi
     done
 
     display_menu kernel last
 
-    if [[ `getconf WORD_BIT` == "32" && `getconf LONG_BIT` == "64" ]]; then
+    if is_64bit; then
         deb_name=$(wget -qO- https://kernel.ubuntu.com/~kernel-ppa/mainline/v${kernel}/ | grep "linux-image" | grep "generic" | awk -F'\">' '/amd64.deb/{print $2}' | cut -d'<' -f1 | head -1)
         deb_kernel_url="https://kernel.ubuntu.com/~kernel-ppa/mainline/v${kernel}/${deb_name}"
         deb_kernel_name="linux-image-${kernel}-amd64.deb"
@@ -154,7 +154,7 @@ get_latest_version() {
         deb_kernel_modules_name="linux-modules-${kernel}-i386.deb"
     fi
 
-    [ -z ${deb_name} ] && echo -e "${red}Error:${plain} Getting Linux kernel binary package name failed, maybe kernel build failed. Please choose other one and try again." && exit 1
+    [ -z "${deb_name}" ] && echo -e "${red}Error:${plain} Getting Linux kernel binary package name failed, maybe kernel build failed. Please choose other one and try again." && exit 1
 }
 
 get_opsy() {
@@ -229,9 +229,11 @@ install_elrepo() {
     rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org
 
     if centosversion 6; then
-        rpm -Uvh https://www.elrepo.org/elrepo-release-6-9.el6.elrepo.noarch.rpm
+        rpm -Uvh https://www.elrepo.org/elrepo-release-6-10.el6.elrepo.noarch.rpm
     elif centosversion 7; then
-        rpm -Uvh https://www.elrepo.org/elrepo-release-7.0-4.el7.elrepo.noarch.rpm
+        rpm -Uvh https://www.elrepo.org/elrepo-release-7.0-5.el7.elrepo.noarch.rpm
+    elif centosversion 8; then
+        rpm -Uvh https://www.elrepo.org/elrepo-release-8.2-1.el8.elrepo.noarch.rpm
     fi
 
     if [ ! -f /etc/yum.repos.d/elrepo.repo ]; then
@@ -268,34 +270,7 @@ install_config() {
     fi
 }
 
-reboot_os() {
-    echo
-    echo -e "${green}Info:${plain} The system needs to reboot."
-    read -p "Do you want to restart system? [y/n]" is_reboot
-    if [[ ${is_reboot} == "y" || ${is_reboot} == "Y" ]]; then
-        reboot
-    else
-        echo -e "${green}Info:${plain} Reboot has been canceled..."
-        exit 0
-    fi
-}
-
-install_bbr() {
-    check_bbr_status
-    if [ $? -eq 0 ]; then
-        echo
-        echo -e "${green}Info:${plain} TCP BBR has already been installed. nothing to do..."
-        exit 0
-    fi
-    check_kernel_version
-    if [ $? -eq 0 ]; then
-        echo
-        echo -e "${green}Info:${plain} Your kernel version is greater than 4.9, directly setting TCP BBR..."
-        sysctl_config
-        echo -e "${green}Info:${plain} Setting TCP BBR completed..."
-        exit 0
-    fi
-
+install_kernel() {
     if [[ x"${release}" == x"centos" ]]; then
         install_elrepo
         [ ! "$(command -v yum-config-manager)" ] && yum install -y yum-utils > /dev/null 2>&1
@@ -340,6 +315,12 @@ install_bbr() {
                 echo -e "${red}Error:${plain} Install latest kernel failed, please check it."
                 exit 1
             fi
+        elif centosversion 8; then
+            yum -y install kernel-ml kernel-ml-core kernel-ml-devel
+            if [ $? -ne 0 ]; then
+                echo -e "${red}Error:${plain} Install latest kernel failed, please check it."
+                exit 1
+            fi
         fi
     elif [[ x"${release}" == x"debian" || x"${release}" == x"ubuntu" ]]; then
         [[ ! -e "/usr/bin/wget" ]] && apt-get -y update && apt-get -y install wget
@@ -364,7 +345,35 @@ install_bbr() {
         echo -e "${red}Error:${plain} OS is not be supported, please change to CentOS/Debian/Ubuntu and try again."
         exit 1
     fi
+}
 
+reboot_os() {
+    echo
+    echo -e "${green}Info:${plain} The system needs to reboot."
+    read -p "Do you want to restart system? [y/n]" is_reboot
+    if [[ ${is_reboot} == "y" || ${is_reboot} == "Y" ]]; then
+        reboot
+    else
+        echo -e "${green}Info:${plain} Reboot has been canceled..."
+        exit 0
+    fi
+}
+
+install_bbr() {
+    if check_bbr_status; then
+        echo
+        echo -e "${green}Info:${plain} TCP BBR has already been installed. nothing to do..."
+        exit 0
+    fi
+    if check_kernel_version; then
+        echo
+        echo -e "${green}Info:${plain} Your kernel version is greater than 4.9, directly setting TCP BBR..."
+        sysctl_config
+        echo -e "${green}Info:${plain} Setting TCP BBR completed..."
+        exit 0
+    fi
+
+    install_kernel
     install_config
     sysctl_config
     reboot_os
