@@ -2,43 +2,86 @@
 #
 # Auto install latest kernel for TCP BBR
 #
-# System Required:  CentOS 6+, Debian7+, Ubuntu12+
+# System Required:  CentOS 6+, Debian8+, Ubuntu16+
 #
 # Copyright (C) 2016-2020 Teddysun <i@teddysun.com>
 #
 # URL: https://teddysun.com/489.html
 #
 
-red='\033[0;31m'
-green='\033[0;32m'
-yellow='\033[0;33m'
-plain='\033[0m'
+cur_dir="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"
 
-cur_dir=$(pwd)
+_red() {
+    printf '\033[1;31;31m%b\033[0m' "$1"
+}
 
-[[ $EUID -ne 0 ]] && echo -e "${red}Error:${plain} This script must be run as root!" && exit 1
+_green() {
+    printf '\033[1;31;32m%b\033[0m' "$1"
+}
 
-[[ -d "/proc/vz" ]] && echo -e "${red}Error:${plain} Your VPS is based on OpenVZ, which is not supported." && exit 1
+_yellow() {
+    printf '\033[1;31;33m%b\033[0m' "$1"
+}
 
-if [ -f /etc/redhat-release ]; then
-    release="centos"
-elif cat /etc/issue | grep -Eqi "debian"; then
-    release="debian"
-elif cat /etc/issue | grep -Eqi "ubuntu"; then
-    release="ubuntu"
-elif cat /etc/issue | grep -Eqi "centos|red hat|redhat"; then
-    release="centos"
-elif cat /proc/version | grep -Eqi "debian"; then
-    release="debian"
-elif cat /proc/version | grep -Eqi "ubuntu"; then
-    release="ubuntu"
-elif cat /proc/version | grep -Eqi "centos|red hat|redhat"; then
-    release="centos"
-else
-    release=""
-fi
+_info() {
+    _green "[Info] "
+    printf -- "%s" "$1"
+    printf "\n"
+}
 
-is_digit(){
+_warn() {
+    _yellow "[Warning] "
+    printf -- "%s" "$1"
+    printf "\n"
+}
+
+_error() {
+    _red "[Error] "
+    printf -- "%s" "$1"
+    printf "\n"
+    exit 1
+}
+
+_exists() {
+    local cmd="$1"
+    if eval type type > /dev/null 2>&1; then
+        eval type "$cmd" > /dev/null 2>&1
+    elif command > /dev/null 2>&1; then
+        command -v "$cmd" > /dev/null 2>&1
+    else
+        which "$cmd" > /dev/null 2>&1
+    fi
+    local rt=$?
+    return ${rt}
+}
+
+_os() {
+    local os=""
+    [ -f "/etc/debian_version" ] && source /etc/os-release && os="${ID}" && printf -- "%s" "${os}" && return
+    [ -f "/etc/redhat-release" ] && os="centos" && printf -- "%s" "${os}" && return
+}
+
+_os_full() {
+    [ -f /etc/redhat-release ] && awk '{print ($1,$3~/^[0-9]/?$3:$4)}' /etc/redhat-release && return
+    [ -f /etc/os-release ] && awk -F'[= "]' '/PRETTY_NAME/{print $3,$4,$5}' /etc/os-release && return
+    [ -f /etc/lsb-release ] && awk -F'[="]+' '/DESCRIPTION/{print $2}' /etc/lsb-release && return
+}
+
+_os_ver() {
+    local main_ver="$( echo $(_os_full) | grep -oE  "[0-9.]+")"
+    printf -- "%s" "${main_ver%%.*}"
+}
+
+_error_detect() {
+    local cmd="$1"
+    _info "${cmd}"
+    eval ${cmd}
+    if [ $? -ne 0 ]; then
+        _error "Execution command (${cmd}) failed, please check it and try again."
+    fi
+}
+
+_is_digit(){
     local input=${1}
     if [[ "$input" =~ ^[0-9]+$ ]]; then
         return 0
@@ -47,12 +90,16 @@ is_digit(){
     fi
 }
 
-is_64bit(){
+_is_64bit(){
     if [ $(getconf WORD_BIT) = '32' ] && [ $(getconf LONG_BIT) = '64' ]; then
         return 0
     else
         return 1
     fi
+}
+
+_version_ge(){
+    test "$(echo "$@" | tr " " "\n" | sort -rV | head -n 1)" == "$1"
 }
 
 get_valid_valname(){
@@ -100,7 +147,7 @@ display_menu(){
             break
         fi
 
-        if ! is_digit "$pick"; then
+        if ! _is_digit "$pick"; then
             prompt="Input error, please input a number"
             continue
         fi
@@ -120,25 +167,17 @@ display_menu(){
     echo -e "\nyour selection: $hint\n"
 }
 
-version_ge(){
-    test "$(echo "$@" | tr " " "\n" | sort -rV | head -n 1)" == "$1"
-}
-
 get_latest_version() {
     latest_version=($(wget -qO- https://kernel.ubuntu.com/~kernel-ppa/mainline/ | awk -F'\"v' '/v[4-9]./{print $2}' | cut -d/ -f1 | grep -v - | sort -V))
-
-    [ ${#latest_version[@]} -eq 0 ] && echo -e "${red}Error:${plain} Get latest kernel version failed." && exit 1
-
+    [ ${#latest_version[@]} -eq 0 ] && _error "Get latest kernel version failed."
     kernel_arr=()
     for i in ${latest_version[@]}; do
-        if version_ge $i 5.6; then
+        if _version_ge $i 5.6; then
             kernel_arr+=($i);
         fi
     done
-
     display_menu kernel last
-
-    if is_64bit; then
+    if _is_64bit; then
         deb_name=$(wget -qO- https://kernel.ubuntu.com/~kernel-ppa/mainline/v${kernel}/ | grep "linux-image" | grep "generic" | awk -F'\">' '/amd64.deb/{print $2}' | cut -d'<' -f1 | head -1)
         deb_kernel_url="https://kernel.ubuntu.com/~kernel-ppa/mainline/v${kernel}/${deb_name}"
         deb_kernel_name="linux-image-${kernel}-amd64.deb"
@@ -153,20 +192,8 @@ get_latest_version() {
         deb_kernel_modules_url="https://kernel.ubuntu.com/~kernel-ppa/mainline/v${kernel}/${modules_deb_name}"
         deb_kernel_modules_name="linux-modules-${kernel}-i386.deb"
     fi
-
-    [ -z "${deb_name}" ] && echo -e "${red}Error:${plain} Getting Linux kernel binary package name failed, maybe kernel build failed. Please choose other one and try again." && exit 1
+    [ -z "${deb_name}" ] && _error "Getting Linux kernel binary package name failed, maybe kernel build failed. Please choose other one and try again."
 }
-
-get_opsy() {
-    [ -f /etc/redhat-release ] && awk '{print ($1,$3~/^[0-9]/?$3:$4)}' /etc/redhat-release && return
-    [ -f /etc/os-release ] && awk -F'[= "]' '/PRETTY_NAME/{print $3,$4,$5}' /etc/os-release && return
-    [ -f /etc/lsb-release ] && awk -F'[="]+' '/DESCRIPTION/{print $2}' /etc/lsb-release && return
-}
-
-opsy=$( get_opsy )
-arch=$( uname -m )
-lbit=$( getconf LONG_BIT )
-kern=$( uname -r )
 
 get_char() {
     SAVEDSTTY=`stty -g`
@@ -176,29 +203,6 @@ get_char() {
     stty -raw
     stty echo
     stty $SAVEDSTTY
-}
-
-getversion() {
-    if [[ -s /etc/redhat-release ]]; then
-        grep -oE  "[0-9.]+" /etc/redhat-release
-    else
-        grep -oE  "[0-9.]+" /etc/issue
-    fi
-}
-
-centosversion() {
-    if [ x"${release}" == x"centos" ]; then
-        local code=$1
-        local version="$(getversion)"
-        local main_ver=${version%%.*}
-        if [ "$main_ver" == "$code" ]; then
-            return 0
-        else
-            return 1
-        fi
-    else
-        return 1
-    fi
 }
 
 check_bbr_status() {
@@ -212,34 +216,41 @@ check_bbr_status() {
 
 check_kernel_version() {
     local kernel_version=$(uname -r | cut -d- -f1)
-    if version_ge ${kernel_version} 4.9; then
+    if _version_ge ${kernel_version} 4.9; then
         return 0
     else
         return 1
     fi
 }
 
-install_elrepo() {
-
-    if centosversion 5; then
-        echo -e "${red}Error:${plain} not supported CentOS 5."
-        exit 1
+# Check OS version
+check_os() {
+    if _exists "virt-what"; then
+        virt="$(virt-what)"
+    elif _exists "systemd-detect-virt"; then
+        virt="$(systemd-detect-virt)"
     fi
-
-    rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org
-
-    if centosversion 6; then
-        rpm -Uvh https://www.elrepo.org/elrepo-release-6-10.el6.elrepo.noarch.rpm
-    elif centosversion 7; then
-        rpm -Uvh https://www.elrepo.org/elrepo-release-7.0-5.el7.elrepo.noarch.rpm
-    elif centosversion 8; then
-        rpm -Uvh https://www.elrepo.org/elrepo-release-8.2-1.el8.elrepo.noarch.rpm
+    if [ -n "${virt}" -a "${virt}" = "lxc" ]; then
+        _error "Virtualization method is LXC, which is not supported."
     fi
-
-    if [ ! -f /etc/yum.repos.d/elrepo.repo ]; then
-        echo -e "${red}Error:${plain} Install elrepo failed, please check it."
-        exit 1
+    if [ -n "${virt}" -a "${virt}" = "openvz" ] || [ -d "/proc/vz" ]; then
+        _error "Virtualization method is OpenVZ, which is not supported."
     fi
+    [ -z "$(_os)" ] && _error "Not supported OS"
+    case "$(_os)" in
+        ubuntu)
+            [ -n "$(_os_ver)" -a "$(_os_ver)" -lt 16 ] && _error "Not supported OS, please change to Ubuntu 16+ and try again."
+            ;;
+        debian)
+            [ -n "$(_os_ver)" -a "$(_os_ver)" -lt 8 ] &&  _error "Not supported OS, please change to Debian 8+ and try again."
+            ;;
+        centos)
+            [ -n "$(_os_ver)" -a "$(_os_ver)" -lt 6 ] &&  _error "Not supported OS, please change to CentOS 6+ and try again."
+            ;;
+        *)
+            _error "Not supported OS"
+            ;;
+    esac
 }
 
 sysctl_config() {
@@ -250,111 +261,70 @@ sysctl_config() {
     sysctl -p >/dev/null 2>&1
 }
 
-install_config() {
-    if [[ x"${release}" == x"centos" ]]; then
-        if centosversion 6; then
-            if [ ! -f "/boot/grub/grub.conf" ]; then
-                echo -e "${red}Error:${plain} /boot/grub/grub.conf not found, please check it."
-                exit 1
-            fi
-            sed -i 's/^default=.*/default=0/g' /boot/grub/grub.conf
-        elif centosversion 7; then
-            if [ ! -f "/boot/grub2/grub.cfg" ]; then
-                echo -e "${red}Error:${plain} /boot/grub2/grub.cfg not found, please check it."
-                exit 1
-            fi
-            grub2-set-default 0
-        fi
-    elif [[ x"${release}" == x"debian" || x"${release}" == x"ubuntu" ]]; then
-        /usr/sbin/update-grub
-    fi
-}
-
 install_kernel() {
-    if [[ x"${release}" == x"centos" ]]; then
-        install_elrepo
-        [ ! "$(command -v yum-config-manager)" ] && yum install -y yum-utils > /dev/null 2>&1
-        [ x"$(yum-config-manager elrepo-kernel | grep -w enabled | awk '{print $3}')" != x"True" ] && yum-config-manager --enable elrepo-kernel > /dev/null 2>&1
-        if centosversion 6; then
-            if is_64bit; then
-                rpm_kernel_name="kernel-ml-4.18.20-1.el6.elrepo.x86_64.rpm"
-                rpm_kernel_devel_name="kernel-ml-devel-4.18.20-1.el6.elrepo.x86_64.rpm"
-                rpm_kernel_url_1="http://repos.lax.quadranet.com/elrepo/archive/kernel/el6/x86_64/RPMS/"
-            else
-                rpm_kernel_name="kernel-ml-4.18.20-1.el6.elrepo.i686.rpm"
-                rpm_kernel_devel_name="kernel-ml-devel-4.18.20-1.el6.elrepo.i686.rpm"
-                rpm_kernel_url_1="http://repos.lax.quadranet.com/elrepo/archive/kernel/el6/i386/RPMS/"
+    case "$(_os)" in
+        centos)
+            if [ -n "$(_os_ver)" ]; then
+                _error_detect "rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org"
+                [ "$(_os_ver)" -eq 6 ] && _error_detect "rpm -Uvh https://www.elrepo.org/elrepo-release-6-10.el6.elrepo.noarch.rpm"
+                [ "$(_os_ver)" -eq 7 ] && _error_detect "rpm -Uvh https://www.elrepo.org/elrepo-release-7.0-5.el7.elrepo.noarch.rpm"
+                [ "$(_os_ver)" -eq 8 ] && _error_detect "rpm -Uvh https://www.elrepo.org/elrepo-release-8.2-1.el8.elrepo.noarch.rpm"
+                [ ! -f "/etc/yum.repos.d/elrepo.repo" ] && _error "Install elrepo failed, please check it and retry."
+                if ! _exists "yum-config-manager"; then
+                    _error_detect "yum install -y yum-utils"
+                fi
+                [ x"$(yum-config-manager elrepo-kernel | grep -w enabled | awk '{print $3}')" != x"True" ] && _error_detect "yum-config-manager --enable elrepo-kernel"
+                if [ "$(_os_ver)" -eq 6 ]; then
+                    rpm_kernel_url="https://dl.lamp.sh/files/"
+                    if _is_64bit; then
+                        rpm_kernel_name="kernel-ml-4.18.20-1.el6.elrepo.x86_64.rpm"
+                        rpm_kernel_devel_name="kernel-ml-devel-4.18.20-1.el6.elrepo.x86_64.rpm"
+                    else
+                        rpm_kernel_name="kernel-ml-4.18.20-1.el6.elrepo.i686.rpm"
+                        rpm_kernel_devel_name="kernel-ml-devel-4.18.20-1.el6.elrepo.i686.rpm"
+                    fi
+                    _error_detect "wget -c -t3 -T60 -O ${rpm_kernel_name} ${rpm_kernel_url}${rpm_kernel_name}"
+                    _error_detect "wget -c -t3 -T60 -O ${rpm_kernel_devel_name} ${rpm_kernel_url}${rpm_kernel_devel_name}"
+                    [ -f "${rpm_kernel_name}" ] && _error_detect "rpm -ivh ${rpm_kernel_name}" || _error "Download ${rpm_kernel_name} failed, please check it."
+                    [ -f "${rpm_kernel_devel_name}" ] && _error_detect "rpm -ivh ${rpm_kernel_devel_name}" || _error "Download ${rpm_kernel_devel_name} failed, please check it."
+                    rm -f ${rpm_kernel_name} ${rpm_kernel_devel_name}
+                    [ ! -f "/boot/grub/grub.conf" ] && _error "/boot/grub/grub.conf not found, please check it."
+                    sed -i 's/^default=.*/default=0/g' /boot/grub/grub.conf
+                elif [ "$(_os_ver)" -eq 7 ]; then
+                    _error_detect "yum -y install kernel-ml kernel-ml-devel"
+                    [ ! -f "/boot/grub2/grub.cfg" ] && _error "/boot/grub2/grub.cfg not found, please check it."
+                    grub2-set-default 0
+                elif [ "$(_os_ver)" -eq 8 ]; then
+                    _error_detect "yum -y install kernel-ml kernel-ml-core kernel-ml-devel"
+                    [ ! -f "/boot/grub2/grub.cfg" ] && _error "/boot/grub2/grub.cfg not found, please check it."
+                    grub2-set-default 0
+                fi
             fi
-            rpm_kernel_url_2="https://dl.lamp.sh/files/"
-            wget -c -t3 -T60 -O ${rpm_kernel_name} ${rpm_kernel_url_1}${rpm_kernel_name}
-            if [ $? -ne 0 ]; then
-                rm -rf ${rpm_kernel_name}
-                wget -c -t3 -T60 -O ${rpm_kernel_name} ${rpm_kernel_url_2}${rpm_kernel_name}
+            ;;
+        ubuntu|debian)
+            _info "Getting latest kernel version..."
+            get_latest_version
+            if [ -n "${modules_deb_name}" ]; then
+                _error_detect "wget -c -t3 -T60 -O ${deb_kernel_modules_name} ${deb_kernel_modules_url}"
             fi
-            wget -c -t3 -T60 -O ${rpm_kernel_devel_name} ${rpm_kernel_url_1}${rpm_kernel_devel_name}
-            if [ $? -ne 0 ]; then
-                rm -rf ${rpm_kernel_devel_name}
-                wget -c -t3 -T60 -O ${rpm_kernel_devel_name} ${rpm_kernel_url_2}${rpm_kernel_devel_name}
-            fi
-            if [ -f "${rpm_kernel_name}" ]; then
-                rpm -ivh ${rpm_kernel_name}
-            else
-                echo -e "${red}Error:${plain} Download ${rpm_kernel_name} failed, please check it."
-                exit 1
-            fi
-            if [ -f "${rpm_kernel_devel_name}" ]; then
-                rpm -ivh ${rpm_kernel_devel_name}
-            else
-                echo -e "${red}Error:${plain} Download ${rpm_kernel_devel_name} failed, please check it."
-                exit 1
-            fi
-            rm -f ${rpm_kernel_name} ${rpm_kernel_devel_name}
-        elif centosversion 7; then
-            yum -y install kernel-ml kernel-ml-devel
-            if [ $? -ne 0 ]; then
-                echo -e "${red}Error:${plain} Install latest kernel failed, please check it."
-                exit 1
-            fi
-        elif centosversion 8; then
-            yum -y install kernel-ml kernel-ml-core kernel-ml-devel
-            if [ $? -ne 0 ]; then
-                echo -e "${red}Error:${plain} Install latest kernel failed, please check it."
-                exit 1
-            fi
-        fi
-    elif [[ x"${release}" == x"debian" || x"${release}" == x"ubuntu" ]]; then
-        [[ ! -e "/usr/bin/wget" ]] && apt-get -y update && apt-get -y install wget
-        echo -e "${green}Info:${plain} Getting latest kernel version..."
-        get_latest_version
-        if [ -n ${modules_deb_name} ]; then
-            wget -c -t3 -T60 -O ${deb_kernel_modules_name} ${deb_kernel_modules_url}
-            if [ $? -ne 0 ]; then
-                echo -e "${red}Error:${plain} Download ${deb_kernel_modules_name} failed, please check it."
-                exit 1
-            fi
-        fi
-        wget -c -t3 -T60 -O ${deb_kernel_name} ${deb_kernel_url}
-        if [ $? -ne 0 ]; then
-            echo -e "${red}Error:${plain} Download ${deb_kernel_name} failed, please check it."
-            exit 1
-        fi
-        [ -f ${deb_kernel_modules_name} ] && dpkg -i ${deb_kernel_modules_name}
-        dpkg -i ${deb_kernel_name}
-        rm -f ${deb_kernel_name} ${deb_kernel_modules_name}
-    else
-        echo -e "${red}Error:${plain} OS is not be supported, please change to CentOS/Debian/Ubuntu and try again."
-        exit 1
-    fi
+            _error_detect "wget -c -t3 -T60 -O ${deb_kernel_name} ${deb_kernel_url}"
+            _error_detect "dpkg -i ${deb_kernel_modules_name} ${deb_kernel_name}"
+            rm -f ${deb_kernel_modules_name} ${deb_kernel_name}
+            _error_detect "/usr/sbin/update-grub"
+            ;;
+        *)
+            ;; # do nothing
+    esac
 }
 
 reboot_os() {
     echo
-    echo -e "${green}Info:${plain} The system needs to reboot."
+    _info "The system needs to reboot."
     read -p "Do you want to restart system? [y/n]" is_reboot
     if [[ ${is_reboot} == "y" || ${is_reboot} == "Y" ]]; then
         reboot
     else
-        echo -e "${green}Info:${plain} Reboot has been canceled..."
+        _info "Reboot has been canceled..."
         exit 0
     fi
 }
@@ -362,23 +332,27 @@ reboot_os() {
 install_bbr() {
     if check_bbr_status; then
         echo
-        echo -e "${green}Info:${plain} TCP BBR has already been installed. nothing to do..."
+        _info "TCP BBR has already been enabled. nothing to do..."
         exit 0
     fi
     if check_kernel_version; then
         echo
-        echo -e "${green}Info:${plain} Your kernel version is greater than 4.9, directly setting TCP BBR..."
+        _info "The kernel version is greater than 4.9, directly setting TCP BBR..."
         sysctl_config
-        echo -e "${green}Info:${plain} Setting TCP BBR completed..."
+        _info "Setting TCP BBR completed..."
         exit 0
     fi
-
+    check_os
     install_kernel
-    install_config
     sysctl_config
     reboot_os
 }
 
+[[ $EUID -ne 0 ]] && _error "This script must be run as root"
+opsy=$( _os_full )
+arch=$( uname -m )
+lbit=$( getconf LONG_BIT )
+kern=$( uname -r )
 
 clear
 echo "---------- System Information ----------"
@@ -392,6 +366,6 @@ echo " URL: https://teddysun.com/489.html"
 echo "----------------------------------------"
 echo
 echo "Press any key to start...or Press Ctrl+C to cancel"
-char=`get_char`
+char=$(get_char)
 
 install_bbr 2>&1 | tee ${cur_dir}/install_bbr.log
