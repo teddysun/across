@@ -22,4 +22,4 @@ RUN set -ex \
 
 VOLUME /etc/v2ray
 ENV TZ=Asia/Shanghai
-CMD [ "v2ray", "-config", "/etc/v2ray/config.json" ]
+CMD [ "/usr/bin/v2ray", "-config", "/etc/v2ray/config.json" ]

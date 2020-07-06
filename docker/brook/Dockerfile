@@ -17,4 +17,4 @@ RUN set -ex \
 ENV TZ=Asia/Shanghai
 ENV ARGS="server -l :9000 -p password0"
 
-CMD brook $ARGS
+CMD /usr/bin/brook $ARGS
