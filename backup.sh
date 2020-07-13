@@ -190,10 +190,10 @@ EOF
 }
 
 start_backup() {
-    [ "${BACKUP[*]}" == "" ] && echo "Error: You must to modify the [$(basename $0)] config before run it!" && exit 1
+    [ "${#BACKUP[@]}" -eq 0 ] && echo "Error: You must to modify the [$(basename $0)] config before run it!" && exit 1
 
     log "Tar backup file start"
-    tar -zcPf ${TARFILE} ${BACKUP[*]}
+    tar -zcPf ${TARFILE} ${BACKUP[@]}
     if [ $? -gt 1 ]; then
         log "Tar backup file failed"
         exit 1
