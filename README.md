@@ -24,7 +24,7 @@
 ## backup.sh
 
 - You must modify the config before run it
-- Backup MySQL/MariaDB/Percona datebases, files and directories
+- Backup MySQL/MariaDB datebases, files and directories
 - Backup file is encrypted with AES256-cbc with SHA1 message-digest (option)
 - Auto transfer backup file to Google Drive (need install `rclone` command) (option)
 - Auto transfer backup file to FTP server (option)
@@ -43,10 +43,6 @@
 - Intro: https://teddysun.com/245.html
 
 ## l2tp.sh(Deprecated, DO NOT USE)
-
-- Description: Auto install L2TP/IPSec VPN Server
-- Intro: https://teddysun.com/448.html
-- Change to **L2TP/IPsec VPN Server Docker Image**: https://hub.docker.com/r/teddysun/l2tp
 
 ## pptp.sh(Deprecated, DO NOT USE)
 
