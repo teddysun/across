@@ -6,6 +6,7 @@
 # Thanks: LookBack <admin@dwhd.org>
 # URL: https://teddysun.com/444.html
 #
+trap _exit INT QUIT TERM
 
 _red() {
     printf '\033[0;31;31m%b\033[0m' "$1"
@@ -44,6 +45,13 @@ _64bit(){
     fi
 }
 
+_exit() {
+    _red "\nThe script has been terminated.\n"
+    # clean up
+    rm -fr speedtest-cli benchtest_*
+    exit 1
+}
+
 get_opsy() {
     [ -f /etc/redhat-release ] && awk '{print ($1,$3~/^[0-9]/?$3:$4)}' /etc/redhat-release && return
     [ -f /etc/os-release ] && awk -F'[= "]' '/PRETTY_NAME/{print $3,$4,$5}' /etc/os-release && return
@@ -55,9 +63,10 @@ next() {
 }
 
 speed_test() {
-    speedtest-cli/speedtest -p no $1 --accept-license > speedtest-cli/speedtest.log 2>&1
+    local nodeName="$2"
+    [ -z "$1" ] && ./speedtest-cli/speedtest --progress=no --accept-license > speedtest-cli/speedtest.log 2>&1 || \
+    ./speedtest-cli/speedtest --progress=no -s "$1" --accept-license > speedtest-cli/speedtest.log 2>&1
     if [ $? -eq 0 ]; then
-        local nodeName=$2
         local dl_speed=$(awk '/Download/{print $3}' speedtest-cli/speedtest.log)
         local up_speed=$(awk '/Upload/{print $3}' speedtest-cli/speedtest.log)
         local latency=$(awk '/Latency/{print $2}' speedtest-cli/speedtest.log)
@@ -69,20 +78,20 @@ speed_test() {
 
 speed() {
     speed_test '' 'Speedtest.net'
-    speed_test '-s 5145'  'Beijing    CU'
-    speed_test '-s 3633'  'Shanghai   CT'
-    speed_test '-s 24447' 'Shanghai   CU'
-    speed_test '-s 27594' 'Guangzhou  CT'
-    speed_test '-s 26678' 'Guangzhou  CU'
-    speed_test '-s 16192' 'Shenzhen   CU'
-    speed_test '-s 4515'  'Shenzhen   CM'
-    speed_test '-s 32155' 'Hongkong   CN'
-    speed_test '-s 13623' 'Singapore  SG'
-    speed_test '-s 15047' 'Tokyo      JP'
+    speed_test '5145'  'Beijing    CU'
+    speed_test '3633'  'Shanghai   CT'
+    speed_test '24447' 'Shanghai   CU'
+    speed_test '27594' 'Guangzhou  CT'
+    speed_test '26678' 'Guangzhou  CU'
+    speed_test '16192' 'Shenzhen   CU'
+    speed_test '4515'  'Shenzhen   CM'
+    speed_test '32155' 'Hongkong   CN'
+    speed_test '13623' 'Singapore  SG'
+    speed_test '15047' 'Tokyo      JP'
 }
 
 io_test() {
-    (LANG=C dd if=/dev/zero of=test_$$ bs=64k count=16k conv=fdatasync && rm -f test_$$ ) 2>&1 | awk -F, '{io=$NF} END { print io}' | sed 's/^[ \t]*//;s/[ \t]*$//'
+    (LANG=C dd if=/dev/zero of=benchtest_$$ bs=64k count=16k conv=fdatasync && rm -f benchtest_$$ ) 2>&1 | awk -F, '{io=$NF} END { print io}' | sed 's/^[ \t]*//;s/[ \t]*$//'
 }
 
 calc_disk() {
