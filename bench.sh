@@ -64,14 +64,14 @@ next() {
 
 speed_test() {
     local nodeName="$2"
-    [ -z "$1" ] && ./speedtest-cli/speedtest --progress=no --accept-license > speedtest-cli/speedtest.log 2>&1 || \
-    ./speedtest-cli/speedtest --progress=no -s "$1" --accept-license > speedtest-cli/speedtest.log 2>&1
+    [ -z "$1" ] && ./speedtest-cli/speedtest --progress=no --accept-license --accept-gdpr > ./speedtest-cli/speedtest.log 2>&1 || \
+    ./speedtest-cli/speedtest --progress=no --server-id=$1 --accept-license --accept-gdpr > ./speedtest-cli/speedtest.log 2>&1
     if [ $? -eq 0 ]; then
-        local dl_speed=$(awk '/Download/{print $3}' speedtest-cli/speedtest.log)
-        local up_speed=$(awk '/Upload/{print $3}' speedtest-cli/speedtest.log)
-        local latency=$(awk '/Latency/{print $2}' speedtest-cli/speedtest.log)
+        local dl_speed=$(awk '/Download/{print $3" "$4}' ./speedtest-cli/speedtest.log)
+        local up_speed=$(awk '/Upload/{print $3" "$4}' ./speedtest-cli/speedtest.log)
+        local latency=$(awk '/Latency/{print $2" "$3}' ./speedtest-cli/speedtest.log)
         if [[ -n "${dl_speed}" && -n "${up_speed}" && -n "${latency}" ]]; then
-            printf "\033[0;33m%-18s\033[0;32m%-18s\033[0;31m%-20s\033[0;36m%-12s\033[0m\n" " ${nodeName}" "${up_speed} Mbit/s" "${dl_speed} Mbit/s" "${latency} ms"
+            printf "\033[0;33m%-18s\033[0;32m%-18s\033[0;31m%-20s\033[0;36m%-12s\033[0m\n" " ${nodeName}" "${up_speed}" "${dl_speed}" "${latency}"
         fi
     fi
 }
@@ -236,7 +236,6 @@ ioall=$( awk 'BEGIN{print '$ioraw1' + '$ioraw2' + '$ioraw3'}' )
 ioavg=$( awk 'BEGIN{printf "%.1f", '$ioall' / 3}' )
 echo -e " Average I/O speed     : $(_yellow "$ioavg MB/s")"
 next
-install_speedtest
-printf "%-18s%-18s%-20s%-12s\n" " Node Name" "Upload Speed" "Download Speed" "Latency"
+install_speedtest && printf "%-18s%-18s%-20s%-12s\n" " Node Name" "Upload Speed" "Download Speed" "Latency"
 speed && rm -fr speedtest-cli
 next
