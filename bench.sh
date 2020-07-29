@@ -156,10 +156,10 @@ check_virt(){
 }
 
 ipv4_info() {
-    local org="$(wget -qO- ipinfo.io/org)"
-    local city="$(wget -qO- ipinfo.io/city)"
-    local country="$(wget -qO- ipinfo.io/country)"
-    local region="$(wget -qO- ipinfo.io/region)"
+    local org="$(wget -q -T10 -O- ipinfo.io/org)"
+    local city="$(wget -q -T10 -O- ipinfo.io/city)"
+    local country="$(wget -q -T10 -O- ipinfo.io/country)"
+    local region="$(wget -q -T10 -O- ipinfo.io/region)"
     [[ -n "$org" ]] && echo " Organization          : $(_blue "$org")"
     [[ -n "$city" && -n "country" ]] && echo " Location              : $(_blue "$city / $country")"
     [[ -n "$region" ]] && echo " Region                : $(_blue "$region")"
@@ -170,9 +170,9 @@ install_speedtest() {
         _64bit && sys_bit=x86_64 || sys_bit=i386
         url1="https://dl.bintray.com/ookla/download/ookla-speedtest-1.0.0-${sys_bit}-linux.tgz"
         url2="https://dl.lamp.sh/files/ookla-speedtest-1.0.0-${sys_bit}-linux.tgz"
-        wget --no-check-certificate -qO speedtest.tgz ${url1}
+        wget --no-check-certificate -q -T10 -O speedtest.tgz ${url1}
         if [ $? -ne 0 ]; then
-            wget --no-check-certificate -qO speedtest.tgz ${url2}
+            wget --no-check-certificate -q -T10 -O speedtest.tgz ${url2}
             [ $? -ne 0 ] && _red "Error: Failed to download speedtest-cli.\n" && exit 1
         fi
         mkdir -p speedtest-cli && tar zxf speedtest.tgz -C ./speedtest-cli && chmod +x ./speedtest-cli/speedtest
