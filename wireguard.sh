@@ -200,7 +200,7 @@ check_os() {
     fi
     [ -z "$(_os)" ] && _error "Not supported OS"
     case "$(_os)" in
-        ubuntu)
+        ubuntu|pop)
             [ -n "$(_os_ver)" -a "$(_os_ver)" -lt 16 ] && _error "Not supported OS, please change to Ubuntu 16+ and try again."
             ;;
         debian|raspbian)
@@ -259,7 +259,7 @@ install_wg_tools() {
 install_wg_pkgs() {
     _info "Install dependencies for wireguard"
     case "$(_os)" in
-        ubuntu|debian|raspbian)
+        ubuntu|pop|debian|raspbian)
             _error_detect "apt-get update"
             _error_detect "apt-get -y install qrencode"
             _error_detect "apt-get -y install iptables"
@@ -298,7 +298,7 @@ install_wg_1() {
     install_wg_pkgs
     _info "Install wireguard from repository"
     case "$(_os)" in
-        ubuntu)
+        ubuntu|pop)
             _error_detect "add-apt-repository ppa:wireguard/wireguard"
             _error_detect "apt-get update"
             _error_detect "apt-get -y install linux-headers-$(uname -r)"
@@ -342,7 +342,7 @@ install_wg_2() {
     install_wg_pkgs
     _info "Install wireguard from source"
     case "$(_os)" in
-        ubuntu|debian|raspbian)
+        ubuntu|pop|debian|raspbian)
             if [ ! -d "/usr/src/linux-headers-$(uname -r)" ]; then
                 if [ "$(_os)" = "raspbian" ]; then
                     _error_detect "apt-get -y install raspberrypi-kernel-headers"
@@ -369,7 +369,7 @@ install_wg_3() {
     install_wg_pkgs
     _info "Install wireguard from repository"
     case "$(_os)" in
-        ubuntu)
+        ubuntu|pop)
             _error_detect "add-apt-repository ppa:wireguard/wireguard"
             _error_detect "apt-get update"
             _error_detect "apt-get -y install --no-install-recommends wireguard-tools"
