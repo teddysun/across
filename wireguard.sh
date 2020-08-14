@@ -314,7 +314,6 @@ install_wg_1() {
             _error_detect "apt-get -y install wireguard-tools"
             ;;
         fedora)
-            _error_detect "dnf -y copr enable jdoss/wireguard"
             _error_detect "dnf -y install kernel-devel"
             _error_detect "dnf -y install kernel-headers"
             _error_detect "dnf -y install wireguard-dkms"
@@ -381,7 +380,6 @@ install_wg_3() {
             _error_detect "apt-get -y install --no-install-recommends wireguard-tools"
             ;;
         fedora)
-            _error_detect "dnf -y copr enable jdoss/wireguard"
             _error_detect "dnf -y install wireguard-tools"
             ;;
         centos)
