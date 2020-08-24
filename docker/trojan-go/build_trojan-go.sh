@@ -19,7 +19,9 @@ for CMD in "${COMMANDS[@]}"; do
 done
 
 cd ${cur_dir}
-git clone https://github.com/p4gefau1t/trojan-go.git
+version=$(wget --no-check-certificate -qO- https://api.github.com/repos/p4gefau1t/trojan-go/tags | grep 'name' | cut -d\" -f4 | head -1)
+echo "git clone -b ${version} https://github.com/p4gefau1t/trojan-go.git"
+git clone -b ${version} https://github.com/p4gefau1t/trojan-go.git
 cd trojan-go || exit 2
 
 PACKAGE_NAME="github.com/p4gefau1t/trojan-go"
