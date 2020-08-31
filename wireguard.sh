@@ -92,8 +92,7 @@ _nic() {
 
 _port() {
     local port="$(shuf -i 1024-20480 -n 1)"
-    while true
-    do
+    while true; do
         if _exists "netstat" && netstat -tunlp | grep -w "${port}" > /dev/null 2>&1; then
             port="$(shuf -i 1024-20480 -n 1)"
         else
@@ -146,6 +145,7 @@ _is_installed() {
     if [ -s "/lib/modules/$(uname -r)/extra/wireguard.ko" ] \
     || [ -s "/lib/modules/$(uname -r)/extra/wireguard.ko.xz" ] \
     || [ -s "/lib/modules/$(uname -r)/updates/dkms/wireguard.ko" ] \
+    || [ -s "/lib/modules/$(uname -r)/updates/dkms/wireguard.ko.xz" ] \
     || [ -s "/lib/modules/$(uname -r)/kernel/drivers/net/wireguard/wireguard.ko" ] \
     || [ -s "/lib/modules/$(uname -r)/kernel/drivers/net/wireguard/wireguard.ko.xz" ]; then
         install_flag[1]=1
@@ -193,10 +193,10 @@ check_os() {
         virt="$(systemd-detect-virt)"
     fi
     if [ -n "${virt}" -a "${virt}" = "lxc" ]; then
-        _error "Virtualization method is LXC, which is not supported."
+        _error "Virtualization is LXC, which is not supported."
     fi
     if [ -n "${virt}" -a "${virt}" = "openvz" ] || [ -d "/proc/vz" ]; then
-        _error "Virtualization method is OpenVZ, which is not supported."
+        _error "Virtualization is OpenVZ, which is not supported."
     fi
     [ -z "$(_os)" ] && _error "Not supported OS"
     case "$(_os)" in
@@ -606,8 +606,7 @@ add_client() {
     default_client_if="/etc/wireguard/${SERVER_WG_NIC}_client"
     [ ! -s "${default_server_if}" ] && echo "The default server interface ($(_red ${default_server_if})) does not exists" && exit 1
     [ ! -s "${default_client_if}" ] && echo "The default client interface ($(_red ${default_client_if})) does not exists" && exit 1
-    while true
-    do
+    while true; do
         read -p "Please enter a client name (for example: wg1):" client
         if [ -z "${client}" ]; then
             _red "Client name can not be empty\n"
@@ -711,8 +710,7 @@ remove_client() {
     fi
     default_server_if="/etc/wireguard/${SERVER_WG_NIC}.conf"
     [ ! -s "${default_server_if}" ] && echo "The default server interface ($(_red ${default_server_if})) does not exists" && exit 1
-    while true
-    do
+    while true; do
         read -p "Please enter a client name you want to delete it (for example: wg1):" client
         if [ -z "${client}" ]; then
             _red "Client name can not be empty\n"
