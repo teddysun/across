@@ -306,16 +306,15 @@ install_wg_1() {
             echo "deb http://deb.debian.org/debian/ unstable main" > /etc/apt/sources.list.d/unstable.list
             printf 'Package: *\nPin: release a=unstable\nPin-Priority: 90\n' > /etc/apt/preferences.d/limit-unstable
             _error_detect "apt-get update"
-            _error_detect "apt-get -y install linux-headers-$(uname -r)"
-            _error_detect "apt-get -y install wireguard-dkms"
-            _error_detect "apt-get -y install wireguard-tools"
+            _error_detect "apt-get -y install wireguard"
             ;;
         fedora)
-            _error_detect "dnf -y copr enable jdoss/wireguard"
-            _error_detect "dnf -y install kernel-devel"
-            _error_detect "dnf -y install kernel-headers"
-            _error_detect "dnf -y install wireguard-dkms"
-            _error_detect "dnf -y install wireguard-tools"
+            if [ -n "$(_os_ver)" -a "$(_os_ver)" -lt 31 ]; then
+                _error_detect "dnf -y copr enable jdoss/wireguard"
+                _error_detect "dnf -y install wireguard-dkms wireguard-tools"
+            else
+                _error_detect "dnf -y install wireguard-tools"
+            fi
             ;;
         centos)
             if [ -n "$(_os_ver)" -a "$(_os_ver)" -eq 7 ]; then
@@ -378,8 +377,12 @@ install_wg_3() {
             _error_detect "apt-get -y install --no-install-recommends wireguard-tools"
             ;;
         fedora)
-            _error_detect "dnf -y copr enable jdoss/wireguard"
-            _error_detect "dnf -y install wireguard-tools"
+            if [ -n "$(_os_ver)" -a "$(_os_ver)" -lt 31 ]; then
+                _error_detect "dnf -y copr enable jdoss/wireguard"
+                _error_detect "dnf -y install wireguard-tools"
+            else
+                _error_detect "dnf -y install wireguard-tools"
+            fi
             ;;
         centos)
             if [ -n "$(_os_ver)" -a "$(_os_ver)" -eq 7 ]; then
