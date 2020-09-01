@@ -1,4 +1,4 @@
-# Across the Great Wall we can reach every corner in the world
+## Across the Great Wall we can reach every corner in the world
 
 ## wireguard.sh
 
@@ -18,17 +18,17 @@
 
 ## bench.sh
 
-- Description: Auto test download & I/O speed script
+- Description: Auto test I/O & upload & download speed script
 - Intro: https://teddysun.com/444.html
 
 ## backup.sh
 
 - You must modify the config before run it
-- Backup MySQL/MariaDB datebases, files and directories
-- Backup file is encrypted with AES256-cbc with SHA1 message-digest (option)
-- Auto transfer backup file to Google Drive (need install `rclone` command) (option)
-- Auto transfer backup file to FTP server (option)
-- Auto delete Google Drive's or FTP server's remote file (option)
+- Backup MySQL or MariaDB datebases, files and directories
+- Backup file is encrypted with AES256-cbc with SHA1 message-digest (Depends on `openssl` command) (option)
+- Auto transfer backup file to Google Drive (Depends on [`rclone`](https://teddysun.com/469.html) command) (option)
+- Auto transfer backup file to FTP server (Depends on `ftp` command) (option)
+- Auto delete remote file from Google Drive or FTP server (option)
 - Intro: https://teddysun.com/469.html
 
 ## ftp_upload.sh
