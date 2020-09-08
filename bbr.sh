@@ -265,10 +265,12 @@ install_kernel() {
     case "$(_os)" in
         centos)
             if [ -n "$(_os_ver)" ]; then
-                _error_detect "rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org"
-                [ "$(_os_ver)" -eq 6 ] && _error_detect "rpm -Uvh https://www.elrepo.org/elrepo-release-6-10.el6.elrepo.noarch.rpm"
-                [ "$(_os_ver)" -eq 7 ] && _error_detect "rpm -Uvh https://www.elrepo.org/elrepo-release-7.0-5.el7.elrepo.noarch.rpm"
-                [ "$(_os_ver)" -eq 8 ] && _error_detect "rpm -Uvh https://www.elrepo.org/elrepo-release-8.2-1.el8.elrepo.noarch.rpm"
+                if [ ! -f "/etc/yum.repos.d/elrepo.repo" ]; then
+                    _error_detect "rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org"
+                    [ "$(_os_ver)" -eq 6 ] && _error_detect "rpm -Uvh https://www.elrepo.org/elrepo-release-6-10.el6.elrepo.noarch.rpm"
+                    [ "$(_os_ver)" -eq 7 ] && _error_detect "rpm -Uvh https://www.elrepo.org/elrepo-release-7.0-5.el7.elrepo.noarch.rpm"
+                    [ "$(_os_ver)" -eq 8 ] && _error_detect "rpm -Uvh https://www.elrepo.org/elrepo-release-8.2-1.el8.elrepo.noarch.rpm"
+                fi
                 [ ! -f "/etc/yum.repos.d/elrepo.repo" ] && _error "Install elrepo failed, please check it and retry."
                 if ! _exists "yum-config-manager"; then
                     _error_detect "yum install -y yum-utils"
