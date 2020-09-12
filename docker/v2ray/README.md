@@ -64,7 +64,7 @@ $ docker run -d -p 9000:9000 --name v2ray --restart=always -v /etc/v2ray:/etc/v2
 
 **Warning**: The port number must be same as configuration and opened in firewall.
 
-[1]: https://github.com/v2ray/v2ray-core
+[1]: https://github.com/v2fly/v2ray-core
 [2]: https://docs.docker.com/
 [3]: https://docs.docker.com/install/
 [4]: https://hub.docker.com/r/teddysun/v2ray/
