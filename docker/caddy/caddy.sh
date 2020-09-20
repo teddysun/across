@@ -51,4 +51,3 @@ fi
 echo "Download binary file: ${CADDY_FILE} completed"
 
 chmod +x /usr/bin/caddy
-/usr/bin/caddy version
