@@ -28,14 +28,19 @@ You **must create a configuration file**  `/etc/caddy/Caddyfile` in host at firs
 $ mkdir -p /etc/caddy
 ```
 
-A sample `Caddyfile` please visit [here](https://github.com/caddyserver/dist/blob/master/config/Caddyfile)
+Mount your site root using the `www` volume, a sample `Caddyfile` like below:
 
-Caddy requires write access to two locations: a [data directory](https://caddyserver.com/docs/conventions#data-directory), and a [configuration directory](https://caddyserver.com/docs/conventions#configuration-directory). 
+```
+:80 {
+  root /www
+  index index.html
+}
+```
 
 There is an example to override the default `Caddyfile`, you can mount a new one at `/etc/caddy/Caddyfile` like below:
 
 ```bash
-$ docker run -d -p 80:80 --name caddy --restart=always -v /etc/caddy:/etc/caddy teddysun/caddy
+$ docker run -d -p 80:80 --name caddy --restart=always -v /etc/caddy:/etc/caddy -v $(pwd)/site:/www teddysun/caddy
 ```
 
 [1]: https://caddyserver.com/
