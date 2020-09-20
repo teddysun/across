@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Caddy works!</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="icon" href="data:,">
+		<style>
+			* {
+				box-sizing: border-box;
+				padding: 0;
+				margin: 0;
+			}
+
+			body {
+				background: #f1f4f5;
+				font-family: sans-serif;
+				font-size: 20px;
+				-webkit-font-smoothing: antialiased;
+			}
+
+			a {
+				color: #2f79ff;
+				text-decoration: none;
+			}
+
+			a:hover {
+				text-decoration: underline;
+			}
+
+			.stack {
+				width: 70%;
+				max-width: 1150px;
+				margin: 25px 0 150px 25px;
+				display: flex;
+				align-content: flex-start;
+			}
+
+			.paper {
+				position: relative;
+				flex-shrink: 0;
+				width: 100%;
+
+				background: white;
+				border-radius: 3px;
+				box-shadow: 1px 2px 4px 1px rgba(0, 0, 0, .15);
+				padding: 100px;
+			}
+
+			#paper1 {
+				top: 45px;
+				left: 50px;
+			}
+
+			#paper2 {
+				top: 20px;
+				left: -100%;
+			}
+
+			#paper3 {
+				top: 25px;
+				transform: rotate(-4deg);
+				left: -200%;
+			}
+
+			#caddy {
+				max-width: 175px;
+				margin-bottom: 75px;
+			}
+
+			#caddy .caddy-color {
+				fill: #005e7e;
+			}
+
+			h1 {
+				font-size: 20px;
+				margin-bottom: 50px;
+			}
+
+			h1 .emoji {
+				font-size: 150%;
+				vertical-align: middle;
+			}
+
+			h1 .lang {
+				margin-right: 1.5em;
+			}
+
+			h2 {
+				font-size: 28px;
+				margin-top: 1.5em;
+			}
+
+			p,
+			ol,
+			ul {
+				color: #333;
+				line-height: 1.5em;
+			}
+
+			p {
+				margin: 1.5em 0;
+			}
+
+			ol,
+			ul {
+				margin: .5em 0 .5em 2em;
+			}
+
+			ol li,
+			ul li {
+				margin-left: 1em;
+				margin-bottom: .5em;
+			}
+
+			li ol {
+				list-style-type: lower-alpha;
+			}
+
+			code {
+				color: #000;
+				font-family: Menlo, monospace;
+				background: #f0f0f0;
+				border-radius: 2px;
+				padding: 4px 8px;
+				font-size: 90%;
+			}
+
+			.warn {
+				color: #dd0000;
+			}
+
+			footer {
+				color: #777;
+				font-size: 16px;
+				text-align: center;
+				max-width: 600px;
+				margin: 0 auto 50px;
+			}
+
+			#disclaimer {
+				font-size: 14px;
+				margin-top: 20px;
+				display: inline-block;
+				border-top: 1px solid #ccc;
+				padding: 20px;
+			}
+
+			@media (max-width: 1100px) {
+				.stack {
+					width: 85%;
+				}
+			}
+
+			@media (max-width: 800px) {
+				.stack {
+					margin: 0 0 50px 0;
+					width: 100%;
+				}
+
+				.paper {
+					padding: 50px;
+				}
+
+				#paper1,
+				#paper2 {
+					display: none;
+				}
+
+				#paper3 {
+					left: 0;
+					transform: none;
+					top: 0;
+				}
+
+				#caddy {
+					margin-bottom: 25px;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<div class="stack">
+			<div class="paper" id="paper1"></div>
+			<div class="paper" id="paper2"></div>
+			<div class="paper" id="paper3">
+				<a href="https://caddyserver.com/" title="Caddy Web Server"><svg id="caddy" viewBox="0 0 302 93" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;"><g><path d="M299.377,2.595c1.557,1.556 2.335,3.429 2.335,5.617c0,2.188 -0.775,4.064 -2.324,5.628c-1.549,1.564 -3.432,2.346 -5.65,2.346c-2.217,0 -4.093,-0.775 -5.628,-2.324c-1.534,-1.55 -2.302,-3.418 -2.302,-5.606c0,-2.188 0.775,-4.068 2.324,-5.639c1.55,-1.571 3.426,-2.357 5.628,-2.357c2.203,0 4.075,0.778 5.617,2.335Zm-1.057,10c1.175,-1.219 1.762,-2.687 1.762,-4.405c0,-1.718 -0.617,-3.194 -1.85,-4.428c-1.234,-1.233 -2.721,-1.85 -4.461,-1.85c-1.74,0 -3.23,0.624 -4.471,1.872c-1.241,1.249 -1.862,2.739 -1.862,4.472c0,1.733 0.61,3.216 1.829,4.449c1.219,1.234 2.716,1.851 4.493,1.851c1.777,0 3.282,-0.639 4.516,-1.917l-2.555,0l-1.917,-2.753l-0.969,0l0,2.753l-2.423,0l0,-8.943l3.546,0c1.41,0 2.416,0.243 3.018,0.727c0.602,0.485 0.903,1.263 0.903,2.335c0,1.307 -0.594,2.217 -1.784,2.731l2.225,3.106Zm-4.318,-4.692c0.573,0 0.962,-0.091 1.168,-0.275c0.206,-0.184 0.308,-0.477 0.308,-0.881c0,-0.404 -0.106,-0.683 -0.319,-0.837c-0.213,-0.154 -0.584,-0.231 -1.112,-0.231l-1.212,0l0,2.224l1.167,0Z" class="caddy-color"  style="fill-rule:nonzero;"/><path d="M34.502,73.491c-6.519,0 -12.408,-1.515 -17.666,-4.544c-5.258,-3.03 -9.379,-7.216 -12.362,-12.558c-2.983,-5.343 -4.474,-11.369 -4.474,-18.08c0,-6.71 1.507,-12.737 4.52,-18.079c3.014,-5.343 7.15,-9.529 12.408,-12.558c5.259,-3.03 11.147,-4.545 17.667,-4.545c5.289,0 10.117,0.978 14.483,2.932c4.367,1.955 8.057,4.789 11.07,8.502l-7.749,7.721c-4.674,-5.343 -10.424,-8.014 -17.251,-8.014c-4.428,0 -8.395,1.026 -11.9,3.079c-3.506,2.052 -6.243,4.902 -8.211,8.551c-1.968,3.648 -2.952,7.785 -2.952,12.411c0,4.626 0.984,8.763 2.952,12.412c1.968,3.648 4.705,6.498 8.211,8.551c3.505,2.052 7.472,3.078 11.9,3.078c6.827,0 12.577,-2.704 17.251,-8.111l7.749,7.818c-3.013,3.714 -6.719,6.548 -11.116,8.502c-4.397,1.955 -9.241,2.932 -14.53,2.932Z" class="caddy-color" style="fill-rule:nonzero;"/><path d="M84.78,19.741c7.257,0 12.807,1.84 16.651,5.522c3.844,3.681 5.766,9.235 5.766,16.662l0,30.589l-10.886,0l0,-6.353c-1.414,2.281 -3.428,4.024 -6.042,5.229c-2.614,1.205 -5.766,1.808 -9.456,1.808c-3.69,0 -6.919,-0.668 -9.687,-2.004c-2.767,-1.335 -4.904,-3.192 -6.411,-5.57c-1.507,-2.378 -2.26,-5.066 -2.26,-8.063c0,-4.69 1.645,-8.453 4.935,-11.287c3.291,-2.834 8.472,-4.251 15.545,-4.251l12.731,0l0,-0.782c0,-3.649 -1.031,-6.45 -3.091,-8.405c-2.06,-1.954 -5.12,-2.931 -9.179,-2.931c-2.768,0 -5.489,0.456 -8.164,1.368c-2.676,0.912 -4.936,2.182 -6.781,3.811l-4.52,-8.893c2.583,-2.085 5.689,-3.681 9.317,-4.789c3.629,-1.107 7.473,-1.661 11.532,-1.661Zm-1.568,44.564c2.89,0 5.458,-0.701 7.703,-2.102c2.244,-1.4 3.828,-3.404 4.751,-6.01l0,-6.059l-11.901,0c-6.642,0 -9.963,2.313 -9.963,6.939c0,2.215 0.83,3.974 2.491,5.277c1.66,1.303 3.966,1.955 6.919,1.955Z" class="caddy-color" style="fill-rule:nonzero;"/><path d="M165.593,0l0,72.514l-11.071,0l0,-6.743c-1.906,2.475 -4.258,4.332 -7.057,5.57c-2.798,1.238 -5.889,1.857 -9.271,1.857c-4.736,0 -8.995,-1.108 -12.777,-3.323c-3.782,-2.215 -6.75,-5.359 -8.902,-9.431c-2.153,-4.072 -3.229,-8.746 -3.229,-14.023c0,-5.278 1.076,-9.936 3.229,-13.976c2.152,-4.039 5.12,-7.166 8.902,-9.381c3.782,-2.215 8.041,-3.323 12.777,-3.323c3.259,0 6.242,0.586 8.948,1.759c2.706,1.173 5.013,2.932 6.919,5.277l0,-26.777l11.532,0Zm-26.015,62.741c2.767,0 5.258,-0.668 7.472,-2.003c2.214,-1.336 3.967,-3.242 5.258,-5.717c1.292,-2.476 1.938,-5.343 1.938,-8.6c0,-3.258 -0.646,-6.125 -1.938,-8.6c-1.291,-2.476 -3.044,-4.382 -5.258,-5.718c-2.214,-1.335 -4.705,-2.003 -7.472,-2.003c-2.768,0 -5.259,0.668 -7.473,2.003c-2.214,1.336 -3.967,3.242 -5.258,5.718c-1.292,2.475 -1.937,5.342 -1.937,8.6c0,3.257 0.645,6.124 1.937,8.6c1.291,2.475 3.044,4.381 5.258,5.717c2.214,1.335 4.705,2.003 7.473,2.003Z" class="caddy-color" style="fill-rule:nonzero;"/><path d="M224.357,0l0,72.514l-11.07,0l0,-6.743c-1.906,2.475 -4.259,4.332 -7.057,5.57c-2.798,1.238 -5.889,1.857 -9.271,1.857c-4.736,0 -8.995,-1.108 -12.777,-3.323c-3.783,-2.215 -6.75,-5.359 -8.903,-9.431c-2.152,-4.072 -3.229,-8.746 -3.229,-14.023c0,-5.278 1.077,-9.936 3.229,-13.976c2.153,-4.039 5.12,-7.166 8.903,-9.381c3.782,-2.215 8.041,-3.323 12.777,-3.323c3.259,0 6.242,0.586 8.948,1.759c2.706,1.173 5.012,2.932 6.919,5.277l0,-26.777l11.531,0Zm-26.015,62.741c2.768,0 5.259,-0.668 7.473,-2.003c2.214,-1.336 3.967,-3.242 5.258,-5.717c1.292,-2.476 1.937,-5.343 1.937,-8.6c0,-3.258 -0.645,-6.125 -1.937,-8.6c-1.291,-2.476 -3.044,-4.382 -5.258,-5.718c-2.214,-1.335 -4.705,-2.003 -7.473,-2.003c-2.767,0 -5.258,0.668 -7.472,2.003c-2.214,1.336 -3.967,3.242 -5.259,5.718c-1.291,2.475 -1.937,5.342 -1.937,8.6c0,3.257 0.646,6.124 1.937,8.6c1.292,2.475 3.045,4.381 5.259,5.717c2.214,1.335 4.705,2.003 7.472,2.003Z" class="caddy-color" style="fill-rule:nonzero;"/><path d="M281,20.327l-23.063,56.389c-2.152,5.668 -4.766,9.659 -7.841,11.972c-3.075,2.313 -6.796,3.469 -11.163,3.469c-2.46,0 -4.889,-0.424 -7.288,-1.271c-2.398,-0.846 -4.366,-2.019 -5.904,-3.518l4.613,-8.991c1.107,1.108 2.414,1.988 3.921,2.639c1.506,0.652 3.028,0.977 4.566,0.977c2.03,0 3.705,-0.553 5.028,-1.661c1.322,-1.108 2.537,-2.964 3.644,-5.571l0.83,-2.052l-21.495,-52.382l11.993,0l15.498,38.603l15.591,-38.603l11.07,0Z" class="caddy-color" style="fill-rule:nonzero;"/></g></svg></a>
+
+				<h1>
+					<!-- English --> <span class="lang">Congratulations!</span>
+					<!-- Japanese --> <span class="lang">おめでとう!</span>
+					<!-- Spanish --> <span class="lang">Felicidades!</span>
+					<!-- Chinese --> <span class="lang">恭喜!</span>
+					<!-- Hindi --> <span class="lang">बधाई हो!</span>
+					<!-- Russian --> <span class="lang">Поздравляю! </span>
+					<span class="emoji">🎊</span>
+				</h1>
+
+				<p>
+					Your web server is working. Now make it work for you. 💪
+				</p>
+				<p>
+					Caddy is ready to serve your site over HTTPS:
+				</p>
+				<ol>
+					<li>Point your domain's A/AAAA DNS records at this machine.</li>
+					<li>Upload your site's files to <code>/var/www/html</code>.
+					<li>
+						Edit your Caddyfile at <code>/etc/caddy/Caddyfile</code>:
+						<ol>
+							<li>Replace <code>:80</code> with your domain name</li>
+							<li>Change the site root to <code>/var/www/html</code></li>
+						</ol>
+					</li>
+					<li>Reload the configuration: <code>systemctl reload caddy</code></li>
+					<li>Visit your site!</li>
+				</ol>
+				<h2>If that worked 🥳</h2>
+				<p>
+					Awesome! You won't have to look at this slanted page anymore.
+				</p>
+				<p>
+					Remember, Caddy can do a lot more than serve static files. It's also a powerful reverse proxy and application platform. You can use the Caddyfile to enable any other features you need. Or you could use Caddy's API to configure it programmatically.
+				</p>
+				<p>
+					Everything you need to know is either in the <a href="https://caddyserver.com/docs/">📖 Caddy documentation</a> or the manual for your OS/platform. Have fun!
+				</p>
+
+				<h2>If that didn't work 😶</h2>
+				<p>
+					It's okay, you can fix it! First check the following things:
+				</p>
+				<ul>
+					<li>Service status: <code>systemctl status caddy</code></li>
+					<li>Logs: <code>journalctl --no-pager -u caddy</code></li>
+					<li>Are your site's files readable by the caddy user and group? <code>ls -la /var/www/html</code></li>
+					<li>Is the caddy home directory writeable? <code>ls -la /var/lib/caddy</code></li>
+					<li>Ensure your domain's A and/or AAAA records point to your machine's public IP address: <code>dig example.com</code></li>
+					<li>Are your ports 80 and 443 externally reachable, and is Caddy able to bind to them? Check your firewalls, port forwarding, and other network configuration.</li>
+				</ul>
+				<p>
+					<b class="warn">WAIT!</b> Before trying again, switch to <a href="https://letsencrypt.org/docs/staging-environment/">Let's Encrypt's staging environment</a> to avoid being accidentally <a href="https://letsencrypt.org/docs/rate-limits/">rate limited</a>. Once you get everything else working, it's safe to switch back.
+				</p>
+				<p>
+					Depending on your DNS provider, it may take a while for the DNS records to propagate. Even when everything is configured properly, automated challenges to obtain TLS certificates usually take several seconds, but may take up to several minutes or hours.
+				<p>
+					If you still need help, we have a <a href="https://caddy.community/">great community</a>! First <a href="https://caddy.community/search">try a search</a>, and if your question is original, go ahead and ask it! Remember to pay it forward and help others too. 😁
+				</p>
+				<p>
+					Visit Caddy on:
+					<b><a href="https://github.com/caddyserver/caddy" title="Caddy on GitHub">GitHub</a></b>
+					or
+					<b><a href="https://twitter.com/caddyserver" title="@caddyserver on Twitter">Twitter</a></b>
+					or
+					<b><a href="https://caddy.community/" title="Caddy forums">Our Forum</a></b>
+				</p>
+			</div>
+		</div>
+
+		<footer>
+			&copy; Copyright 2020 The Caddy Authors.
+			<br>
+			Caddy<sup>&reg;</sup> is a registered trademark of Light Code Labs, LLC.
+
+			<div id="disclaimer">The Caddy project is not responsible for the content, disposition, or behavior of this Web property, which is independently owned and maintained. For inquiries, please contact the site owner or hosting provider.</div>
+		</footer>
+
+	</body>
+</html>
