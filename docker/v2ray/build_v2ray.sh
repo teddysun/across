@@ -7,7 +7,7 @@
 # Copyright (C) 2020 Teddysun <i@teddysun.com>
 #
 # Reference URL:
-# https://github.com/v2ray/v2ray-core.git
+# https://github.com/v2fly/v2ray-core.git
 
 cur_dir="$(pwd)"
 
