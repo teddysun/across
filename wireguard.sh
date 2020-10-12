@@ -268,6 +268,13 @@ install_wg_pkgs() {
             _error_detect "apt-get -y install make"
             _error_detect "apt-get -y install libmnl-dev"
             _error_detect "apt-get -y install libelf-dev"
+            if [ ! -d "/usr/src/linux-headers-$(uname -r)" ]; then
+                if [ "$(_os)" = "raspbian" ]; then
+                    _error_detect "apt-get -y install raspberrypi-kernel-headers"
+                else
+                    _error_detect "apt-get -y install linux-headers-$(uname -r)"
+                fi
+            fi
             ;;
         fedora)
             _error_detect "dnf -y install qrencode"
@@ -276,6 +283,7 @@ install_wg_pkgs() {
             _error_detect "dnf -y install make"
             _error_detect "dnf -y install libmnl-devel"
             _error_detect "dnf -y install elfutils-libelf-devel"
+            [ ! -d "/usr/src/kernels/$(uname -r)" ] && _error_detect "dnf -y install kernel-headers" && _error_detect "dnf -y install kernel-devel"
             ;;
         centos)
             _error_detect "yum -y install epel-release"
@@ -287,6 +295,7 @@ install_wg_pkgs() {
             [ -n "$(_os_ver)" -a "$(_os_ver)" -eq 8 ] && _error_detect "yum-config-manager --enable PowerTools"
             _error_detect "yum -y install libmnl-devel"
             _error_detect "yum -y install elfutils-libelf-devel"
+            [ ! -d "/usr/src/kernels/$(uname -r)" ] && _error_detect "yum -y install kernel-headers" && _error_detect "yum -y install kernel-devel"
             ;;
         *)
             ;; # do nothing
@@ -323,8 +332,6 @@ install_wg_1() {
             if [ -n "$(_os_ver)" -a "$(_os_ver)" -eq 8 ]; then
                 _error_detect "curl -Lso /etc/yum.repos.d/wireguard.repo https://copr.fedorainfracloud.org/coprs/jdoss/wireguard/repo/epel-8/jdoss-wireguard-epel-8.repo"
             fi
-            _error_detect "yum -y install kernel-devel"
-            _error_detect "yum -y install kernel-headers"
             _error_detect "yum -y install wireguard-dkms"
             _error_detect "yum -y install wireguard-tools"
             ;;
@@ -337,25 +344,6 @@ install_wg_1() {
 install_wg_2() {
     install_wg_pkgs
     _info "Install wireguard from source"
-    case "$(_os)" in
-        ubuntu|debian|raspbian)
-            if [ ! -d "/usr/src/linux-headers-$(uname -r)" ]; then
-                if [ "$(_os)" = "raspbian" ]; then
-                    _error_detect "apt-get -y install raspberrypi-kernel-headers"
-                else
-                    _error_detect "apt-get -y install linux-headers-$(uname -r)"
-                fi
-            fi
-            ;;
-        fedora)
-            [ ! -d "/usr/src/kernels/$(uname -r)" ] && _error_detect "dnf -y install kernel-headers" && _error_detect "dnf -y install kernel-devel"
-            ;;
-        centos)
-            [ ! -d "/usr/src/kernels/$(uname -r)" ] && _error_detect "yum -y install kernel-headers" && _error_detect "yum -y install kernel-devel"
-            ;;
-        *)
-            ;; # do nothing
-    esac
     install_wg_module
     install_wg_tools
 }
