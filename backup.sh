@@ -44,7 +44,8 @@ TEMPDIR="/opt/backups/temp/"
 # File to log the outcome of backups
 LOGFILE="/opt/backups/backup.log"
 
-# OPTIONAL: If you want backup MySQL database, enter the MySQL root password below
+# OPTIONAL:
+# If you want to backup the MySQL database, enter the MySQL root password below, otherwise leave it blank
 MYSQL_ROOT_PASSWORD=""
 
 # Below is a list of MySQL database name that will be backed up
@@ -76,19 +77,19 @@ FTP_FLG=false
 RCLONE_FLG=false
 
 # FTP server
-# OPTIONAL: If you want upload to FTP server, enter the Hostname or IP address below
+# OPTIONAL: If you want to upload to FTP server, enter the Hostname or IP address below
 FTP_HOST=""
 
 # FTP username
-# OPTIONAL: If you want upload to FTP server, enter the FTP username below
+# OPTIONAL: If you want to upload to FTP server, enter the FTP username below
 FTP_USER=""
 
 # FTP password
-# OPTIONAL: If you want upload to FTP server, enter the username's password below
+# OPTIONAL: If you want to upload to FTP server, enter the username's password below
 FTP_PASS=""
 
 # FTP server remote folder
-# OPTIONAL: If you want upload to FTP server, enter the FTP remote folder below
+# OPTIONAL: If you want to upload to FTP server, enter the FTP remote folder below
 # For example: public_html
 FTP_DIR=""
 
@@ -114,8 +115,13 @@ log() {
 # Check for list of mandatory binaries
 check_commands() {
     # This section checks for all of the binaries used in the backup
-    BINARIES=( cat cd du date dirname echo openssl mysql mysqldump pwd rm tar )
-    
+    # Do not check mysql command if you do not want to backup the MySQL database
+    if [ -z "${MYSQL_ROOT_PASSWORD}" ]; then
+        BINARIES=( cat cd du date dirname echo openssl pwd rm tar )
+    else
+        BINARIES=( cat cd du date dirname echo openssl mysql mysqldump pwd rm tar )
+    fi
+
     # Iterate over the list of binaries, and if one isn't found, abort
     for BINARY in "${BINARIES[@]}"; do
         if [ ! "$(command -v "$BINARY")" ]; then
@@ -162,7 +168,7 @@ EOF
             log "MySQL root password is incorrect. Please check it and try again"
             exit 1
         fi
-        if [ "${MYSQL_DATABASE_NAME[*]}" == "" ]; then
+        if [ "${MYSQL_DATABASE_NAME[@]}" == "" ]; then
             mysqldump -u root -p"${MYSQL_ROOT_PASSWORD}" --all-databases > "${SQLFILE}" 2>/dev/null
             if [ $? -ne 0 ]; then
                 log "MySQL all databases backup failed"
@@ -170,9 +176,9 @@ EOF
             fi
             log "MySQL all databases dump file name: ${SQLFILE}"
             #Add MySQL backup dump file to BACKUP list
-            BACKUP=(${BACKUP[*]} ${SQLFILE})
+            BACKUP=(${BACKUP[@]} ${SQLFILE})
         else
-            for db in ${MYSQL_DATABASE_NAME[*]}; do
+            for db in ${MYSQL_DATABASE_NAME[@]}; do
                 unset DBFILE
                 DBFILE="${TEMPDIR}${db}_${BACKUPDATE}.sql"
                 mysqldump -u root -p"${MYSQL_ROOT_PASSWORD}" ${db} > "${DBFILE}" 2>/dev/null
@@ -182,7 +188,7 @@ EOF
                 fi
                 log "MySQL database name [${db}] dump file name: ${DBFILE}"
                 #Add MySQL backup dump file to BACKUP list
-                BACKUP=(${BACKUP[*]} ${DBFILE})
+                BACKUP=(${BACKUP[@]} ${DBFILE})
             done
         fi
         log "MySQL dump completed"
