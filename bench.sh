@@ -186,15 +186,15 @@ cname=$( awk -F: '/model name/ {name=$2} END {print name}' /proc/cpuinfo | sed '
 cores=$( awk -F: '/model name/ {core++} END {print core}' /proc/cpuinfo )
 freq=$( awk -F'[ :]' '/cpu MHz/ {print $4;exit}' /proc/cpuinfo )
 ccache=$( awk -F: '/cache size/ {cache=$2} END {print cache}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
-tram=$( free -m | awk '/Mem/ {print $2}' )
-uram=$( free -m | awk '/Mem/ {print $3}' )
-swap=$( free -m | awk '/Swap/ {print $2}' )
-uswap=$( free -m | awk '/Swap/ {print $3}' )
+tram=$( LANG=C; free -m | awk '/Mem/ {print $2}' )
+uram=$( LANG=C; free -m | awk '/Mem/ {print $3}' )
+swap=$( LANG=C; free -m | awk '/Swap/ {print $2}' )
+uswap=$( LANG=C; free -m | awk '/Swap/ {print $3}' )
 up=$( awk '{a=$1/86400;b=($1%86400)/3600;c=($1%3600)/60} {printf("%d days, %d hour %d min\n",a,b,c)}' /proc/uptime )
 if _exists "w"; then
-    load=$( w | head -1 | awk -F'load average:' '{print $2}' | sed 's/^[ \t]*//;s/[ \t]*$//' )
+    load=$( LANG=C; w | head -1 | awk -F'load average:' '{print $2}' | sed 's/^[ \t]*//;s/[ \t]*$//' )
 elif _exists "uptime"; then
-    load=$( uptime | head -1 | awk -F'load average:' '{print $2}' | sed 's/^[ \t]*//;s/[ \t]*$//' )
+    load=$( LANG=C; uptime | head -1 | awk -F'load average:' '{print $2}' | sed 's/^[ \t]*//;s/[ \t]*$//' )
 fi
 opsy=$( get_opsy )
 arch=$( uname -m )
