@@ -146,6 +146,7 @@ _is_installed() {
     || [ -s "/lib/modules/$(uname -r)/extra/wireguard.ko.xz" ] \
     || [ -s "/lib/modules/$(uname -r)/updates/dkms/wireguard.ko" ] \
     || [ -s "/lib/modules/$(uname -r)/updates/dkms/wireguard.ko.xz" ] \
+    || [ -s "/lib/modules/$(uname -r)/kernel/wireguard/wireguard.ko" ] \
     || [ -s "/lib/modules/$(uname -r)/kernel/drivers/net/wireguard/wireguard.ko" ] \
     || [ -s "/lib/modules/$(uname -r)/kernel/drivers/net/wireguard/wireguard.ko.xz" ]; then
         install_flag[1]=1
