@@ -27,16 +27,12 @@ COPY index.html /usr/share/caddy/index.html
 # See https://caddyserver.com/docs/conventions#file-locations for details
 ENV XDG_CONFIG_HOME /config
 ENV XDG_DATA_HOME /data
-# Let's Encrypt Agreement
-ENV ACME_AGREE="false"
 
 VOLUME /etc/caddy
 VOLUME /config
 VOLUME /data
 
-EXPOSE 80
-EXPOSE 443
-EXPOSE 2015
+EXPOSE 80 443 2015
 
 ENV TZ=Asia/Shanghai
-CMD [ "/usr/bin/caddy", "--conf", "/etc/caddy/Caddyfile", "--agree=$ACME_AGREE" ]
+CMD [ "/usr/bin/caddy", "-conf", "/etc/caddy/Caddyfile", "-agree" ]
