@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# This is a Shell script for build multi-architectures v2ray binary file
+# This is a Shell script for build multi-architectures xray binary file
 # 
 # Supported architectures: amd64, arm32v6, arm32v7, arm64v8, i386, ppc64le, s390x
 # 
