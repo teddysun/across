@@ -4,7 +4,7 @@
 #
 # System Required:  CentOS 6+, Debian8+, Ubuntu16+
 #
-# Copyright (C) 2016-2020 Teddysun <i@teddysun.com>
+# Copyright (C) 2016-2021 Teddysun <i@teddysun.com>
 #
 # URL: https://teddysun.com/489.html
 #
@@ -172,7 +172,7 @@ get_latest_version() {
     [ ${#latest_version[@]} -eq 0 ] && _error "Get latest kernel version failed."
     kernel_arr=()
     for i in ${latest_version[@]}; do
-        if _version_ge $i 5.6; then
+        if _version_ge $i 5.9; then
             kernel_arr+=($i);
         fi
     done
@@ -265,18 +265,11 @@ install_kernel() {
     case "$(_os)" in
         centos)
             if [ -n "$(_os_ver)" ]; then
-                if [ ! -f "/etc/yum.repos.d/elrepo.repo" ]; then
-                    _error_detect "rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org"
-                    [ "$(_os_ver)" -eq 6 ] && _error_detect "rpm -Uvh https://www.elrepo.org/elrepo-release-6-10.el6.elrepo.noarch.rpm"
-                    [ "$(_os_ver)" -eq 7 ] && _error_detect "rpm -Uvh https://www.elrepo.org/elrepo-release-7.0-5.el7.elrepo.noarch.rpm"
-                    [ "$(_os_ver)" -eq 8 ] && _error_detect "rpm -Uvh https://www.elrepo.org/elrepo-release-8.2-1.el8.elrepo.noarch.rpm"
-                fi
-                [ ! -f "/etc/yum.repos.d/elrepo.repo" ] && _error "Install elrepo failed, please check it and retry."
                 if ! _exists "yum-config-manager"; then
                     _error_detect "yum install -y yum-utils"
                 fi
-                [ x"$(yum-config-manager elrepo-kernel | grep -w enabled | awk '{print $3}')" != x"True" ] && _error_detect "yum-config-manager --enable elrepo-kernel"
                 if [ "$(_os_ver)" -eq 6 ]; then
+                    _error_detect "rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org"
                     rpm_kernel_url="https://dl.lamp.sh/files/"
                     if _is_64bit; then
                         rpm_kernel_name="kernel-ml-4.18.20-1.el6.elrepo.x86_64.rpm"
@@ -287,19 +280,16 @@ install_kernel() {
                     fi
                     _error_detect "wget -c -t3 -T60 -O ${rpm_kernel_name} ${rpm_kernel_url}${rpm_kernel_name}"
                     _error_detect "wget -c -t3 -T60 -O ${rpm_kernel_devel_name} ${rpm_kernel_url}${rpm_kernel_devel_name}"
-                    [ -f "${rpm_kernel_name}" ] && _error_detect "rpm -ivh ${rpm_kernel_name}" || _error "Download ${rpm_kernel_name} failed, please check it."
-                    [ -f "${rpm_kernel_devel_name}" ] && _error_detect "rpm -ivh ${rpm_kernel_devel_name}" || _error "Download ${rpm_kernel_devel_name} failed, please check it."
+                    [ -s "${rpm_kernel_name}" ] && _error_detect "rpm -ivh ${rpm_kernel_name}" || _error "Download ${rpm_kernel_name} failed, please check it."
+                    [ -s "${rpm_kernel_devel_name}" ] && _error_detect "rpm -ivh ${rpm_kernel_devel_name}" || _error "Download ${rpm_kernel_devel_name} failed, please check it."
                     rm -f ${rpm_kernel_name} ${rpm_kernel_devel_name}
                     [ ! -f "/boot/grub/grub.conf" ] && _error "/boot/grub/grub.conf not found, please check it."
                     sed -i 's/^default=.*/default=0/g' /boot/grub/grub.conf
                 elif [ "$(_os_ver)" -eq 7 ]; then
-                    _error_detect "yum -y install kernel-ml kernel-ml-devel"
-                    [ ! -f "/boot/grub2/grub.cfg" ] && _error "/boot/grub2/grub.cfg not found, please check it."
-                    grub2-set-default 0
-                elif [ "$(_os_ver)" -eq 8 ]; then
-                    _error_detect "yum -y install kernel-ml kernel-ml-core kernel-ml-devel"
-                    [ ! -f "/boot/grub2/grub.cfg" ] && _error "/boot/grub2/grub.cfg not found, please check it."
-                    grub2-set-default 0
+                    _error_detect "yum -y install centos-release-xen-48"
+                    [ x"$(yum-config-manager centos-virt-xen-48 | grep -w enabled | awk '{print $3}')" != x"True" ] && _error_detect "yum-config-manager --enable centos-virt-xen-48"
+                    _error_detect "yum -y update kernel"
+                    _error_detect "yum -y install kernel-devel"
                 fi
             fi
             ;;
@@ -362,7 +352,7 @@ echo " OS      : $opsy"
 echo " Arch    : $arch ($lbit Bit)"
 echo " Kernel  : $kern"
 echo "----------------------------------------"
-echo " Auto install latest kernel for TCP BBR"
+echo " Automatically enable TCP BBR script"
 echo
 echo " URL: https://teddysun.com/489.html"
 echo "----------------------------------------"
