@@ -48,7 +48,7 @@ _64bit(){
 _exit() {
     _red "\nThe script has been terminated.\n"
     # clean up
-    rm -fr speedtest-cli benchtest_*
+    rm -fr speedtest.tgz speedtest-cli benchtest_*
     exit 1
 }
 
