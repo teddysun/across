@@ -4,7 +4,7 @@
 # https://github.com/caddyserver/caddy
 # https://github.com/caddyserver/forwardproxy
 
-FROM --platform=${TARGETPLATFORM} alpine:3.12
+FROM --platform=${TARGETPLATFORM} alpine:3.13
 LABEL maintainer="Teddysun <i@teddysun.com>"
 
 ARG TARGETPLATFORM
