@@ -453,6 +453,7 @@ PrivateKey = ${SERVER_PRIVATE_KEY}
 PublicKey = ${CLIENT_PUBLIC_KEY}
 AllowedIPs = ${CLIENT_WG_IPV4}/32,${CLIENT_WG_IPV6}/128
 PresharedKey = ${CLIENT_PRE_SHARED_KEY}
+PersistentKeepalive = 25
 EOF
     else
         cat > /etc/wireguard/${SERVER_WG_NIC}.conf <<EOF
@@ -465,6 +466,7 @@ PrivateKey = ${SERVER_PRIVATE_KEY}
 PublicKey = ${CLIENT_PUBLIC_KEY}
 AllowedIPs = ${CLIENT_WG_IPV4}/32
 PresharedKey = ${CLIENT_PRE_SHARED_KEY}
+PersistentKeepalive = 25
 EOF
     fi
     chmod 600 /etc/wireguard/${SERVER_WG_NIC}.conf
