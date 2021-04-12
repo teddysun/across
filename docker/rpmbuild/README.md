@@ -47,14 +47,14 @@ There is an example to start a container for CentOS 7 like below:
 
 ```bash
 $ mkdir -m 777 -p /opt/builder7
-$ docker run -it --rm --name rpmbuild7 -v /opt/builder7:/home/builder/rpmbuild teddysun/rpmbuild:7
+$ docker run -it --rm -h buildbot --name rpmbuild7 -v /opt/builder7:/home/builder/rpmbuild teddysun/rpmbuild:7
 ```
 
 There is an example to start a container for CentOS 8 like below:
 
 ```bash
 $ mkdir -m 777 -p /opt/builder8
-$ docker run -it --rm --name rpmbuild8 -v /opt/builder8:/home/builder/rpmbuild teddysun/rpmbuild:8
+$ docker run -it --rm -h buildbot --name rpmbuild8 -v /opt/builder8:/home/builder/rpmbuild teddysun/rpmbuild:8
 ```
 
 [1]: https://docs.docker.com/
