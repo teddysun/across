@@ -1,0 +1,36 @@
+# Dockerfile for build RPM packages.
+# Copyright (C) 2021 Teddysun <i@teddysun.com>
+
+FROM --platform=${TARGETPLATFORM} centos:8
+LABEL maintainer="Teddysun <i@teddysun.com>"
+
+RUN yum install -y yum-utils epel-release && \
+	yum-config-manager --enable epel && \
+	rpm -e --nodeps coreutils-single && \
+	yum install -y tar wget git tree gcc gcc-c++ \
+		sudo net-tools make cmake zstd libzstd \
+		bash coreutils diffutils patch \
+		rpm-build rpm-devel rpmlint rpmdevtools \
+		asciidoc audit-libs-devel binutils-devel flex \
+		libcap-devel newt-devel pciutils-devel perl-generators \
+		python3 python3-devel python3-docutils rsync xmlto bc bison \
+		java-devel ncurses-devel numactl-devel openssl-devel perl-devel \
+		elfutils-devel xz-devel perl-ExtUtils-Embed && \
+	yum clean all && rm -rf /var/cache/dnf /var/lib/rpm/__db*
+
+RUN useradd builder -u 1000 -m -G users,wheel && \
+	echo "builder ALL=(ALL:ALL) NOPASSWD:ALL" >> /etc/sudoers && \
+	echo "# macros"                           >  /home/builder/.rpmmacros && \
+	echo "%_topdir    /home/builder/rpmbuild" >> /home/builder/.rpmmacros && \
+	echo "%_sourcedir %{_topdir}"             >> /home/builder/.rpmmacros && \
+	echo "%_builddir  %{_topdir}"             >> /home/builder/.rpmmacros && \
+	echo "%_specdir   %{_topdir}"             >> /home/builder/.rpmmacros && \
+	echo "%_rpmdir    %{_topdir}"             >> /home/builder/.rpmmacros && \
+	echo "%_srcrpmdir %{_topdir}"             >> /home/builder/.rpmmacros && \
+	mkdir -p /home/builder/rpmbuild && \
+	chown -R builder /home/builder
+
+USER builder
+VOLUME /home/builder
+WORKDIR /home/builder/rpmbuild
+CMD ["/bin/bash"]
