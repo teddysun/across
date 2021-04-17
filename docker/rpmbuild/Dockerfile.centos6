@@ -1,0 +1,39 @@
+# Dockerfile for build RPM packages.
+# Copyright (C) 2021 Teddysun <i@teddysun.com>
+
+FROM centos:6
+LABEL maintainer="Teddysun <i@teddysun.com>"
+
+RUN sed -i -e "s/^mirrorlist=http:\/\/mirrorlist.centos.org/#mirrorlist=http:\/\/mirrorlist.centos.org/g" /etc/yum.repos.d/CentOS-Base.repo && \
+	sed -i -e "s/^#baseurl=http:\/\/mirror.centos.org/baseurl=https:\/\/vault.centos.org/g" /etc/yum.repos.d/CentOS-Base.repo && \
+	yum install -y yum-utils epel-release && \
+	yum-config-manager --enable epel && \
+	yum install -y centos-release-scl-rh && \
+	sed -i -e "s/^mirrorlist=http:\/\/mirrorlist.centos.org/#mirrorlist=http:\/\/mirrorlist.centos.org/g" /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo && \
+	sed -i -e "s/^#baseurl=http:\/\/mirror.centos.org/baseurl=https:\/\/vault.centos.org/g" /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo && \
+	yum install -y tar wget git tree gcc gcc-c++ \
+		sudo net-tools make cmake bash python-devel \
+		python asciidoc bc m4 patchutils xmlto audit-libs-devel \
+		rpm-build rpm-devel rpmlint rpmdevtools \
+		devtoolset-9-gcc devtoolset-9-binutils devtoolset-9-runtime \
+		binutils-devel bison elfutils-devel elfutils-libelf-devel \
+		flex java-1.8.0-openjdk-devel newt-devel numactl-devel ncurses-devel \
+		openssl-devel slang-devel systemtap-sdt-devel xz-devel zlib-devel perl-ExtUtils-Embed && \
+	yum clean all && rm -rf /var/cache/yum /var/lib/rpm/__db*
+
+RUN useradd builder -u 1000 -m -G users,wheel && \
+	echo "builder ALL=(ALL:ALL) NOPASSWD:ALL" >> /etc/sudoers && \
+	echo "# macros"                           >  /home/builder/.rpmmacros && \
+	echo "%_topdir    /home/builder/rpmbuild" >> /home/builder/.rpmmacros && \
+	echo "%_sourcedir %{_topdir}"             >> /home/builder/.rpmmacros && \
+	echo "%_builddir  %{_topdir}"             >> /home/builder/.rpmmacros && \
+	echo "%_specdir   %{_topdir}"             >> /home/builder/.rpmmacros && \
+	echo "%_rpmdir    %{_topdir}"             >> /home/builder/.rpmmacros && \
+	echo "%_srcrpmdir %{_topdir}"             >> /home/builder/.rpmmacros && \
+	mkdir -p /home/builder/rpmbuild && \
+	chown -R builder /home/builder
+
+USER builder
+VOLUME /home/builder
+WORKDIR /home/builder/rpmbuild
+CMD ["/bin/bash"]
