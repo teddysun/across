@@ -46,4 +46,4 @@
 
 ## pptp.sh(Deprecated, DO NOT USE)
 
-Copyright (C) 2013-2020 Teddysun <i@teddysun.com>
+Copyright (C) 2013-2021 Teddysun <i@teddysun.com>
