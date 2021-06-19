@@ -1,10 +1,10 @@
 # Dockerfile for trojan-go based alpine
-# Copyright (C) 2019 - 2020 Teddysun <i@teddysun.com>
+# Copyright (C) 2019 - 2021 Teddysun <i@teddysun.com>
 # Reference URL:
 # https://github.com/p4gefau1t/trojan-go
-# https://github.com/v2ray/v2ray-core
-# https://github.com/v2ray/geoip
-# https://github.com/v2ray/domain-list-community
+# https://github.com/v2fly/v2ray-core
+# https://github.com/v2fly/geoip
+# https://github.com/v2fly/domain-list-community
 
 FROM --platform=${TARGETPLATFORM} alpine:latest
 LABEL maintainer="Teddysun <i@teddysun.com>"
@@ -17,8 +17,9 @@ RUN set -ex \
 	&& chmod +x /root/trojan-go.sh \
 	&& /root/trojan-go.sh "${TARGETPLATFORM}" \
 	&& rm -fv /root/trojan-go.sh \
-	&& wget -O /usr/bin/geosite.dat https://github.com/v2fly/domain-list-community/releases/latest/download/dlc.dat \
-	&& wget -O /usr/bin/geoip.dat https://github.com/v2fly/geoip/releases/latest/download/geoip.dat
+	&& mkdir -p /usr/share/trojan-go \
+	&& wget -O /usr/share/trojan-go/geosite.dat https://github.com/v2fly/domain-list-community/releases/latest/download/dlc.dat \
+	&& wget -O /usr/share/trojan-go/geoip.dat https://github.com/v2fly/geoip/releases/latest/download/geoip.dat
 
 VOLUME /etc/trojan-go
 ENV TZ=Asia/Shanghai
