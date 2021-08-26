@@ -2,7 +2,7 @@
 #
 # This is a Shell script for caddy based alpine with Docker image
 # 
-# Copyright (C) 2019 - 2020 Teddysun <i@teddysun.com>
+# Copyright (C) 2019 - 2021 Teddysun <i@teddysun.com>
 #
 # Reference URL:
 # https://github.com/caddyserver/caddy
