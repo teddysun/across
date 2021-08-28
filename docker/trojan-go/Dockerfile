@@ -18,7 +18,11 @@ RUN set -ex \
 	&& rm -fv /root/trojan-go.sh \
 	&& mkdir -p /usr/share/trojan-go \
 	&& wget -O /usr/share/trojan-go/geosite.dat https://github.com/v2fly/domain-list-community/releases/latest/download/dlc.dat \
-	&& wget -O /usr/share/trojan-go/geoip.dat https://github.com/v2fly/geoip/releases/latest/download/geoip.dat
+	&& wget -O /usr/share/trojan-go/geoip.dat https://github.com/v2fly/geoip/releases/latest/download/geoip.dat \
+	&& wget -O /usr/share/trojan-go/geoip-only-cn-private.dat https://github.com/v2fly/geoip/releases/latest/download/geoip-only-cn-private.dat \
+	&& ln -fs /usr/share/trojan-go/geoip.dat /usr/bin/ \
+	&& ln -fs /usr/share/trojan-go/geoip-only-cn-private.dat /usr/bin/ \
+	&& ln -fs /usr/share/trojan-go/geosite.dat /usr/bin/ 
 
 VOLUME /etc/trojan-go
 ENV TZ=Asia/Shanghai
