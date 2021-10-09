@@ -14,7 +14,7 @@ RUN yum install -y yum-utils epel-release centos-release-scl-rh && \
 		scl-utils asciidoc bison elfutils-libelf-devel m4 newt-devel \
 		openssl-devel openssl xmlto audit-libs-devel binutils-devel elfutils-devel \
 		gettext java-1.8.0-openjdk-devel libcap-devel numactl-devel python-devel python3 \
-		slang-devel xz-devel zlib-devel ncurses-devel pciutils-devel perl-ExtUtils-Embed && \
+		slang-devel xz-devel zlib-devel ncurses-devel pciutils-devel perl-ExtUtils-Embed epel-rpm-macros && \
 	yum clean all && rm -rf /var/cache/yum /var/lib/rpm/__db*
 
 RUN useradd builder -u 1000 -m -G users,wheel && \

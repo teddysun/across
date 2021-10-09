@@ -6,6 +6,7 @@ LABEL maintainer="Teddysun <i@teddysun.com>"
 
 RUN yum install -y yum-utils epel-release && \
 	yum-config-manager --enable epel && \
+	yum-config-manager --enable powertools && \
 	rpm -e --nodeps coreutils-single && \
 	yum install -y tar wget git tree gcc gcc-c++ \
 		sudo net-tools make cmake zstd libzstd \
