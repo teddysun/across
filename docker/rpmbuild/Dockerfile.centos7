@@ -8,7 +8,7 @@ RUN yum install -y yum-utils epel-release centos-release-scl-rh && \
 	yum-config-manager --enable epel && \
 	yum install -y tar wget git tree gcc gcc-c++ \
 		sudo net-tools make cmake zstd libzstd \
-		python bash coreutils diffutils patch \
+		python bash coreutils diffutils patch ca-certificates \
 		rpm-build rpm-devel rpmlint rpmdevtools \
 		devtoolset-9-gcc devtoolset-9-binutils devtoolset-9-runtime \
 		scl-utils asciidoc bison elfutils-libelf-devel m4 newt-devel \

@@ -10,7 +10,7 @@ RUN yum install -y yum-utils epel-release && \
 	rpm -e --nodeps coreutils-single && \
 	yum install -y tar wget git tree gcc gcc-c++ \
 		sudo net-tools make cmake zstd libzstd \
-		bash coreutils diffutils patch \
+		bash coreutils diffutils patch ca-certificates \
 		rpm-build rpm-devel rpmlint rpmdevtools \
 		asciidoc audit-libs-devel binutils-devel flex \
 		libcap-devel newt-devel pciutils-devel perl-generators \
