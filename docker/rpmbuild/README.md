@@ -28,12 +28,6 @@ The `builder` user (UID 1000) is a member of users and wheel, and has password-l
 
 ## Pull the image
 
-For CentOS 6
-
-```bash
-$ docker pull teddysun/rpmbuild:6
-```
-
 For CentOS 7
 
 ```bash
