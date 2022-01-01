@@ -178,8 +178,8 @@ ipv4_info() {
 install_speedtest() {
     if  [ ! -e "./speedtest-cli/speedtest" ]; then
         _64bit && sys_bit=x86_64 || sys_bit=i386
-        url1="https://install.speedtest.net/app/cli/ookla-speedtest-1.0.0-${sys_bit}-linux.tgz"
-        url2="https://dl.lamp.sh/files/ookla-speedtest-1.0.0-${sys_bit}-linux.tgz"
+        url1="https://install.speedtest.net/app/cli/ookla-speedtest-1.1.1-linux-${sys_bit}.tgz"
+        url2="https://dl.lamp.sh/files/ookla-speedtest-1.1.1-linux-${sys_bit}.tgz"
         wget --no-check-certificate -q -T10 -O speedtest.tgz ${url1}
         if [ $? -ne 0 ]; then
             wget --no-check-certificate -q -T10 -O speedtest.tgz ${url2}
