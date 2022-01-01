@@ -38,14 +38,6 @@ _exists() {
     return ${rt}
 }
 
-_64bit(){
-    if [ $(getconf WORD_BIT) = '32' ] && [ $(getconf LONG_BIT) = '64' ]; then
-        return 0
-    else
-        return 1
-    fi
-}
-
 _exit() {
     _red "\nThe script has been terminated.\n"
     # clean up
@@ -169,15 +161,43 @@ ipv4_info() {
     local city="$(wget -q -T10 -O- ipinfo.io/city)"
     local country="$(wget -q -T10 -O- ipinfo.io/country)"
     local region="$(wget -q -T10 -O- ipinfo.io/region)"
-    [[ -n "$org" ]] && echo " Organization          : $(_blue "$org")"
-    [[ -n "$city" && -n "country" ]] && echo " Location              : $(_blue "$city / $country")"
-    [[ -n "$region" ]] && echo " Region                : $(_yellow "$region")"
-    [[ -z "$org" ]] && echo " Region                : $(_red "No ISP detected")"
+    if [[ -n "$org" ]]; then
+        echo " Organization       : $(_blue "$org")"
+    fi
+    if [[ -n "$city" && -n "country" ]]; then
+        echo " Location           : $(_blue "$city / $country")"
+    fi
+    if [[ -n "$region" ]]; then
+        echo " Region             : $(_yellow "$region")"
+    fi
+    if [[ -z "$org" ]]; then
+        echo " Region             : $(_red "No ISP detected")"
+    fi
 }
 
 install_speedtest() {
     if  [ ! -e "./speedtest-cli/speedtest" ]; then
-        _64bit && sys_bit=x86_64 || sys_bit=i386
+        sys_bit=""
+        local sysarch="$(uname -m)"
+        if [ "${sysarch}" = "unknown" ] || [ "${sysarch}" = "" ]; then
+            local sysarch="$(arch)"
+        fi
+        if [ "${sysarch}" = "x86_64" ]; then
+            sys_bit="x86_64"
+        fi
+        if [ "${sysarch}" = "i386" ] || [ "${sysarch}" = "i686" ]; then
+            sys_bit="i386"
+        fi
+        if [ "${sysarch}" = "armv8" ] || [ "${sysarch}" = "armv8l" ] || [ "${sysarch}" = "aarch64" ] || [ "${sysarch}" = "arm64" ]; then
+            sys_bit="aarch64"
+        fi
+        if [ "${sysarch}" = "armv7" ] || [ "${sysarch}" = "armv7l" ]; then
+            sys_bit="armhf"
+        fi
+        if [ "${sysarch}" = "armv6" ]; then
+            sys_bit="armel"
+        fi
+        [ -z "${sys_bit}" ] && _red "Error: Unsupported system architecture (${sysarch}).\n" && exit 1
         url1="https://install.speedtest.net/app/cli/ookla-speedtest-1.1.1-linux-${sys_bit}.tgz"
         url2="https://dl.lamp.sh/files/ookla-speedtest-1.1.1-linux-${sys_bit}.tgz"
         wget --no-check-certificate -q -T10 -O speedtest.tgz ${url1}
@@ -191,10 +211,10 @@ install_speedtest() {
 }
 
 print_intro() {
-    echo " $(_yellow "*********************** A Bench.sh Script By Teddysun ***************")"
-    echo " Intro                 : https://teddysun.com/444.html"
-    echo " Version               : $(_green v2022-01-01)"
-    echo " Usage                 : $(_red "wget -qO- bench.sh | bash")"
+    echo "-------------------- A Bench.sh Script By Teddysun -------------------"
+    echo " Intro              : https://teddysun.com/444.html"
+    echo " Version            : $(_green v2022-01-01)"
+    echo " Usage              : $(_red "wget -qO- bench.sh | bash")"
 }
 
 # Get System information
@@ -229,20 +249,24 @@ get_system_info() {
 }
 # Print System information
 print_system_info() {
-    echo " CPU Model             : $(_blue "$cname")"
-    echo " CPU Cores             : $(_blue "$cores")"
-    echo " CPU Frequency         : $(_blue "$freq MHz")"
-    echo " CPU Cache             : $(_blue "$ccache")"
-    echo " Total Disk            : $(_yellow "$disk_total_size GB") $(_blue "($disk_used_size GB Used)")"
-    echo " Total Mem             : $(_yellow "$tram MB") $(_blue "($uram MB Used)")"
-    echo " Total Swap            : $(_blue "$swap MB ($uswap MB Used)")"
-    echo " System uptime         : $(_blue "$up")"
-    echo " Load average          : $(_blue "$load")"
-    echo " OS                    : $(_blue "$opsy")"
-    echo " Arch                  : $(_blue "$arch ($lbit Bit)")"
-    echo " Kernel                : $(_blue "$kern")"
-    echo " TCP CC                : $(_yellow "$tcpctrl")"
-    echo " Virtualization        : $(_blue "$virt")"
+    echo " CPU Model          : $(_blue "$cname")"
+    echo " CPU Cores          : $(_blue "$cores")"
+    if [ -n "$freq" ]; then
+    echo " CPU Frequency      : $(_blue "$freq MHz")"
+    fi
+    if [ -n "$ccache" ]; then
+    echo " CPU Cache          : $(_blue "$ccache")"
+    fi
+    echo " Total Disk         : $(_yellow "$disk_total_size GB") $(_blue "($disk_used_size GB Used)")"
+    echo " Total Mem          : $(_yellow "$tram MB") $(_blue "($uram MB Used)")"
+    echo " Total Swap         : $(_blue "$swap MB ($uswap MB Used)")"
+    echo " System uptime      : $(_blue "$up")"
+    echo " Load average       : $(_blue "$load")"
+    echo " OS                 : $(_blue "$opsy")"
+    echo " Arch               : $(_blue "$arch ($lbit Bit)")"
+    echo " Kernel             : $(_blue "$kern")"
+    echo " TCP CC             : $(_yellow "$tcpctrl")"
+    echo " Virtualization     : $(_blue "$virt")"
 }
 
 print_io_test() {
@@ -253,11 +277,11 @@ print_io_test() {
     if [ ${freespace} -gt 1024 ]; then
         writemb=2048
         io1=$( io_test ${writemb} )
-        echo " I/O Speed(1st run)    : $(_yellow "$io1")"
+        echo " I/O Speed(1st run) : $(_yellow "$io1")"
         io2=$( io_test ${writemb} )
-        echo " I/O Speed(2nd run)    : $(_yellow "$io2")"
+        echo " I/O Speed(2nd run) : $(_yellow "$io2")"
         io3=$( io_test ${writemb} )
-        echo " I/O Speed(3rd run)    : $(_yellow "$io3")"
+        echo " I/O Speed(3rd run) : $(_yellow "$io3")"
         ioraw1=$( echo $io1 | awk 'NR==1 {print $1}' )
         [ "`echo $io1 | awk 'NR==1 {print $2}'`" == "GB/s" ] && ioraw1=$( awk 'BEGIN{print '$ioraw1' * 1024}' )
         ioraw2=$( echo $io2 | awk 'NR==1 {print $1}' )
@@ -266,7 +290,7 @@ print_io_test() {
         [ "`echo $io3 | awk 'NR==1 {print $2}'`" == "GB/s" ] && ioraw3=$( awk 'BEGIN{print '$ioraw3' * 1024}' )
         ioall=$( awk 'BEGIN{print '$ioraw1' + '$ioraw2' + '$ioraw3'}' )
         ioavg=$( awk 'BEGIN{printf "%.1f", '$ioall' / 3}' )
-        echo " I/O Speed(average)    : $(_yellow "$ioavg MB/s")"
+        echo " I/O Speed(average) : $(_yellow "$ioavg MB/s")"
     else
         echo " $(_red "Not enough space for I/O Speed test!")"
     fi
@@ -278,20 +302,19 @@ print_end_time() {
     if [ ${time} -gt 60 ]; then
         min=$(expr $time / 60)
         sec=$(expr $time % 60)
-        echo " Finished in           : ${min} min ${sec} sec"
+        echo " Finished in        : ${min} min ${sec} sec"
     else
-        echo " Finished in           : ${time} sec"
+        echo " Finished in        : ${time} sec"
     fi
     date_time=$(date +%Y-%m-%d" "%H:%M:%S)
-    echo " Timestamp             : $date_time"
+    echo " Timestamp          : $date_time"
 }
 
-
-! _exists "wget" && _red "Error: wget command not found. You must be install wget command at first.\n" && exit 1
+! _exists "wget" && _red "Error: wget command not found.\n" && exit 1
+! _exists "free" && _red "Error: free command not found.\n" && exit 1
 start_time=$(date +%s)
 check_virt
 clear
-next
 print_intro
 next
 get_system_info
