@@ -2,9 +2,10 @@
 #
 # Description: Auto test download & I/O speed script
 #
-# Copyright (C) 2015 - 2020 Teddysun <i@teddysun.com>
+# Copyright (C) 2015 - 2022 Teddysun <i@teddysun.com>
 # Thanks: LookBack <admin@dwhd.org>
 # URL: https://teddysun.com/444.html
+# https://github.com/teddysun/across/blob/master/bench.sh
 #
 trap _exit INT QUIT TERM
 
@@ -78,20 +79,22 @@ speed_test() {
 
 speed() {
     speed_test '' 'Speedtest.net'
-    speed_test '5145'  'Beijing    CU'
-    speed_test '3633'  'Shanghai   CT'
-    speed_test '24447' 'Shanghai   CU'
-    speed_test '27594' 'Guangzhou  CT'
-    speed_test '26678' 'Guangzhou  CU'
-    speed_test '16192' 'Shenzhen   CU'
-    speed_test '4515'  'Shenzhen   CM'
-    speed_test '32155' 'Hongkong   CN'
-    speed_test '13623' 'Singapore  SG'
-    speed_test '15047' 'Tokyo      JP'
+    speed_test '21541' 'Los Angeles, US'
+    speed_test '43860' 'Dallas, US'
+    speed_test '40879' 'Montreal, CA'
+    speed_test '24215' 'Paris, FR'
+    speed_test '28922' 'Amsterdam, NL'
+    speed_test '24447' 'Shanghai, CN'
+    speed_test '26352' 'Nanjing, CN'
+    speed_test '27594' 'Guangzhou, CN'
+    speed_test '32155' 'Hongkong, CN'
+    speed_test '6527'  'Seoul, KR'
+    speed_test '25960' 'Singapore, SG'
+    speed_test '15047' 'Tokyo, JP'
 }
 
 io_test() {
-    (LANG=C dd if=/dev/zero of=benchtest_$$ bs=64k count=16k conv=fdatasync && rm -f benchtest_$$ ) 2>&1 | awk -F, '{io=$NF} END { print io}' | sed 's/^[ \t]*//;s/[ \t]*$//'
+    (LANG=C dd if=/dev/zero of=benchtest_$$ bs=512k count=$1 conv=fdatasync && rm -f benchtest_$$ ) 2>&1 | awk -F, '{io=$NF} END { print io}' | sed 's/^[ \t]*//;s/[ \t]*$//'
 }
 
 calc_disk() {
@@ -141,6 +144,12 @@ check_virt(){
     elif [[ "${virtualx}" == *VirtualBox* ]]; then
         virt="VirtualBox"
     elif [[ -e /proc/xen ]]; then
+        if grep -q "control_d" "/proc/xen/capabilities" 2>/dev/null; then
+            virt="Xen-Dom0"
+        else
+            virt="Xen-DomU"
+        fi
+    elif [ -f "/sys/hypervisor/type" ] && grep -q "xen" "/sys/hypervisor/type"; then
         virt="Xen"
     elif [[ "${sys_manu}" == *"Microsoft Corporation"* ]]; then
         if [[ "${sys_product}" == *"Virtual Machine"* ]]; then
@@ -162,7 +171,8 @@ ipv4_info() {
     local region="$(wget -q -T10 -O- ipinfo.io/region)"
     [[ -n "$org" ]] && echo " Organization          : $(_blue "$org")"
     [[ -n "$city" && -n "country" ]] && echo " Location              : $(_blue "$city / $country")"
-    [[ -n "$region" ]] && echo " Region                : $(_blue "$region")"
+    [[ -n "$region" ]] && echo " Region                : $(_yellow "$region")"
+    [[ -z "$org" ]] && echo " Region                : $(_red "No ISP detected")"
 }
 
 install_speedtest() {
@@ -180,70 +190,118 @@ install_speedtest() {
     fi
 }
 
-! _exists "wget" && _red "Error: wget command not found. You must be install wget command at first.\n" && exit 1
+print_intro() {
+    echo " $(_yellow "*********************** A Bench.sh Script By Teddysun ***************")"
+    echo " Intro                 : https://teddysun.com/444.html"
+    echo " Version               : $(_green v2022-01-01)"
+    echo " Usage                 : $(_red "wget -qO- bench.sh | bash")"
+}
+
 # Get System information
-cname=$( awk -F: '/model name/ {name=$2} END {print name}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
-cores=$( awk -F: '/model name/ {core++} END {print core}' /proc/cpuinfo )
-freq=$( awk -F'[ :]' '/cpu MHz/ {print $4;exit}' /proc/cpuinfo )
-ccache=$( awk -F: '/cache size/ {cache=$2} END {print cache}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
-tram=$( LANG=C; free -m | awk '/Mem/ {print $2}' )
-uram=$( LANG=C; free -m | awk '/Mem/ {print $3}' )
-swap=$( LANG=C; free -m | awk '/Swap/ {print $2}' )
-uswap=$( LANG=C; free -m | awk '/Swap/ {print $3}' )
-up=$( awk '{a=$1/86400;b=($1%86400)/3600;c=($1%3600)/60} {printf("%d days, %d hour %d min\n",a,b,c)}' /proc/uptime )
-if _exists "w"; then
-    load=$( LANG=C; w | head -1 | awk -F'load average:' '{print $2}' | sed 's/^[ \t]*//;s/[ \t]*$//' )
-elif _exists "uptime"; then
-    load=$( LANG=C; uptime | head -1 | awk -F'load average:' '{print $2}' | sed 's/^[ \t]*//;s/[ \t]*$//' )
-fi
-opsy=$( get_opsy )
-arch=$( uname -m )
-if _exists "getconf"; then
-    lbit=$( getconf LONG_BIT )
-else
-    echo ${arch} | grep -q "64" && lbit="64" || lbit="32"
-fi
-kern=$( uname -r )
-disk_size1=($( LANG=C df -hPl | grep -wvE '\-|none|tmpfs|devtmpfs|by-uuid|chroot|Filesystem|udev|docker' | awk '{print $2}' ))
-disk_size2=($( LANG=C df -hPl | grep -wvE '\-|none|tmpfs|devtmpfs|by-uuid|chroot|Filesystem|udev|docker' | awk '{print $3}' ))
-disk_total_size=$( calc_disk "${disk_size1[@]}" )
-disk_used_size=$( calc_disk "${disk_size2[@]}" )
-tcpctrl=$( sysctl net.ipv4.tcp_congestion_control | awk -F ' ' '{print $3}' )
+get_system_info() {
+    cname=$( awk -F: '/model name/ {name=$2} END {print name}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
+    cores=$( awk -F: '/model name/ {core++} END {print core}' /proc/cpuinfo )
+    freq=$( awk -F'[ :]' '/cpu MHz/ {print $4;exit}' /proc/cpuinfo )
+    ccache=$( awk -F: '/cache size/ {cache=$2} END {print cache}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
+    tram=$( LANG=C; free -m | awk '/Mem/ {print $2}' )
+    uram=$( LANG=C; free -m | awk '/Mem/ {print $3}' )
+    swap=$( LANG=C; free -m | awk '/Swap/ {print $2}' )
+    uswap=$( LANG=C; free -m | awk '/Swap/ {print $3}' )
+    up=$( awk '{a=$1/86400;b=($1%86400)/3600;c=($1%3600)/60} {printf("%d days, %d hour %d min\n",a,b,c)}' /proc/uptime )
+    if _exists "w"; then
+        load=$( LANG=C; w | head -1 | awk -F'load average:' '{print $2}' | sed 's/^[ \t]*//;s/[ \t]*$//' )
+    elif _exists "uptime"; then
+        load=$( LANG=C; uptime | head -1 | awk -F'load average:' '{print $2}' | sed 's/^[ \t]*//;s/[ \t]*$//' )
+    fi
+    opsy=$( get_opsy )
+    arch=$( uname -m )
+    if _exists "getconf"; then
+        lbit=$( getconf LONG_BIT )
+    else
+        echo ${arch} | grep -q "64" && lbit="64" || lbit="32"
+    fi
+    kern=$( uname -r )
+    disk_size1=($( LANG=C df -hPl | grep -wvE '\-|none|tmpfs|devtmpfs|by-uuid|chroot|Filesystem|udev|docker' | awk '{print $2}' ))
+    disk_size2=($( LANG=C df -hPl | grep -wvE '\-|none|tmpfs|devtmpfs|by-uuid|chroot|Filesystem|udev|docker' | awk '{print $3}' ))
+    disk_total_size=$( calc_disk "${disk_size1[@]}" )
+    disk_used_size=$( calc_disk "${disk_size2[@]}" )
+    tcpctrl=$( sysctl net.ipv4.tcp_congestion_control | awk -F ' ' '{print $3}' )
+}
+# Print System information
+print_system_info() {
+    echo " CPU Model             : $(_blue "$cname")"
+    echo " CPU Cores             : $(_blue "$cores")"
+    echo " CPU Frequency         : $(_blue "$freq MHz")"
+    echo " CPU Cache             : $(_blue "$ccache")"
+    echo " Total Disk            : $(_yellow "$disk_total_size GB") $(_blue "($disk_used_size GB Used)")"
+    echo " Total Mem             : $(_yellow "$tram MB") $(_blue "($uram MB Used)")"
+    echo " Total Swap            : $(_blue "$swap MB ($uswap MB Used)")"
+    echo " System uptime         : $(_blue "$up")"
+    echo " Load average          : $(_blue "$load")"
+    echo " OS                    : $(_blue "$opsy")"
+    echo " Arch                  : $(_blue "$arch ($lbit Bit)")"
+    echo " Kernel                : $(_blue "$kern")"
+    echo " TCP CC                : $(_yellow "$tcpctrl")"
+    echo " Virtualization        : $(_blue "$virt")"
+}
+
+print_io_test() {
+    freespace=$( df -m . | awk 'NR==2 {print $4}' )
+    if [ -z "${freespace}" ]; then
+        freespace=$( df -m . | awk 'NR==3 {print $3}' )
+    fi
+    if [ ${freespace} -gt 1024 ]; then
+        writemb=2048
+        io1=$( io_test ${writemb} )
+        echo " I/O Speed(1st run)    : $(_yellow "$io1")"
+        io2=$( io_test ${writemb} )
+        echo " I/O Speed(2nd run)    : $(_yellow "$io2")"
+        io3=$( io_test ${writemb} )
+        echo " I/O Speed(3rd run)    : $(_yellow "$io3")"
+        ioraw1=$( echo $io1 | awk 'NR==1 {print $1}' )
+        [ "`echo $io1 | awk 'NR==1 {print $2}'`" == "GB/s" ] && ioraw1=$( awk 'BEGIN{print '$ioraw1' * 1024}' )
+        ioraw2=$( echo $io2 | awk 'NR==1 {print $1}' )
+        [ "`echo $io2 | awk 'NR==1 {print $2}'`" == "GB/s" ] && ioraw2=$( awk 'BEGIN{print '$ioraw2' * 1024}' )
+        ioraw3=$( echo $io3 | awk 'NR==1 {print $1}' )
+        [ "`echo $io3 | awk 'NR==1 {print $2}'`" == "GB/s" ] && ioraw3=$( awk 'BEGIN{print '$ioraw3' * 1024}' )
+        ioall=$( awk 'BEGIN{print '$ioraw1' + '$ioraw2' + '$ioraw3'}' )
+        ioavg=$( awk 'BEGIN{printf "%.1f", '$ioall' / 3}' )
+        echo " I/O Speed(average)    : $(_yellow "$ioavg MB/s")"
+    else
+        echo " $(_red "Not enough space for I/O Speed test!")"
+    fi
+}
+
+print_end_time() {
+    end_time=$(date +%s)
+    time=$(( ${end_time} - ${start_time} ))
+    if [ ${time} -gt 60 ]; then
+        min=$(expr $time / 60)
+        sec=$(expr $time % 60)
+        echo " Finished in           : ${min} min ${sec} sec"
+    else
+        echo " Finished in           : ${time} sec"
+    fi
+    date_time=$(date +%Y-%m-%d" "%H:%M:%S)
+    echo " Timestamp             : $date_time"
+}
+
+
+! _exists "wget" && _red "Error: wget command not found. You must be install wget command at first.\n" && exit 1
+start_time=$(date +%s)
 check_virt
 clear
 next
-echo " CPU Model             : $(_blue "$cname")"
-echo " CPU Cores             : $(_blue "$cores")"
-echo " CPU Frequency         : $(_blue "$freq MHz")"
-echo " CPU Cache             : $(_blue "$ccache")"
-echo " Total Disk            : $(_blue "$disk_total_size GB ($disk_used_size GB Used)")"
-echo " Total Mem             : $(_blue "$tram MB ($uram MB Used)")"
-echo " Total Swap            : $(_blue "$swap MB ($uswap MB Used)")"
-echo " System uptime         : $(_blue "$up")"
-echo " Load average          : $(_blue "$load")"
-echo " OS                    : $(_blue "$opsy")"
-echo " Arch                  : $(_blue "$arch ($lbit Bit)")"
-echo " Kernel                : $(_blue "$kern")"
-echo " TCP CC                : $(_blue "$tcpctrl")"
-echo " Virtualization        : $(_blue "$virt")"
+print_intro
+next
+get_system_info
+print_system_info
 ipv4_info
 next
-io1=$( io_test )
-echo " I/O Speed(1st run)    : $(_yellow "$io1")"
-io2=$( io_test )
-echo " I/O Speed(2nd run)    : $(_yellow "$io2")"
-io3=$( io_test )
-echo " I/O Speed(3rd run)    : $(_yellow "$io3")"
-ioraw1=$( echo $io1 | awk 'NR==1 {print $1}' )
-[ "`echo $io1 | awk 'NR==1 {print $2}'`" == "GB/s" ] && ioraw1=$( awk 'BEGIN{print '$ioraw1' * 1024}' )
-ioraw2=$( echo $io2 | awk 'NR==1 {print $1}' )
-[ "`echo $io2 | awk 'NR==1 {print $2}'`" == "GB/s" ] && ioraw2=$( awk 'BEGIN{print '$ioraw2' * 1024}' )
-ioraw3=$( echo $io3 | awk 'NR==1 {print $1}' )
-[ "`echo $io3 | awk 'NR==1 {print $2}'`" == "GB/s" ] && ioraw3=$( awk 'BEGIN{print '$ioraw3' * 1024}' )
-ioall=$( awk 'BEGIN{print '$ioraw1' + '$ioraw2' + '$ioraw3'}' )
-ioavg=$( awk 'BEGIN{printf "%.1f", '$ioall' / 3}' )
-echo -e " Average I/O speed     : $(_yellow "$ioavg MB/s")"
+print_io_test
 next
 install_speedtest && printf "%-18s%-18s%-20s%-12s\n" " Node Name" "Upload Speed" "Download Speed" "Latency"
 speed && rm -fr speedtest-cli
+next
+print_end_time
 next
