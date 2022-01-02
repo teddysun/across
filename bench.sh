@@ -220,7 +220,7 @@ print_intro() {
 # Get System information
 get_system_info() {
     cname=$( awk -F: '/model name/ {name=$2} END {print name}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
-    cores=$( awk -F: '/model name/ {core++} END {print core}' /proc/cpuinfo )
+    cores=$( awk -F: '/processor/ {core++} END {print core}' /proc/cpuinfo )
     freq=$( awk -F'[ :]' '/cpu MHz/ {print $4;exit}' /proc/cpuinfo )
     ccache=$( awk -F: '/cache size/ {cache=$2} END {print cache}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
     tram=$( LANG=C; free -m | awk '/Mem/ {print $2}' )
@@ -249,7 +249,11 @@ get_system_info() {
 }
 # Print System information
 print_system_info() {
-    echo " CPU Model          : $(_blue "$cname")"
+    if [ -n "$cname" ]; then
+        echo " CPU Model          : $(_blue "$cname")"
+    else
+        echo " CPU Model          : $(_blue "CPU model not detected")"
+    fi
     echo " CPU Cores          : $(_blue "$cores")"
     if [ -n "$freq" ]; then
         echo " CPU Frequency      : $(_blue "$freq MHz")"
