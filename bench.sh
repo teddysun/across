@@ -176,7 +176,7 @@ ipv4_info() {
 }
 
 install_speedtest() {
-    if  [ ! -e "./speedtest-cli/speedtest" ]; then
+    if [ ! -e "./speedtest-cli/speedtest" ]; then
         sys_bit=""
         local sysarch="$(uname -m)"
         if [ "${sysarch}" = "unknown" ] || [ "${sysarch}" = "" ]; then
@@ -252,10 +252,10 @@ print_system_info() {
     echo " CPU Model          : $(_blue "$cname")"
     echo " CPU Cores          : $(_blue "$cores")"
     if [ -n "$freq" ]; then
-    echo " CPU Frequency      : $(_blue "$freq MHz")"
+        echo " CPU Frequency      : $(_blue "$freq MHz")"
     fi
     if [ -n "$ccache" ]; then
-    echo " CPU Cache          : $(_blue "$ccache")"
+        echo " CPU Cache          : $(_blue "$ccache")"
     fi
     echo " Total Disk         : $(_yellow "$disk_total_size GB") $(_blue "($disk_used_size GB Used)")"
     echo " Total Mem          : $(_yellow "$tram MB") $(_blue "($uram MB Used)")"
@@ -313,11 +313,11 @@ print_end_time() {
 ! _exists "wget" && _red "Error: wget command not found.\n" && exit 1
 ! _exists "free" && _red "Error: free command not found.\n" && exit 1
 start_time=$(date +%s)
+get_system_info
 check_virt
 clear
 print_intro
 next
-get_system_info
 print_system_info
 ipv4_info
 next
