@@ -89,19 +89,30 @@ io_test() {
     (LANG=C dd if=/dev/zero of=benchtest_$$ bs=512k count=$1 conv=fdatasync && rm -f benchtest_$$ ) 2>&1 | awk -F, '{io=$NF} END { print io}' | sed 's/^[ \t]*//;s/[ \t]*$//'
 }
 
-calc_disk() {
+calc_size() {
+    local raw=$1
     local total_size=0
-    local array=$@
-    for size in ${array[@]}
-    do
-        [ "${size}" == "0" ] && size_t=0 || size_t=`echo ${size:0:${#size}-1}`
-        [ "`echo ${size:(-1)}`" == "K" ] && size=0
-        [ "`echo ${size:(-1)}`" == "M" ] && size=$( awk 'BEGIN{printf "%.1f", '$size_t' / 1024}' )
-        [ "`echo ${size:(-1)}`" == "T" ] && size=$( awk 'BEGIN{printf "%.1f", '$size_t' * 1024}' )
-        [ "`echo ${size:(-1)}`" == "G" ] && size=${size_t}
-        total_size=$( awk 'BEGIN{printf "%.1f", '$total_size' + '$size'}' )
-    done
-    echo ${total_size}
+    local num=1
+    local unit="KB"
+    if ! [[ ${raw} =~ ^[0-9]+$ ]] ; then
+        echo ""
+        return
+    fi
+    if [ "${raw}" -ge 1073741824 ]; then
+        num=1073741824
+        unit="TB"
+    elif [ "${raw}" -ge 1048576 ]; then
+        num=1048576
+        unit="GB"
+    elif [ "${raw}" -ge 1024 ]; then
+        num=1024
+        unit="MB"
+    elif [ "${raw}" -eq 0 ]; then
+        echo "${total_size}"
+        return
+    fi
+    total_size=$( awk 'BEGIN{printf "%.1f", '$raw' / '$num'}' )
+    echo "${total_size} ${unit}"
 }
 
 check_virt(){
@@ -212,8 +223,7 @@ install_speedtest() {
 
 print_intro() {
     echo "-------------------- A Bench.sh Script By Teddysun -------------------"
-    echo " Intro              : https://teddysun.com/444.html"
-    echo " Version            : $(_green v2022-01-01)"
+    echo " Version            : $(_green v2022-02-22)"
     echo " Usage              : $(_red "wget -qO- bench.sh | bash")"
 }
 
@@ -223,10 +233,16 @@ get_system_info() {
     cores=$( awk -F: '/processor/ {core++} END {print core}' /proc/cpuinfo )
     freq=$( awk -F'[ :]' '/cpu MHz/ {print $4;exit}' /proc/cpuinfo )
     ccache=$( awk -F: '/cache size/ {cache=$2} END {print cache}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
-    tram=$( LANG=C; free -m | awk '/Mem/ {print $2}' )
-    uram=$( LANG=C; free -m | awk '/Mem/ {print $3}' )
-    swap=$( LANG=C; free -m | awk '/Swap/ {print $2}' )
-    uswap=$( LANG=C; free -m | awk '/Swap/ {print $3}' )
+    cpu_aes=$( grep -i 'aes' /proc/cpuinfo )
+    cpu_virt=$( grep -Ei 'vmx|svm' /proc/cpuinfo )
+    tram=$( LANG=C; free | awk '/Mem/ {print $2}' )
+    tram=$( calc_size $tram )
+    uram=$( LANG=C; free | awk '/Mem/ {print $3}' )
+    uram=$( calc_size $uram )
+    swap=$( LANG=C; free | awk '/Swap/ {print $2}' )
+    swap=$( calc_size $swap )
+    uswap=$( LANG=C; free | awk '/Swap/ {print $3}' )
+    uswap=$( calc_size $uswap )
     up=$( awk '{a=$1/86400;b=($1%86400)/3600;c=($1%3600)/60} {printf("%d days, %d hour %d min\n",a,b,c)}' /proc/uptime )
     if _exists "w"; then
         load=$( LANG=C; w | head -1 | awk -F'load average:' '{print $2}' | sed 's/^[ \t]*//;s/[ \t]*$//' )
@@ -241,10 +257,8 @@ get_system_info() {
         echo ${arch} | grep -q "64" && lbit="64" || lbit="32"
     fi
     kern=$( uname -r )
-    disk_size1=($( LANG=C df -hPl | grep -wvE '\-|none|tmpfs|devtmpfs|by-uuid|chroot|Filesystem|udev|docker|snapd' | awk '{print $2}' ))
-    disk_size2=($( LANG=C df -hPl | grep -wvE '\-|none|tmpfs|devtmpfs|by-uuid|chroot|Filesystem|udev|docker|snapd' | awk '{print $3}' ))
-    disk_total_size=$( calc_disk "${disk_size1[@]}" )
-    disk_used_size=$( calc_disk "${disk_size2[@]}" )
+    disk_total_size=$( LANG=C; df -h -t simfs -t ext2 -t ext3 -t ext4 -t btrfs -t xfs -t vfat -t ntfs -t swap --total 2>/dev/null | grep total | awk '{ print $2 }' )
+    disk_used_size=$( LANG=C; df -h -t simfs -t ext2 -t ext3 -t ext4 -t btrfs -t xfs -t vfat -t ntfs -t swap --total 2>/dev/null | grep total | awk '{ print $3 }' )
     tcpctrl=$( sysctl net.ipv4.tcp_congestion_control | awk -F ' ' '{print $3}' )
 }
 # Print System information
@@ -261,9 +275,21 @@ print_system_info() {
     if [ -n "$ccache" ]; then
         echo " CPU Cache          : $(_blue "$ccache")"
     fi
-    echo " Total Disk         : $(_yellow "$disk_total_size GB") $(_blue "($disk_used_size GB Used)")"
-    echo " Total Mem          : $(_yellow "$tram MB") $(_blue "($uram MB Used)")"
-    echo " Total Swap         : $(_blue "$swap MB ($uswap MB Used)")"
+    if [ -n "$cpu_aes" ]; then
+        echo " AES-NI             : $(_green "Enabled")"
+    else
+        echo " AES-NI             : $(_red "Disabled")"
+    fi
+    if [ -n "$cpu_virt" ]; then
+        echo " VM-x/AMD-V         : $(_green "Enabled")"
+    else
+        echo " VM-x/AMD-V         : $(_red "Disabled")"
+    fi
+    echo " Total Disk         : $(_yellow "$disk_total_size") $(_blue "($disk_used_size Used)")"
+    echo " Total Mem          : $(_yellow "$tram") $(_blue "($uram Used)")"
+    if [ "$swap" != "0" ]; then
+        echo " Total Swap         : $(_blue "$swap ($uswap Used)")"
+    fi
     echo " System uptime      : $(_blue "$up")"
     echo " Load average       : $(_blue "$load")"
     echo " OS                 : $(_blue "$opsy")"
@@ -310,7 +336,7 @@ print_end_time() {
     else
         echo " Finished in        : ${time} sec"
     fi
-    date_time=$(date +%Y-%m-%d" "%H:%M:%S)
+    date_time=$(date '+%Y-%m-%d %H:%M:%S %Z')
     echo " Timestamp          : $date_time"
 }
 
