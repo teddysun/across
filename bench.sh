@@ -257,8 +257,10 @@ get_system_info() {
         echo ${arch} | grep -q "64" && lbit="64" || lbit="32"
     fi
     kern=$( uname -r )
-    disk_total_size=$( LANG=C; df -h -t simfs -t ext2 -t ext3 -t ext4 -t btrfs -t xfs -t vfat -t ntfs -t swap --total 2>/dev/null | grep total | awk '{ print $2 }' )
-    disk_used_size=$( LANG=C; df -h -t simfs -t ext2 -t ext3 -t ext4 -t btrfs -t xfs -t vfat -t ntfs -t swap --total 2>/dev/null | grep total | awk '{ print $3 }' )
+    disk_total_size=$( LANG=C; df -t simfs -t ext2 -t ext3 -t ext4 -t btrfs -t xfs -t vfat -t ntfs -t swap --total 2>/dev/null | grep total | awk '{ print $2 }' )
+    disk_total_size=$( calc_size $disk_total_size )
+    disk_used_size=$( LANG=C; df -t simfs -t ext2 -t ext3 -t ext4 -t btrfs -t xfs -t vfat -t ntfs -t swap --total 2>/dev/null | grep total | awk '{ print $3 }' )
+    disk_used_size=$( calc_size $disk_used_size )
     tcpctrl=$( sysctl net.ipv4.tcp_congestion_control | awk -F ' ' '{print $3}' )
 }
 # Print System information
@@ -268,9 +270,10 @@ print_system_info() {
     else
         echo " CPU Model          : $(_blue "CPU model not detected")"
     fi
-    echo " CPU Cores          : $(_blue "$cores")"
     if [ -n "$freq" ]; then
-        echo " CPU Frequency      : $(_blue "$freq MHz")"
+        echo " CPU Cores          : $(_blue "$cores @ $freq MHz")"
+    else
+        echo " CPU Cores          : $(_blue "$cores")"
     fi
     if [ -n "$ccache" ]; then
         echo " CPU Cache          : $(_blue "$ccache")"
