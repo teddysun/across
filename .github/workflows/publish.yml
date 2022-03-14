@@ -4,17 +4,14 @@ on:
 #  push:
 #    branches: [ master ]
 jobs:
-  test:
-    [...]
-  
+#  test:
+#    [...]
   build:
-    needs: test
     runs-on: ubuntu-latest
-   
- steps:
+    steps:
        - uses: docker/build-push-action@v1
-      with:
-        username: sleeplife
-        password: ${{ secrets.DOCKER_PASSWORD }}
-        repository: sleeplife/v2ray
-        tags: latest
+         with:
+          username: sleeplife
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          repository: sleeplife/v2ray
+          tags: latest
