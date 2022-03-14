@@ -1,4 +1,4 @@
-name: ci
+name: Build and Push
 
 on:
   workflow_dispatch:
