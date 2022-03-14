@@ -26,5 +26,7 @@ jobs:
         name: Build and push
         uses: docker/build-push-action@v2
         with:
+#          context: "{{defaultContext}}:docker/v2ray"
+          file: "docker/v2ray/Dockerfile"
           push: true
           tags: sleeplife/v2ray:latest
