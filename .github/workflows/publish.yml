@@ -1,0 +1,20 @@
+name: Test and publish to DockerHub
+on:
+  workflow_dispatch:
+#  push:
+#    branches: [ master ]
+jobs:
+  test:
+    [...]
+  
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+   
+ steps:
+       - uses: docker/build-push-action@v1
+      with:
+        username: sleeplife
+        password: ${{ secrets.DOCKER_PASSWORD }}
+        repository: sleeplife/v2ray
+        tags: latest
