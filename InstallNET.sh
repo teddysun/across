@@ -255,7 +255,7 @@ function diskType(){
 
 function getGrub(){
   Boot="${1:-/boot}"
-  folder=`find "$Boot" -type d -name "grub*" 2>/dev/null |tail -n1`
+  folder=`find "$Boot" -type d -name "grub*" 2>/dev/null | sort | tail -n1`
   [ -n "$folder" ] || return
   fileName=`ls -1 "$folder" 2>/dev/null |grep '^grub.conf$\|^grub.cfg$'`
   if [ -z "$fileName" ]; then
