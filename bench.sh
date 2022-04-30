@@ -136,6 +136,8 @@ check_virt(){
         virt="OpenVZ"
     elif [[ "${virtualx}" == *kvm-clock* ]]; then
         virt="KVM"
+    elif [[ "${sys_product}" == *KVM* ]]; then
+        virt="KVM"
     elif [[ "${cname}" == *KVM* ]]; then
         virt="KVM"
     elif [[ "${cname}" == *QEMU* ]]; then
