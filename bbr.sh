@@ -265,8 +265,8 @@ install_kernel() {
     case "$(_os)" in
         centos)
             if [ -n "$(_os_ver)" ]; then
-                if ! _exists "yum-config-manager"; then
-                    _error_detect "yum install -y yum-utils"
+                if ! _exists "perl"; then
+                    _error_detect "yum install -y perl"
                 fi
                 if [ "$(_os_ver)" -eq 6 ]; then
                     _error_detect "rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org"
