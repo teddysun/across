@@ -172,7 +172,7 @@ get_latest_version() {
     [ ${#latest_version[@]} -eq 0 ] && _error "Get latest kernel version failed."
     kernel_arr=()
     for i in ${latest_version[@]}; do
-        if _version_ge $i 5.9; then
+        if _version_ge $i 5.15; then
             kernel_arr+=($i);
         fi
     done
@@ -286,10 +286,19 @@ install_kernel() {
                     [ ! -f "/boot/grub/grub.conf" ] && _error "/boot/grub/grub.conf not found, please check it."
                     sed -i 's/^default=.*/default=0/g' /boot/grub/grub.conf
                 elif [ "$(_os_ver)" -eq 7 ]; then
-                    _error_detect "yum -y install centos-release-xen-48"
-                    [ x"$(yum-config-manager centos-virt-xen-48 | grep -w enabled | awk '{print $3}')" != x"True" ] && _error_detect "yum-config-manager --enable centos-virt-xen-48"
-                    _error_detect "yum -y update kernel"
-                    _error_detect "yum -y install kernel-devel"
+                    rpm_kernel_url="https://dl.lamp.sh/kernel/el7/"
+                    if _is_64bit; then
+                        rpm_kernel_name="kernel-ml-5.15.38-1.el7.x86_64.rpm"
+                        rpm_kernel_devel_name="kernel-ml-devel-5.15.38-1.el7.x86_64.rpm"
+                    else
+                        _error "Not supported architecture, please change to 64-bit architecture."
+                    fi
+                    _error_detect "wget -c -t3 -T60 -O ${rpm_kernel_name} ${rpm_kernel_url}${rpm_kernel_name}"
+                    _error_detect "wget -c -t3 -T60 -O ${rpm_kernel_devel_name} ${rpm_kernel_url}${rpm_kernel_devel_name}"
+                    [ -s "${rpm_kernel_name}" ] && _error_detect "rpm -ivh ${rpm_kernel_name}" || _error "Download ${rpm_kernel_name} failed, please check it."
+                    [ -s "${rpm_kernel_devel_name}" ] && _error_detect "rpm -ivh ${rpm_kernel_devel_name}" || _error "Download ${rpm_kernel_devel_name} failed, please check it."
+                    rm -f ${rpm_kernel_name} ${rpm_kernel_devel_name}
+                    /usr/sbin/grub2-set-default 0
                 fi
             fi
             ;;
