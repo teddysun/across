@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright (C) 2013 - 2020 Teddysun <i@teddysun.com>
+# Copyright (C) 2013 - 2022 Teddysun <i@teddysun.com>
 # 
 # This file is part of the LAMP script.
 #
@@ -168,7 +168,7 @@ EOF
             log "MySQL root password is incorrect. Please check it and try again"
             exit 1
         fi
-        if [ "${MYSQL_DATABASE_NAME[@]}" == "" ]; then
+        if [[ "${MYSQL_DATABASE_NAME[@]}" == "" ]]; then
             mysqldump -u root -p"${MYSQL_ROOT_PASSWORD}" --all-databases > "${SQLFILE}" 2>/dev/null
             if [ $? -ne 0 ]; then
                 log "MySQL all databases backup failed"
@@ -218,7 +218,7 @@ start_backup() {
     fi
 
     # Delete MySQL temporary dump file
-    for sql in $(ls ${TEMPDIR}*.sql); do
+    for sql in $(ls ${TEMPDIR}*.sql 2> /dev/null); do
         log "Delete MySQL temporary dump file: ${sql}"
         rm -f ${sql}
     done
@@ -336,9 +336,9 @@ EOF
 clean_up_files() {
     cd ${LOCALDIR} || exit
     if ${ENCRYPTFLG}; then
-        LS=($(ls *.enc))
+        LS=($(ls *.enc 2> /dev/null))
     else
-        LS=($(ls *.tgz))
+        LS=($(ls *.tgz 2> /dev/null))
     fi
     for f in ${LS[@]}; do
         get_file_date ${f}
