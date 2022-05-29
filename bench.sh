@@ -144,6 +144,8 @@ check_virt(){
         virt="KVM"
     elif [[ "${virtualx}" == *"VMware Virtual Platform"* ]]; then
         virt="VMware"
+    elif [[ "${sys_product}" == *"VMware Virtual Platform"* ]]; then
+        virt="VMware"
     elif [[ "${virtualx}" == *"Parallels Software International"* ]]; then
         virt="Parallels"
     elif [[ "${virtualx}" == *VirtualBox* ]]; then
