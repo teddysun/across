@@ -6,7 +6,8 @@ For more information on docker and containerization technologies, refer to [offi
 
 ## Supported tags and respective `Dockerfile` links
 
-- `latest`, `8` [*(Dockerfile)*][2]
+- `latest`, `9` [*(Dockerfile)*][7]
+- `8` [*(Dockerfile)*][2]
 - `7` [*(Dockerfile)*][3]
 
 ### Reference
@@ -33,10 +34,16 @@ For CentOS 7
 $ docker pull teddysun/rpmbuild:7
 ```
 
-For CentOS 8
+For CentOS 8 Stream / Rockylinux 8 / Almalinux 8
 
 ```bash
 $ docker pull teddysun/rpmbuild:8
+```
+
+For CentOS 9 Stream / Rockylinux 9 / Almalinux 9
+
+```bash
+$ docker pull teddysun/rpmbuild:9
 ```
 
 It can be found at [Docker Hub][6].
@@ -50,11 +57,18 @@ $ mkdir -m 777 -p /opt/builder7
 $ docker run -it --rm -h buildbot --name rpmbuild7 -v /opt/builder7:/home/builder/rpmbuild teddysun/rpmbuild:7
 ```
 
-There is an example to start a container for CentOS 8 like below:
+There is an example to start a container for CentOS 8 Stream / Rockylinux 8 / Almalinux 8 like below:
 
 ```bash
 $ mkdir -m 777 -p /opt/builder8
 $ docker run -it --rm -h buildbot --name rpmbuild8 -v /opt/builder8:/home/builder/rpmbuild teddysun/rpmbuild:8
+```
+
+There is an example to start a container for CentOS 9 Stream / Rockylinux 9 / Almalinux 9 like below:
+
+```bash
+$ mkdir -m 777 -p /opt/builder9
+$ docker run -it --rm -h buildbot --name rpmbuild9 -v /opt/builder9:/home/builder/rpmbuild teddysun/rpmbuild:9
 ```
 
 
@@ -64,3 +78,4 @@ $ docker run -it --rm -h buildbot --name rpmbuild8 -v /opt/builder8:/home/builde
 [4]: https://github.com/docker-library/official-images#architectures-other-than-amd64
 [5]: https://docs.docker.com/install/
 [6]: https://hub.docker.com/r/teddysun/rpmbuild/
+[7]: https://github.com/teddysun/across/blob/master/docker/rpmbuild/Dockerfile.rpmbuild9
