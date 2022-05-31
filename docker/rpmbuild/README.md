@@ -7,7 +7,6 @@ For more information on docker and containerization technologies, refer to [offi
 ## Supported tags and respective `Dockerfile` links
 
 - `latest`, `8` [*(Dockerfile)*][2]
-- `rockylinux`[*(Dockerfile)*][7]
 - `7` [*(Dockerfile)*][3]
 
 ### Reference
@@ -40,12 +39,6 @@ For CentOS 8
 $ docker pull teddysun/rpmbuild:8
 ```
 
-For Rockylinux 8
-
-```bash
-$ docker pull teddysun/rpmbuild:rockylinux
-```
-
 It can be found at [Docker Hub][6].
 
 ## Start a container
@@ -64,17 +57,10 @@ $ mkdir -m 777 -p /opt/builder8
 $ docker run -it --rm -h buildbot --name rpmbuild8 -v /opt/builder8:/home/builder/rpmbuild teddysun/rpmbuild:8
 ```
 
-There is an example to start a container for Rockylinux 8 like below:
-
-```bash
-mkdir -m 777 -p /opt/rockylinux
-docker run -it --rm -h buildbot --name rockylinux8 -v /opt/rockylinux:/home/builder/rpmbuild teddysun/rpmbuild:rockylinux
-```
 
 [1]: https://docs.docker.com/
-[2]: https://github.com/teddysun/across/blob/master/docker/rpmbuild/Dockerfile.centos8
-[3]: https://github.com/teddysun/across/blob/master/docker/rpmbuild/Dockerfile.centos7
+[2]: https://github.com/teddysun/across/blob/master/docker/rpmbuild/Dockerfile.rpmbuild8
+[3]: https://github.com/teddysun/across/blob/master/docker/rpmbuild/Dockerfile.rpmbuild7
 [4]: https://github.com/docker-library/official-images#architectures-other-than-amd64
 [5]: https://docs.docker.com/install/
 [6]: https://hub.docker.com/r/teddysun/rpmbuild/
-[7]: https://github.com/teddysun/across/blob/master/docker/rpmbuild/Dockerfile.rockylinux
