@@ -1,5 +1,5 @@
 # Dockerfile for build RPM packages.
-# Copyright (C) 2021 Teddysun <i@teddysun.com>
+# Copyright (C) 2021 - 2022 Teddysun <i@teddysun.com>
 
 FROM --platform=${TARGETPLATFORM} centos:7
 LABEL maintainer="Teddysun <i@teddysun.com>"
@@ -7,7 +7,7 @@ LABEL maintainer="Teddysun <i@teddysun.com>"
 RUN yum install -y yum-utils epel-release centos-release-scl-rh && \
 	yum-config-manager --enable epel && \
 	yum install -y tar wget git tree gcc gcc-c++ \
-		sudo net-tools make cmake zstd libzstd \
+		sudo net-tools make cmake zstd libzstd chkconfig \
 		python bash coreutils diffutils patch ca-certificates \
 		rpm-build rpm-devel rpmlint rpmdevtools \
 		devtoolset-9-gcc devtoolset-9-binutils devtoolset-9-runtime \
