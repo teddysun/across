@@ -1,0 +1,13 @@
+{
+    "server": "IP:8998",
+    "obfs": "dGVkZHlzdW4uY29tCg==",
+    "up_mbps": 200,
+    "down_mbps": 1000,
+    "insecure": true,
+    "socks5": {
+        "listen": "127.0.0.1:1080"
+    },
+    "http": {
+        "listen": "127.0.0.1:1081"
+    }
+}

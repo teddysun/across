@@ -1,0 +1,23 @@
+# Dockerfile for hysteria based alpine
+# Copyright (C) 2022 Teddysun <i@teddysun.com>
+# Reference URL:
+# https://github.com/HyNetwork/hysteria
+
+FROM --platform=${TARGETPLATFORM} alpine:latest
+LABEL maintainer="Teddysun <i@teddysun.com>"
+
+ARG TARGETPLATFORM
+WORKDIR /root
+COPY hysteria.sh /root/hysteria.sh
+COPY server.json /etc/hysteria/server.json
+COPY cert.crt /etc/hysteria/cert.crt
+COPY private.key /etc/hysteria/private.key
+RUN set -ex \
+	&& apk add --no-cache bash tzdata ca-certificates \
+	&& chmod +x /root/hysteria.sh \
+	&& /root/hysteria.sh "${TARGETPLATFORM}" \
+	&& rm -fv /root/hysteria.sh
+
+VOLUME /etc/hysteria
+ENV TZ=Asia/Shanghai
+CMD [ "/usr/bin/hysteria", "server", "--config", "/etc/hysteria/server.json" ]
