@@ -1,6 +1,6 @@
 {
     "listen": ":8998",
     "cert": "/etc/hysteria/cert.crt",
-    "key": "/root/hysteria/private.key",
+    "key": "/etc/hysteria/private.key",
     "obfs": "dGVkZHlzdW4uY29tCg=="
 }

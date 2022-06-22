@@ -34,10 +34,12 @@ A sample in JSON like below:
 {
     "listen": ":8998",
     "cert": "/etc/hysteria/cert.crt",
-    "key": "/root/hysteria/private.key",
+    "key": "/etc/hysteria/private.key",
     "obfs": "dGVkZHlzdW4uY29tCg=="
 }
 ```
+
+And put the `cert.crt`, `private.key` to the `/etc/hysteria/`.
 
 There is an example to start a container that listen on port `8998`, run as a Hysteria server like below:
 
