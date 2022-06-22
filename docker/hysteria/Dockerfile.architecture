@@ -10,8 +10,6 @@ ARG TARGETPLATFORM
 WORKDIR /root
 COPY hysteria.sh /root/hysteria.sh
 COPY server.json /etc/hysteria/server.json
-COPY cert.crt /etc/hysteria/cert.crt
-COPY private.key /etc/hysteria/private.key
 RUN set -ex \
 	&& apk add --no-cache bash tzdata ca-certificates \
 	&& chmod +x /root/hysteria.sh \
