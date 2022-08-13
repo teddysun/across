@@ -288,8 +288,8 @@ install_kernel() {
                 elif [ "$(_os_ver)" -eq 7 ]; then
                     rpm_kernel_url="https://dl.lamp.sh/kernel/el7/"
                     if _is_64bit; then
-                        rpm_kernel_name="kernel-ml-5.15.48-1.el7.x86_64.rpm"
-                        rpm_kernel_devel_name="kernel-ml-devel-5.15.48-1.el7.x86_64.rpm"
+                        rpm_kernel_name="kernel-ml-5.15.60-1.el7.x86_64.rpm"
+                        rpm_kernel_devel_name="kernel-ml-devel-5.15.60-1.el7.x86_64.rpm"
                     else
                         _error "Not supported architecture, please change to 64-bit architecture."
                     fi
