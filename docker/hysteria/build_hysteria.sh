@@ -7,7 +7,7 @@
 # Copyright (C) 2022 Teddysun <i@teddysun.com>
 #
 # Reference URL:
-# https://github.com/HyNetwork/hysteria
+# https://github.com/apernet/hysteria
 
 cur_dir="$(pwd)"
 
@@ -19,8 +19,8 @@ for CMD in "${COMMANDS[@]}"; do
 done
 
 cd ${cur_dir}
-echo "git clone https://github.com/HyNetwork/hysteria.git"
-git clone https://github.com/HyNetwork/hysteria.git
+echo "git clone https://github.com/apernet/hysteria.git"
+git clone https://github.com/apernet/hysteria.git
 cd hysteria || exit 2
 
 VERSION="$(git describe)"
@@ -35,18 +35,18 @@ for ARCH in ${ARCHS[@]}; do
     if [ "${ARCH}" = "arm" ]; then
         for V in ${ARMS[@]}; do
             echo "Building hysteria_linux_${ARCH}${V}"
-            env CGO_ENABLED=0 GOOS=linux GOARCH=${ARCH} GOARM=${V} go build -v -trimpath -ldflags "${LDFLAGS}" -o ${cur_dir}/hysteria_linux_${ARCH}${V} ./cmd || exit 1
+            env CGO_ENABLED=0 GOOS=linux GOARCH=${ARCH} GOARM=${V} go build -v -trimpath -ldflags "${LDFLAGS}" -o ${cur_dir}/hysteria_linux_${ARCH}${V} ./app/cmd || exit 1
         done
     else
         echo "Building hysteria_linux_${ARCH}"
-        env CGO_ENABLED=0 GOOS=linux GOARCH=${ARCH} go build -v -trimpath -ldflags "${LDFLAGS}" -o ${cur_dir}/hysteria_linux_${ARCH} ./cmd || exit 1
+        env CGO_ENABLED=0 GOOS=linux GOARCH=${ARCH} go build -v -trimpath -ldflags "${LDFLAGS}" -o ${cur_dir}/hysteria_linux_${ARCH} ./app/cmd || exit 1
     fi
 done
 
 ARCHS=( 386 amd64 )
 for ARCH in ${ARCHS[@]}; do
     echo "Building hysteria_windows_${ARCH}.exe"
-    env CGO_ENABLED=0 GOOS=windows GOARCH=${ARCH} go build -v -trimpath -ldflags "${LDFLAGS}" -o ${cur_dir}/hysteria_windows_${ARCH}.exe ./cmd
+    env CGO_ENABLED=0 GOOS=windows GOARCH=${ARCH} go build -v -trimpath -ldflags "${LDFLAGS}" -o ${cur_dir}/hysteria_windows_${ARCH}.exe ./app/cmd
 done
 
 chmod +x ${cur_dir}/hysteria_*
