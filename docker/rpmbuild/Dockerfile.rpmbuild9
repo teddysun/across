@@ -1,7 +1,7 @@
 # Dockerfile for build RPM packages.
 # Copyright (C) 2022 Teddysun <i@teddysun.com>
 
-FROM --platform=${TARGETPLATFORM} almalinux:9
+FROM --platform=${TARGETPLATFORM} rockylinux:9
 LABEL maintainer="Teddysun <i@teddysun.com>"
 
 RUN yum install -y yum-utils epel-release && \
@@ -12,7 +12,7 @@ RUN yum install -y yum-utils epel-release && \
 		sudo net-tools make cmake zstd libzstd chkconfig \
 		bash coreutils diffutils patch ca-certificates \
 		rpm-build rpm-devel rpmlint rpmdevtools ncurses which procps \
-		asciidoc audit-libs-devel binutils-devel flex \
+		asciidoc audit-libs-devel binutils-devel flex jq \
 		libcap-devel newt-devel pciutils-devel perl-generators \
 		python3 python3-devel python3-docutils rsync xmlto bc bison \
 		java-devel ncurses-devel numactl-devel openssl-devel perl-devel \
