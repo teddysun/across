@@ -12,7 +12,7 @@ RUN yum install -y yum-utils epel-release && \
 		sudo net-tools make cmake zstd libzstd chkconfig \
 		bash coreutils diffutils patch ca-certificates \
 		rpm-build rpm-devel rpmlint rpmdevtools ncurses which procps \
-		asciidoc audit-libs-devel binutils-devel flex jq \
+		asciidoc audit-libs-devel binutils-devel flex jq gettext \
 		libcap-devel newt-devel pciutils-devel perl-generators \
 		python3 python3-devel python3-docutils rsync xmlto bc bison \
 		java-devel ncurses-devel numactl-devel openssl-devel perl-devel \
