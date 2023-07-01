@@ -15,7 +15,7 @@ RUN yum install -y yum-utils epel-release && \
 		asciidoc audit-libs-devel binutils-devel flex \
 		libcap-devel newt-devel pciutils-devel perl-generators \
 		python3 python3-devel python3-docutils rsync xmlto bc bison \
-		java-devel ncurses-devel numactl-devel openssl-devel perl-devel \
+		java-devel ncurses-devel numactl-devel openssl-devel perl-devel dwarves \
 		elfutils-devel xz-devel perl-ExtUtils-Embed gettext kmod libkcapi-hmaccalc && \
 	yum clean all && rm -rf /var/cache/dnf /var/lib/rpm/__db*
 
