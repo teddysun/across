@@ -30,6 +30,7 @@ RUN useradd builder -u 1000 -m -G users,wheel && \
 	echo "%_specdir   %{_topdir}"             >> /home/builder/.rpmmacros && \
 	echo "%_rpmdir    %{_topdir}"             >> /home/builder/.rpmmacros && \
 	echo "%_srcrpmdir %{_topdir}"             >> /home/builder/.rpmmacros && \
+	echo "set enable-bracketed-paste off"     >> /etc/inputrc && \
 	mkdir -p /home/builder/rpmbuild && \
 	chown -R builder /home/builder
 
