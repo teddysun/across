@@ -1,0 +1,37 @@
+# Dockerfile for build RPM packages.
+# Copyright (C) 2023 Teddysun <i@teddysun.com>
+
+FROM --platform=${TARGETPLATFORM} fedora:37
+LABEL maintainer="Teddysun <i@teddysun.com>"
+
+RUN dnf install -y yum-utils && \
+	dnf install -y tar wget git tree gcc gcc-c++ vim automake \
+		sudo net-tools make cmake zstd libzstd chkconfig libtool \
+		bash coreutils diffutils patch ca-certificates pcre-devel \
+		rpm-build rpm-devel rpmlint rpmdevtools ncurses which procps \
+		asciidoc audit-libs-devel binutils-devel flex jq gettext mbedtls-devel \
+		libcap-devel newt-devel pciutils-devel perl-generators c-ares-devel libev-devel \
+		python3 python3-devel python3-docutils rsync xmlto bc bison libsodium-devel \
+		java-devel ncurses-devel numactl-devel openssl-devel perl-devel \
+		bpftool dwarves gcc-plugin-devel glibc-static hmaccalc kernel-rpm-macros \
+		libbabeltrace-devel libbpf-devel libcap-ng-devel libnl3-devel libtraceevent-devel \
+		elfutils-devel xz-devel perl-ExtUtils-Embed && \
+	dnf clean all && rm -rf /var/cache/dnf /var/lib/rpm/__db*
+
+RUN useradd builder -u 1000 -m -G users,wheel && \
+	echo "builder ALL=(ALL:ALL) NOPASSWD:ALL" >> /etc/sudoers && \
+	echo "# macros"                           >  /home/builder/.rpmmacros && \
+	echo "%_topdir    /home/builder/rpmbuild" >> /home/builder/.rpmmacros && \
+	echo "%_sourcedir %{_topdir}"             >> /home/builder/.rpmmacros && \
+	echo "%_builddir  %{_topdir}"             >> /home/builder/.rpmmacros && \
+	echo "%_specdir   %{_topdir}"             >> /home/builder/.rpmmacros && \
+	echo "%_rpmdir    %{_topdir}"             >> /home/builder/.rpmmacros && \
+	echo "%_srcrpmdir %{_topdir}"             >> /home/builder/.rpmmacros && \
+	echo "set enable-bracketed-paste off"     >> /etc/inputrc && \
+	mkdir -p /home/builder/rpmbuild && \
+	chown -R builder /home/builder
+
+USER builder
+VOLUME /home/builder
+WORKDIR /home/builder/rpmbuild
+CMD ["/bin/bash"]
