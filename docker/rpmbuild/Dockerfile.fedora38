@@ -16,7 +16,7 @@ RUN dnf install -y yum-utils && \
 		bpftool dwarves gcc-plugin-devel glibc-static hmaccalc kernel-rpm-macros \
 		libbabeltrace-devel libbpf-devel libcap-ng-devel libnl3-devel libtraceevent-devel \
 		elfutils-devel xz-devel perl-ExtUtils-Embed && \
-	yum clean all && rm -rf /var/cache/dnf /var/lib/rpm/__db*
+	dnf clean all && rm -rf /var/cache/dnf /var/lib/rpm/__db*
 
 RUN useradd builder -u 1000 -m -G users,wheel && \
 	echo "builder ALL=(ALL:ALL) NOPASSWD:ALL" >> /etc/sudoers && \
