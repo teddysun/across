@@ -1,0 +1,15 @@
+listen: :8998
+
+tls:
+  cert: /etc/hysteria/cert.crt
+  key: /etc/hysteria/private.key
+
+auth:
+  type: password
+  password: your_password
+
+resolver:
+  type: https
+  https:
+    addr: 8.8.8.8:443
+    timeout: 10s

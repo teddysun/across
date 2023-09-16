@@ -22,21 +22,30 @@ It can be found at [Docker Hub][4].
 
 ## Start a container
 
-You **must create a configuration file**  `/etc/hysteria/server.json` in host at first:
+You **must create a configuration file**  `/etc/hysteria/server.yaml` in host at first:
 
 ```
 $ mkdir -p /etc/hysteria
 ```
 
-A sample in JSON like below:
+A sample in yaml like below:
 
 ```
-{
-    "listen": ":8998",
-    "cert": "/etc/hysteria/cert.crt",
-    "key": "/etc/hysteria/private.key",
-    "obfs": "dGVkZHlzdW4uY29tCg=="
-}
+listen: :8998
+
+tls:
+  cert: /etc/hysteria/cert.crt
+  key: /etc/hysteria/private.key
+
+auth:
+  type: password
+  password: your_password
+
+resolver:
+  type: https
+  https:
+    addr: 8.8.8.8:443
+    timeout: 10s
 ```
 
 And put the `cert.crt`, `private.key` to the `/etc/hysteria/`.
@@ -49,7 +58,7 @@ $ docker run -d -p 8998:8998 --name hysteria --restart=always -v /etc/hysteria:/
 
 **Warning**: The port number must be same as configuration and opened in firewall.
 
-[1]: https://github.com/HyNetwork/hysteria
+[1]: https://github.com/apernet/hysteria
 [2]: https://docs.docker.com/
 [3]: https://docs.docker.com/install/
 [4]: https://hub.docker.com/r/teddysun/hysteria/

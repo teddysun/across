@@ -1,0 +1,9 @@
+server: "IP:8998"
+
+auth: your_password
+
+tls:
+  sni: www.example.com
+
+socks5:
+  listen: 127.0.0.1:1080
