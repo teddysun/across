@@ -308,14 +308,14 @@ print_system_info() {
         echo " CPU Cache          : $(_blue "$ccache")"
     fi
     if [ -n "$cpu_aes" ]; then
-        echo " AES-NI             : $(_green "Enabled")"
+        echo " AES-NI             : $(_green "\xe2\x9c\x93 Enabled")"
     else
-        echo " AES-NI             : $(_red "Disabled")"
+        echo " AES-NI             : $(_red "\xe2\x9c\x97 Disabled")"
     fi
     if [ -n "$cpu_virt" ]; then
-        echo " VM-x/AMD-V         : $(_green "Enabled")"
+        echo " VM-x/AMD-V         : $(_green "\xe2\x9c\x93 Enabled")"
     else
-        echo " VM-x/AMD-V         : $(_red "Disabled")"
+        echo " VM-x/AMD-V         : $(_red "\xe2\x9c\x97 Disabled")"
     fi
     echo " Total Disk         : $(_yellow "$disk_total_size") $(_blue "($disk_used_size Used)")"
     echo " Total Mem          : $(_yellow "$tram") $(_blue "($uram Used)")"
@@ -384,8 +384,8 @@ ipv6_check=$((ping -6 -c 1 -W 4 ipv6.google.com >/dev/null 2>&1 && echo true) ||
 if [[ -z "$ipv4_check" && -z "$ipv6_check" ]]; then
     _yellow "Warning: Both IPv4 and IPv6 connectivity were not detected.\n"
 fi
-[[ -z "$ipv4_check" ]] && online="$(_red "Offline")" || online="$(_green "Online")"
-[[ -z "$ipv6_check" ]] && online+=" / $(_red "Offline")" || online+=" / $(_green "Online")"
+[[ -z "$ipv4_check" ]] && online="$(_red "\xe2\x9c\x97 Offline")" || online="$(_green "\xe2\x9c\x93 Online")"
+[[ -z "$ipv6_check" ]] && online+=" / $(_red "\xe2\x9c\x97 Offline")" || online+=" / $(_green "\xe2\x9c\x93 Online")"
 start_time=$(date +%s)
 get_system_info
 check_virt
