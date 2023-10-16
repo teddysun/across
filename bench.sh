@@ -62,7 +62,7 @@ speed_test() {
     if [ $? -eq 0 ]; then
         local dl_speed=$(awk '/Download/{print $3" "$4}' ./speedtest-cli/speedtest.log)
         local up_speed=$(awk '/Upload/{print $3" "$4}' ./speedtest-cli/speedtest.log)
-        local latency=$(awk '/Latency/{print $2" "$3}' ./speedtest-cli/speedtest.log)
+        local latency=$(awk '/Latency/{print $3" "$4}' ./speedtest-cli/speedtest.log)
         if [[ -n "${dl_speed}" && -n "${up_speed}" && -n "${latency}" ]]; then
             printf "\033[0;33m%-18s\033[0;32m%-18s\033[0;31m%-20s\033[0;36m%-12s\033[0m\n" " ${nodeName}" "${up_speed}" "${dl_speed}" "${latency}"
         fi
