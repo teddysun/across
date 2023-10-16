@@ -27,12 +27,12 @@ _blue() {
 
 _exists() {
     local cmd="$1"
-    if eval type type > /dev/null 2>&1; then
-        eval type "$cmd" > /dev/null 2>&1
-    elif command > /dev/null 2>&1; then
-        command -v "$cmd" > /dev/null 2>&1
+    if eval type type >/dev/null 2>&1; then
+        eval type "$cmd" >/dev/null 2>&1
+    elif command >/dev/null 2>&1; then
+        command -v "$cmd" >/dev/null 2>&1
     else
-        which "$cmd" > /dev/null 2>&1
+        which "$cmd" >/dev/null 2>&1
     fi
     local rt=$?
     return ${rt}
@@ -57,8 +57,8 @@ next() {
 
 speed_test() {
     local nodeName="$2"
-    [ -z "$1" ] && ./speedtest-cli/speedtest --progress=no --accept-license --accept-gdpr > ./speedtest-cli/speedtest.log 2>&1 || \
-    ./speedtest-cli/speedtest --progress=no --server-id=$1 --accept-license --accept-gdpr > ./speedtest-cli/speedtest.log 2>&1
+    [ -z "$1" ] && ./speedtest-cli/speedtest --progress=no --accept-license --accept-gdpr >./speedtest-cli/speedtest.log 2>&1 || \
+        ./speedtest-cli/speedtest --progress=no --server-id=$1 --accept-license --accept-gdpr >./speedtest-cli/speedtest.log 2>&1
     if [ $? -eq 0 ]; then
         local dl_speed=$(awk '/Download/{print $3" "$4}' ./speedtest-cli/speedtest.log)
         local up_speed=$(awk '/Upload/{print $3" "$4}' ./speedtest-cli/speedtest.log)
@@ -77,16 +77,16 @@ speed() {
     speed_test '24215' 'Paris, FR'
     speed_test '28922' 'Amsterdam, NL'
     speed_test '24447' 'Shanghai, CN'
-    speed_test '26352' 'Nanjing, CN'
-    speed_test '27594' 'Guangzhou, CN'
+    speed_test '5530' 'Chongqing, CN'
+    speed_test '60572' 'Guangzhou, CN'
     speed_test '32155' 'Hongkong, CN'
-    speed_test '6527'  'Seoul, KR'
-    speed_test '7311'  'Singapore, SG'
+    speed_test '23647' 'Mumbai, IN'
+    speed_test '13623' 'Singapore, SG'
     speed_test '21569' 'Tokyo, JP'
 }
 
 io_test() {
-    (LANG=C dd if=/dev/zero of=benchtest_$$ bs=512k count=$1 conv=fdatasync && rm -f benchtest_$$ ) 2>&1 | awk -F, '{io=$NF} END { print io}' | sed 's/^[ \t]*//;s/[ \t]*$//'
+    (LANG=C dd if=/dev/zero of=benchtest_$$ bs=512k count=$1 conv=fdatasync && rm -f benchtest_$$) 2>&1 | awk -F, '{io=$NF} END { print io}' | sed 's/^[ \t]*//;s/[ \t]*$//'
 }
 
 calc_size() {
@@ -94,7 +94,7 @@ calc_size() {
     local total_size=0
     local num=1
     local unit="KB"
-    if ! [[ ${raw} =~ ^[0-9]+$ ]] ; then
+    if ! [[ ${raw} =~ ^[0-9]+$ ]]; then
         echo ""
         return
     fi
@@ -111,11 +111,11 @@ calc_size() {
         echo "${total_size}"
         return
     fi
-    total_size=$( awk 'BEGIN{printf "%.1f", '$raw' / '$num'}' )
+    total_size=$(awk 'BEGIN{printf "%.1f", '$raw' / '$num'}')
     echo "${total_size} ${unit}"
 }
 
-check_virt(){
+check_virt() {
     _exists "dmesg" && virtualx="$(dmesg 2>/dev/null)"
     if _exists "dmidecode"; then
         sys_manu="$(dmidecode -s system-manufacturer 2>/dev/null)"
@@ -126,7 +126,7 @@ check_virt(){
         sys_product=""
         sys_ver=""
     fi
-    if   grep -qa docker /proc/1/cgroup; then
+    if grep -qa docker /proc/1/cgroup; then
         virt="Docker"
     elif grep -qa lxc /proc/1/cgroup; then
         virt="LXC"
@@ -234,39 +234,63 @@ print_intro() {
 
 # Get System information
 get_system_info() {
-    cname=$( awk -F: '/model name/ {name=$2} END {print name}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
-    cores=$( awk -F: '/processor/ {core++} END {print core}' /proc/cpuinfo )
-    freq=$( awk -F'[ :]' '/cpu MHz/ {print $4;exit}' /proc/cpuinfo )
-    ccache=$( awk -F: '/cache size/ {cache=$2} END {print cache}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
-    cpu_aes=$( grep -i 'aes' /proc/cpuinfo )
-    cpu_virt=$( grep -Ei 'vmx|svm' /proc/cpuinfo )
-    tram=$( LANG=C; free | awk '/Mem/ {print $2}' )
-    tram=$( calc_size $tram )
-    uram=$( LANG=C; free | awk '/Mem/ {print $3}' )
-    uram=$( calc_size $uram )
-    swap=$( LANG=C; free | awk '/Swap/ {print $2}' )
-    swap=$( calc_size $swap )
-    uswap=$( LANG=C; free | awk '/Swap/ {print $3}' )
-    uswap=$( calc_size $uswap )
-    up=$( awk '{a=$1/86400;b=($1%86400)/3600;c=($1%3600)/60} {printf("%d days, %d hour %d min\n",a,b,c)}' /proc/uptime )
+    cname=$(awk -F: '/model name/ {name=$2} END {print name}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//')
+    cores=$(awk -F: '/processor/ {core++} END {print core}' /proc/cpuinfo)
+    freq=$(awk -F'[ :]' '/cpu MHz/ {print $4;exit}' /proc/cpuinfo)
+    ccache=$(awk -F: '/cache size/ {cache=$2} END {print cache}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//')
+    cpu_aes=$(grep -i 'aes' /proc/cpuinfo)
+    cpu_virt=$(grep -Ei 'vmx|svm' /proc/cpuinfo)
+    tram=$(
+        LANG=C
+        free | awk '/Mem/ {print $2}'
+    )
+    tram=$(calc_size $tram)
+    uram=$(
+        LANG=C
+        free | awk '/Mem/ {print $3}'
+    )
+    uram=$(calc_size $uram)
+    swap=$(
+        LANG=C
+        free | awk '/Swap/ {print $2}'
+    )
+    swap=$(calc_size $swap)
+    uswap=$(
+        LANG=C
+        free | awk '/Swap/ {print $3}'
+    )
+    uswap=$(calc_size $uswap)
+    up=$(awk '{a=$1/86400;b=($1%86400)/3600;c=($1%3600)/60} {printf("%d days, %d hour %d min\n",a,b,c)}' /proc/uptime)
     if _exists "w"; then
-        load=$( LANG=C; w | head -1 | awk -F'load average:' '{print $2}' | sed 's/^[ \t]*//;s/[ \t]*$//' )
+        load=$(
+            LANG=C
+            w | head -1 | awk -F'load average:' '{print $2}' | sed 's/^[ \t]*//;s/[ \t]*$//'
+        )
     elif _exists "uptime"; then
-        load=$( LANG=C; uptime | head -1 | awk -F'load average:' '{print $2}' | sed 's/^[ \t]*//;s/[ \t]*$//' )
+        load=$(
+            LANG=C
+            uptime | head -1 | awk -F'load average:' '{print $2}' | sed 's/^[ \t]*//;s/[ \t]*$//'
+        )
     fi
-    opsy=$( get_opsy )
-    arch=$( uname -m )
+    opsy=$(get_opsy)
+    arch=$(uname -m)
     if _exists "getconf"; then
-        lbit=$( getconf LONG_BIT )
+        lbit=$(getconf LONG_BIT)
     else
         echo ${arch} | grep -q "64" && lbit="64" || lbit="32"
     fi
-    kern=$( uname -r )
-    disk_total_size=$( LANG=C; df -t simfs -t ext2 -t ext3 -t ext4 -t btrfs -t xfs -t vfat -t ntfs -t swap --total 2>/dev/null | grep total | awk '{ print $2 }' )
-    disk_total_size=$( calc_size $disk_total_size )
-    disk_used_size=$( LANG=C; df -t simfs -t ext2 -t ext3 -t ext4 -t btrfs -t xfs -t vfat -t ntfs -t swap --total 2>/dev/null | grep total | awk '{ print $3 }' )
-    disk_used_size=$( calc_size $disk_used_size )
-    tcpctrl=$( sysctl net.ipv4.tcp_congestion_control | awk -F ' ' '{print $3}' )
+    kern=$(uname -r)
+    disk_total_size=$(
+        LANG=C
+        df -t simfs -t ext2 -t ext3 -t ext4 -t btrfs -t xfs -t vfat -t ntfs -t swap --total 2>/dev/null | grep total | awk '{ print $2 }'
+    )
+    disk_total_size=$(calc_size $disk_total_size)
+    disk_used_size=$(
+        LANG=C
+        df -t simfs -t ext2 -t ext3 -t ext4 -t btrfs -t xfs -t vfat -t ntfs -t swap --total 2>/dev/null | grep total | awk '{ print $3 }'
+    )
+    disk_used_size=$(calc_size $disk_used_size)
+    tcpctrl=$(sysctl net.ipv4.tcp_congestion_control | awk -F ' ' '{print $3}')
 }
 # Print System information
 print_system_info() {
@@ -309,26 +333,26 @@ print_system_info() {
 }
 
 print_io_test() {
-    freespace=$( df -m . | awk 'NR==2 {print $4}' )
+    freespace=$(df -m . | awk 'NR==2 {print $4}')
     if [ -z "${freespace}" ]; then
-        freespace=$( df -m . | awk 'NR==3 {print $3}' )
+        freespace=$(df -m . | awk 'NR==3 {print $3}')
     fi
     if [ ${freespace} -gt 1024 ]; then
         writemb=2048
-        io1=$( io_test ${writemb} )
+        io1=$(io_test ${writemb})
         echo " I/O Speed(1st run) : $(_yellow "$io1")"
-        io2=$( io_test ${writemb} )
+        io2=$(io_test ${writemb})
         echo " I/O Speed(2nd run) : $(_yellow "$io2")"
-        io3=$( io_test ${writemb} )
+        io3=$(io_test ${writemb})
         echo " I/O Speed(3rd run) : $(_yellow "$io3")"
-        ioraw1=$( echo $io1 | awk 'NR==1 {print $1}' )
-        [ "`echo $io1 | awk 'NR==1 {print $2}'`" == "GB/s" ] && ioraw1=$( awk 'BEGIN{print '$ioraw1' * 1024}' )
-        ioraw2=$( echo $io2 | awk 'NR==1 {print $1}' )
-        [ "`echo $io2 | awk 'NR==1 {print $2}'`" == "GB/s" ] && ioraw2=$( awk 'BEGIN{print '$ioraw2' * 1024}' )
-        ioraw3=$( echo $io3 | awk 'NR==1 {print $1}' )
-        [ "`echo $io3 | awk 'NR==1 {print $2}'`" == "GB/s" ] && ioraw3=$( awk 'BEGIN{print '$ioraw3' * 1024}' )
-        ioall=$( awk 'BEGIN{print '$ioraw1' + '$ioraw2' + '$ioraw3'}' )
-        ioavg=$( awk 'BEGIN{printf "%.1f", '$ioall' / 3}' )
+        ioraw1=$(echo $io1 | awk 'NR==1 {print $1}')
+        [ "$(echo $io1 | awk 'NR==1 {print $2}')" == "GB/s" ] && ioraw1=$(awk 'BEGIN{print '$ioraw1' * 1024}')
+        ioraw2=$(echo $io2 | awk 'NR==1 {print $1}')
+        [ "$(echo $io2 | awk 'NR==1 {print $2}')" == "GB/s" ] && ioraw2=$(awk 'BEGIN{print '$ioraw2' * 1024}')
+        ioraw3=$(echo $io3 | awk 'NR==1 {print $1}')
+        [ "$(echo $io3 | awk 'NR==1 {print $2}')" == "GB/s" ] && ioraw3=$(awk 'BEGIN{print '$ioraw3' * 1024}')
+        ioall=$(awk 'BEGIN{print '$ioraw1' + '$ioraw2' + '$ioraw3'}')
+        ioavg=$(awk 'BEGIN{printf "%.1f", '$ioall' / 3}')
         echo " I/O Speed(average) : $(_yellow "$ioavg MB/s")"
     else
         echo " $(_red "Not enough space for I/O Speed test!")"
@@ -337,7 +361,7 @@ print_io_test() {
 
 print_end_time() {
     end_time=$(date +%s)
-    time=$(( ${end_time} - ${start_time} ))
+    time=$((${end_time} - ${start_time}))
     if [ ${time} -gt 60 ]; then
         min=$(expr $time / 60)
         sec=$(expr $time % 60)
