@@ -115,6 +115,22 @@ calc_size() {
     echo "${total_size} ${unit}"
 }
 
+# since calc_size converts kilobyte to MB, GB and TB
+# to_kibyte converts zfs size from bytes to kilobyte
+to_kibyte() {
+    local raw=$1
+    echo ${raw} / 1024
+}
+
+sum() {
+    local arr=("$@")
+    local s=0
+    for i in "${arr[@]}"; do
+        s=$(($s + $i))
+    done
+    echo ${s}
+}
+
 check_virt() {
     _exists "dmesg" && virtualx="$(dmesg 2>/dev/null)"
     if _exists "dmidecode"; then
@@ -280,16 +296,20 @@ get_system_info() {
         echo ${arch} | grep -q "64" && lbit="64" || lbit="32"
     fi
     kern=$(uname -r)
-    disk_total_size=$(
+    in_kernel_no_swap_total_size=$(
         LANG=C
-        df -t simfs -t ext2 -t ext3 -t ext4 -t btrfs -t xfs -t vfat -t ntfs -t swap --total 2>/dev/null | grep total | awk '{ print $2 }'
+        df -t simfs -t ext2 -t ext3 -t ext4 -t btrfs -t xfs -t vfat -t ntfs --total 2>/dev/null | grep total | awk '{ print $2 }'
     )
-    disk_total_size=$(calc_size $disk_total_size)
-    disk_used_size=$(
+    swap_total_size=$(free -k | grep Swap | awk '{print $2}')
+    zfs_total_size=$(to_kibyte $(sum $(zpool list -o size -Hp 2> /dev/null)))
+    disk_total_size=$(calc_size $(($swap_total_size + $in_kernel_no_swap_total_size + $zfs_total_size)))
+    in_kernel_no_swap_used_size=$(
         LANG=C
-        df -t simfs -t ext2 -t ext3 -t ext4 -t btrfs -t xfs -t vfat -t ntfs -t swap --total 2>/dev/null | grep total | awk '{ print $3 }'
+        df -t simfs -t ext2 -t ext3 -t ext4 -t btrfs -t xfs -t vfat -t ntfs --total 2>/dev/null | grep total | awk '{ print $3 }'
     )
-    disk_used_size=$(calc_size $disk_used_size)
+    swap_used_size=$(free -k | grep Swap | awk '{print $3}')
+    zfs_used_size=$(to_kibyte $(sum $(zpool list -o allocated -Hp 2> /dev/null)))
+    disk_used_size=$(calc_size $(($swap_used_size + $in_kernel_no_swap_used_size + $zfs_used_size)))
     tcpctrl=$(sysctl net.ipv4.tcp_congestion_control | awk -F ' ' '{print $3}')
 }
 # Print System information
