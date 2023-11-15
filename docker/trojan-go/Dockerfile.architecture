@@ -1,10 +1,11 @@
 # Dockerfile for trojan-go based alpine
-# Copyright (C) 2019 - 2021 Teddysun <i@teddysun.com>
+# Copyright (C) 2019 - 2023 Teddysun <i@teddysun.com>
 # Reference URL:
 # https://github.com/p4gefau1t/trojan-go
 # https://github.com/v2fly/v2ray-core
 # https://github.com/v2fly/geoip
 # https://github.com/v2fly/domain-list-community
+# https://github.com/Potterli20/trojan-go-fork
 
 FROM --platform=${TARGETPLATFORM} alpine:latest
 LABEL maintainer="Teddysun <i@teddysun.com>"

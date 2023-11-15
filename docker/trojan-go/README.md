@@ -40,13 +40,20 @@ A sample in JSON like below:
     "remote_addr": "127.0.0.1",
     "remote_port": 80,
     "password": [
-        "your_awesome_password"
+        "your_password"
     ],
     "ssl": {
-        "cert": "server.crt",
-        "key": "server.key",
-        "sni": "your-domain-name.com",
-        "fallback_port": 1234
+        "cert": "your_cert.crt",
+        "key": "your_key.key",
+        "sni": "your-domain-name.com"
+    },
+    "router": {
+        "enabled": true,
+        "block": [
+            "geoip:private"
+        ],
+        "geoip": "/usr/share/trojan-go/geoip.dat",
+        "geosite": "/usr/share/trojan-go/geosite.dat"
     }
 }
 ```
