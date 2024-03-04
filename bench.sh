@@ -159,6 +159,8 @@ check_virt() {
         virt="KVM"
     elif [[ "${sys_product}" == *KVM* ]]; then
         virt="KVM"
+    elif [[ "${sys_manu}" == *QEMU* ]]; then
+        virt="KVM"
     elif [[ "${cname}" == *KVM* ]]; then
         virt="KVM"
     elif [[ "${cname}" == *QEMU* ]]; then
