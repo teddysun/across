@@ -1,0 +1,29 @@
+Source: xray
+Section: net
+Priority: optional
+Maintainer: Teddysun <i@teddysun.com>
+Build-Depends: bash,
+               cmake,
+               dh-apparmor,
+               debhelper-compat (= 12),
+               gcc,
+               git,
+               libc-dev,
+               libltdl-dev,
+               libseccomp-dev,
+               libseccomp2,
+               libsystemd-dev,
+               libtool,
+               make,
+               pkg-config
+Standards-Version: 3.9.6
+Homepage: https://github.com/xtls/xray-core
+Rules-Requires-Root: no
+Vcs-Browser: https://github.com/xtls/xray-core
+Vcs-Git: git://github.com/xtls/xray-core.git
+
+Package: xray
+Architecture: linux-any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Xray, Penetrates Everything.
+ Also the best v2ray-core, with XTLS support. Fully compatible configuration.
