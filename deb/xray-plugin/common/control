@@ -1,0 +1,29 @@
+Source: xray-plugin
+Section: devel
+Priority: optional
+Maintainer: Teddysun <i@teddysun.com>
+Build-Depends: bash,
+               cmake,
+               dh-apparmor,
+               debhelper-compat (= 12),
+               gcc,
+               git,
+               libc-dev,
+               libltdl-dev,
+               libseccomp-dev,
+               libseccomp2,
+               libsystemd-dev,
+               libtool,
+               make,
+               pkg-config
+Standards-Version: 3.9.6
+Homepage: https://github.com/teddysun/xray-plugin
+Vcs-Browser: https://github.com/teddysun/xray-plugin
+Vcs-Git: git://github.com/teddysun/xray-plugin.git
+
+Package: xray-plugin
+Architecture: linux-any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Xray plugin for shadowsocks
+ Yet another SIP003 plugin for shadowsocks, based on xray-core.
+ It should be used with shadowsocks.
