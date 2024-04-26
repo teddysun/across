@@ -4,7 +4,7 @@
 # 
 # Supported architectures: amd64, arm32v6, arm32v7, arm64v8, i386, ppc64le, s390x
 # 
-# Copyright (C) 2020 Teddysun <i@teddysun.com>
+# Copyright (C) 2020 - 2024 Teddysun <i@teddysun.com>
 #
 # Reference URL:
 # https://github.com/XTLS/Xray-core
