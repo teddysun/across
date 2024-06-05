@@ -1,0 +1,21 @@
+# Dockerfile for hysteria client based alpine
+# Copyright (C) 2023 Teddysun <i@teddysun.com>
+# Reference URL:
+# https://github.com/HyNetwork/hysteria
+
+FROM --platform=${TARGETPLATFORM} alpine:latest
+LABEL maintainer="Teddysun <i@teddysun.com>"
+
+ARG TARGETPLATFORM
+WORKDIR /root
+COPY hysteria.sh /root/hysteria.sh
+COPY client.yaml /etc/hysteria/client.yaml
+RUN set -ex \
+	&& apk add --no-cache bash tzdata ca-certificates \
+	&& chmod +x /root/hysteria.sh \
+	&& /root/hysteria.sh "${TARGETPLATFORM}" \
+	&& rm -fv /root/hysteria.sh
+
+VOLUME /etc/hysteria
+ENV TZ=Asia/Shanghai
+CMD [ "/usr/bin/hysteria", "client", "-c", "/etc/hysteria/client.yaml" ]
