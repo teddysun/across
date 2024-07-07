@@ -1,7 +1,7 @@
 %global debug_package %{nil}
 
 Name:           xray
-Version:        1.8.11
+Version:        1.8.16
 Release:        1%{?dist}
 Summary:        Xray, Penetrates Everything.
 License:        MPL-2.0
@@ -105,28 +105,3 @@ EOF
 %{_datadir}/%{name}/*.dat
 %license LICENSE
 %doc README.md
-
-%changelog
-* Fri Apr 26 2024 Teddysun <i@teddysun.com> - 1.8.11-1
-- Update to version 1.8.11
-
-* Sat Mar 30 2024 Teddysun <i@teddysun.com> - 1.8.10-1
-- Update to version 1.8.10
-
-* Mon Mar 11 2024 Teddysun <i@teddysun.com> - 1.8.9-1
-- Update to version 1.8.9
-
-* Mon Feb 26 2024 Teddysun <i@teddysun.com> - 1.8.8-1
-- Update to version 1.8.8
-
-* Mon Jan 08 2024 Teddysun <i@teddysun.com> - 1.8.7-1
-- Update to version 1.8.7
-
-* Sat Nov 18 2023 Teddysun <i@teddysun.com> - 1.8.6-1
-- Update to version 1.8.6
-
-* Tue Nov 14 2023 Teddysun <i@teddysun.com> - 1.8.5-1
-- Update to version 1.8.5
-
-* Wed Oct 18 2023 Teddysun <i@teddysun.com> - 1.8.4-1
-- Update to version 1.8.4

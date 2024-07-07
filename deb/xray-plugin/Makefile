@@ -1,12 +1,12 @@
 ARCH=$(shell uname -m)
-VERSION?=1.8.11
-GO_VERSION:=1.22.2
+VERSION?=1.8.15
+GO_VERSION:=1.22.5
 SHELL:=/bin/bash
 GO_BASE_IMAGE=golang
 GO_IMAGE?=$(GO_BASE_IMAGE):$(GO_VERSION)-bookworm
 EPOCH?=
 REPO?=https://github.com/teddysun/xray-plugin.git
-REF?=v1.8.11
+REF?=v1.8.15
 CHOWN:=docker run --rm -v $(CURDIR):/v -w /v alpine chown
 
 ifdef BUILD_IMAGE
