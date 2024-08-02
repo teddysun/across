@@ -310,14 +310,14 @@ get_system_info() {
         df -t simfs -t ext2 -t ext3 -t ext4 -t btrfs -t xfs -t vfat -t ntfs --total 2>/dev/null | grep total | awk '{ print $2 }'
     )
     swap_total_size=$(free -k | grep Swap | awk '{print $2}')
-    zfs_total_size=$(to_kibyte "$(calc_sum "$(zpool list -o size -Hp 2> /dev/null)")")
+    zfs_total_size=$(to_kibyte "$(calc_sum $(zpool list -o size -Hp 2> /dev/null))")
     disk_total_size=$(calc_size $((swap_total_size + in_kernel_no_swap_total_size + zfs_total_size)))
     in_kernel_no_swap_used_size=$(
         LANG=C
         df -t simfs -t ext2 -t ext3 -t ext4 -t btrfs -t xfs -t vfat -t ntfs --total 2>/dev/null | grep total | awk '{ print $3 }'
     )
     swap_used_size=$(free -k | grep Swap | awk '{print $3}')
-    zfs_used_size=$(to_kibyte "$(calc_sum "$(zpool list -o allocated -Hp 2> /dev/null)")")
+    zfs_used_size=$(to_kibyte "$(calc_sum $(zpool list -o allocated -Hp 2> /dev/null))")
     disk_used_size=$(calc_size $((swap_used_size + in_kernel_no_swap_used_size + zfs_used_size)))
     tcpctrl=$(sysctl net.ipv4.tcp_congestion_control | awk -F ' ' '{print $3}')
 }
