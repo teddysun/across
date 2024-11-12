@@ -2,7 +2,7 @@
 #
 # Description: A Bench Script by Teddysun
 #
-# Copyright (C) 2015 - 2023 Teddysun <i@teddysun.com>
+# Copyright (C) 2015 - 2024 Teddysun <i@teddysun.com>
 # Thanks: LookBack <admin@dwhd.org>
 # URL: https://teddysun.com/444.html
 # https://github.com/teddysun/across/blob/master/bench.sh
@@ -80,13 +80,12 @@ speed() {
     speed_test '40879' 'Montreal, CA'
     speed_test '24215' 'Paris, FR'
     speed_test '28922' 'Amsterdam, NL'
+    speed_test '25858' 'Beijing, CN'
     speed_test '24447' 'Shanghai, CN'
-    speed_test '5530' 'Chongqing, CN'
-    speed_test '60572' 'Guangzhou, CN'
-    speed_test '32155' 'Hongkong, CN'
-    speed_test '23647' 'Mumbai, IN'
+    speed_test '60794' 'Guangzhou, CN'
+    speed_test '32155' 'Hong Kong, CN'
     speed_test '13623' 'Singapore, SG'
-    speed_test '21569' 'Tokyo, JP'
+    speed_test '50686' 'Tokyo, JP'
 }
 
 io_test() {
@@ -253,7 +252,7 @@ install_speedtest() {
 
 print_intro() {
     echo "-------------------- A Bench.sh Script By Teddysun -------------------"
-    echo " Version            : $(_green v2023-10-15)"
+    echo " Version            : $(_green v2024-11-11)"
     echo " Usage              : $(_red "wget -qO- bench.sh | bash")"
 }
 
