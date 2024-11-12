@@ -78,14 +78,14 @@ speed() {
     speed_test '21541' 'Los Angeles, US'
     speed_test '43860' 'Dallas, US'
     speed_test '40879' 'Montreal, CA'
-    speed_test '24215' 'Paris, FR'
+    speed_test '61933' 'Paris, FR'
     speed_test '28922' 'Amsterdam, NL'
     speed_test '25858' 'Beijing, CN'
     speed_test '24447' 'Shanghai, CN'
-    speed_test '60794' 'Guangzhou, CN'
+    speed_test '60572' 'Guangzhou, CN'
     speed_test '32155' 'Hong Kong, CN'
     speed_test '13623' 'Singapore, SG'
-    speed_test '50686' 'Tokyo, JP'
+    speed_test '48463' 'Tokyo, JP'
 }
 
 io_test() {
