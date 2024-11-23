@@ -2,7 +2,7 @@
 #
 # This is a Shell script for configure and start WireGuard VPN server.
 #
-# Copyright (C) 2019 - 2020 Teddysun <i@teddysun.com>
+# Copyright (C) 2019 - 2024 Teddysun <i@teddysun.com>
 #
 # Reference URL:
 # https://www.wireguard.com
@@ -296,6 +296,9 @@ install_wg_pkgs() {
             if [ -n "$(_os_ver)" -a "$(_os_ver)" -eq 8 ]; then
                 yum-config-manager --enable PowerTools > /dev/null 2>&1 || yum-config-manager --enable powertools > /dev/null 2>&1
             fi
+            if [ -n "$(_os_ver)" -a "$(_os_ver)" -eq 9 ]; then
+                yum-config-manager --enable crb > /dev/null 2>&1
+            fi
             _error_detect "yum -y install libmnl-devel"
             _error_detect "yum -y install elfutils-libelf-devel"
             [ ! -d "/usr/src/kernels/$(uname -r)" ] && _error_detect "yum -y install kernel-headers" && _error_detect "yum -y install kernel-devel"
@@ -474,9 +477,9 @@ EOF
 
 # Create client interface
 create_client_if() {
-    _info "Create client interface: /etc/wireguard/${SERVER_WG_NIC}_client"
+    _info "Create client interface: /etc/wireguard/${SERVER_WG_NIC}_client.conf"
     if [ -n "${SERVER_PUB_IPV6}" ]; then
-        cat > /etc/wireguard/${SERVER_WG_NIC}_client <<EOF
+        cat > /etc/wireguard/${SERVER_WG_NIC}_client.conf <<EOF
 [Interface]
 PrivateKey = ${CLIENT_PRIVATE_KEY}
 Address = ${CLIENT_WG_IPV4}/24,${CLIENT_WG_IPV6}/64
@@ -489,7 +492,7 @@ AllowedIPs = 0.0.0.0/0,::/0
 Endpoint = ${SERVER_PUB_IPV4}:${SERVER_WG_PORT}
 EOF
     else
-        cat > /etc/wireguard/${SERVER_WG_NIC}_client <<EOF
+        cat > /etc/wireguard/${SERVER_WG_NIC}_client.conf <<EOF
 [Interface]
 PrivateKey = ${CLIENT_PRIVATE_KEY}
 Address = ${CLIENT_WG_IPV4}/24
@@ -502,13 +505,13 @@ AllowedIPs = 0.0.0.0/0
 Endpoint = ${SERVER_PUB_IPV4}:${SERVER_WG_PORT}
 EOF
     fi
-    chmod 600 /etc/wireguard/${SERVER_WG_NIC}_client
+    chmod 600 /etc/wireguard/${SERVER_WG_NIC}_client.conf
 }
 
 # Generate a QR Code picture with default client interface
 generate_qr() {
     _info "Generate a QR Code picture with client interface"
-    _error_detect "qrencode -s8 -o /etc/wireguard/${SERVER_WG_NIC}_client.png < /etc/wireguard/${SERVER_WG_NIC}_client"
+    _error_detect "qrencode -s8 -o /etc/wireguard/${SERVER_WG_NIC}_client.png < /etc/wireguard/${SERVER_WG_NIC}_client.conf"
 }
 
 # Enable IP forwarding
@@ -581,7 +584,7 @@ install_completed() {
     _info "WireGuard VPN Server installation completed"
     _info ""
     _info "WireGuard VPN default client file is below:"
-    _info "$(_green "/etc/wireguard/${SERVER_WG_NIC}_client")"
+    _info "$(_green "/etc/wireguard/${SERVER_WG_NIC}_client.conf")"
     _info ""
     _info "WireGuard VPN default client QR Code is below:"
     _info "$(_green "/etc/wireguard/${SERVER_WG_NIC}_client.png")"
@@ -596,7 +599,7 @@ add_client() {
         _red "WireGuard was not installed, please install it and try again\n" && exit 1
     fi
     default_server_if="/etc/wireguard/${SERVER_WG_NIC}.conf"
-    default_client_if="/etc/wireguard/${SERVER_WG_NIC}_client"
+    default_client_if="/etc/wireguard/${SERVER_WG_NIC}_client.conf"
     [ ! -s "${default_server_if}" ] && echo "The default server interface ($(_red ${default_server_if})) does not exists" && exit 1
     [ ! -s "${default_client_if}" ] && echo "The default client interface ($(_red ${default_client_if})) does not exists" && exit 1
     while true; do
@@ -604,7 +607,7 @@ add_client() {
         if [ -z "${client}" ]; then
             _red "Client name can not be empty\n"
         else
-            new_client_if="/etc/wireguard/${client}_client"
+            new_client_if="/etc/wireguard/${client}_client.conf"
             if [ "${client}" = "${SERVER_WG_NIC}" ]; then
                 echo "The default client ($(_yellow ${client})) already exists. Please re-enter it"
             elif [ -s "${new_client_if}" ]; then
@@ -615,7 +618,7 @@ add_client() {
         fi
     done
     # Get information from default interface file
-    client_files=($(find /etc/wireguard/ -name "*_client" | sort))
+    client_files=($(find /etc/wireguard/ -name "*_client*" | sort))
     client_ipv4=()
     client_ipv6=()
     for ((i=0; i<${#client_files[@]}; i++)); do
@@ -688,11 +691,11 @@ EOF
     echo "Add a WireGuard client ($(_green ${client})) completed"
     systemctl restart wg-quick@${SERVER_WG_NIC}
     # Generate a new QR Code picture
-    qrencode -s8 -o ${new_client_if}.png < ${new_client_if}
+    qrencode -s8 -o /etc/wireguard/${client}_client.png < ${new_client_if}
     echo "Generate a QR Code picture with new client ($(_green ${client})) completed"
     echo
     echo "WireGuard VPN new client ($(_green ${client})) file is below:"
-    _green "/etc/wireguard/${client}_client\n"
+    _green "/etc/wireguard/${client}_client.conf\n"
     echo
     echo "WireGuard VPN new client ($(_green ${client})) QR Code is below:"
     _green "/etc/wireguard/${client}_client.png\n"
@@ -717,7 +720,7 @@ remove_client() {
             fi
         fi
     done
-    client_if="/etc/wireguard/${client}_client"
+    client_if="/etc/wireguard/${client}_client.conf"
     [ ! -s "${client_if}" ] && echo "The client file ($(_red ${client_if})) does not exists" && exit 1
     tmp_tag="$(grep -w "Address" ${client_if} | awk '{print $3}' | cut -d\/ -f1 )"
     [ -n "${tmp_tag}" ] && sed -i '/'"$tmp_tag"'/,+1d;:a;1,3!{P;$!N;D};N;ba' ${default_server_if}
@@ -737,7 +740,7 @@ list_clients() {
     local line="+-------------------------------------------------------------------------+\n"
     local string=%-35s
     printf "${line}|${string} |${string} |\n${line}" " Client Interface" " Client's IP"
-    client_files=($(find /etc/wireguard/ -name "*_client" | sort))
+    client_files=($(find /etc/wireguard/ -name "*_client*" | sort))
     ips=($(grep -w "AllowedIPs" ${default_server_if} | awk '{print $3}'))
     [ ${#client_files[@]} -ne ${#ips[@]} ] && echo "One or more client interface file is missing in /etc/wireguard" && exit 1
     for ((i=0; i<${#ips[@]}; i++)); do
