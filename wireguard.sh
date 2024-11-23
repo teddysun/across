@@ -71,16 +71,16 @@ _exists() {
 }
 
 _ipv4() {
-    local ipv4="$( ip addr | egrep -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | \
-                   egrep -v "^192\.168|^172\.1[6-9]\.|^172\.2[0-9]\.|^172\.3[0-2]\.|^10\.|^127\.|^255\.|^0\.|^169\.254\." | head -n 1 )"
-    [ -z "${ipv4}" ] && ipv4="$( wget -qO- -t1 -T2 ipv4.icanhazip.com )"
-    [ -z "${ipv4}" ] && ipv4="$( wget -qO- -t1 -T2 ipinfo.io/ip )"
+    local ipv4="$( ip addr | grep -E -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | \
+                   grep -E -v "^192\.168|^172\.1[6-9]\.|^172\.2[0-9]\.|^172\.3[0-2]\.|^10\.|^127\.|^255\.|^0\.|^169\.254\." | head -n 1 )"
+    [ -z "${ipv4}" ] && ipv4="$( wget -qO- -t1 -T2 http://ipv4.icanhazip.com )"
+    [ -z "${ipv4}" ] && ipv4="$( wget -qO- -t1 -T2 http://ipinfo.io/ip )"
     printf -- "%s" "${ipv4}"
 }
 
 _ipv6() {
     local ipv6=""
-    ipv6="$(wget -qO- -t1 -T2 ipv6.icanhazip.com)"
+    ipv6="$(wget -qO- -t1 -T2 http://ipv6.icanhazip.com)"
     printf -- "%s" "${ipv6}"
 }
 
