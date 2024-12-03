@@ -1,12 +1,12 @@
 ARCH=$(shell uname -m)
-VERSION?=1.8.16
-GO_VERSION:=1.22.5
+VERSION?=24.11.30
+GO_VERSION:=1.23.3
 SHELL:=/bin/bash
 GO_BASE_IMAGE=golang
 GO_IMAGE?=$(GO_BASE_IMAGE):$(GO_VERSION)-bookworm
 EPOCH?=
 REPO?=https://github.com/xtls/xray-core.git
-REF?=v1.8.16
+REF?=v24.11.30
 CHOWN:=docker run --rm -v $(CURDIR):/v -w /v alpine chown
 
 ifdef BUILD_IMAGE
@@ -47,7 +47,7 @@ help: ## show make targets
 
 .PHONY: checkout-src
 checkout-src: src/github.com/xtls/xray
-	./checkout.sh src/github.com/xtls/xray "$(REF)"
+	../checkout.sh src/github.com/xtls/xray "$(REF)"
 	@curl -sSLo src/github.com/xtls/xray/geoip.dat https://github.com/v2fly/geoip/releases/latest/download/geoip.dat
 	@curl -sSLo src/github.com/xtls/xray/geosite.dat https://github.com/v2fly/domain-list-community/releases/latest/download/dlc.dat
 
