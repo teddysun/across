@@ -1,14 +1,15 @@
 %global debug_package %{nil}
 
 Name:           xray
-Version:        1.8.16
+Version:        24.11.30
 Release:        1%{?dist}
 Summary:        Xray, Penetrates Everything.
 License:        MPL-2.0
 URL:            https://github.com/XTLS/Xray-core
+Packager:       Teddysun <i@teddysun.com>
 
-Source0:        %{name}-%{version}.tar.gz
-Source1:        config.json
+Source0:        https://github.com/XTLS/Xray-core/archive/refs/tags/v%{version}.tar.gz#/Xray-core-%{version}.tar.gz
+Source1:        https://github.com/teddysun/across/raw/master/rpm/xray/config.json
 Source2:        https://github.com/v2fly/geoip/releases/latest/download/geoip.dat
 Source3:        https://github.com/v2fly/domain-list-community/releases/latest/download/dlc.dat
 
@@ -26,7 +27,7 @@ Xray, Penetrates Everything.
 Also the best v2ray-core, with XTLS support. Fully compatible configuration.
 
 %prep
-%autosetup
+%setup -q -n Xray-core-%{version}
 
 %build
 # https://pagure.io/go-rpm-macros/c/1cc7f5d9026175bb6cb1b8c889355d0c4fc0e40a
@@ -105,3 +106,85 @@ EOF
 %{_datadir}/%{name}/*.dat
 %license LICENSE
 %doc README.md
+
+%changelog
+* Sat Nov 30 2024 Teddysun <i@teddysun.com> - 24.11.30-1
+- Update version to 24.11.30
+
+* Thu Nov 21 2024 Teddysun <i@teddysun.com> - 24.11.21-1
+- Update version to 24.11.21
+
+* Mon Nov 11 2024 Teddysun <i@teddysun.com> - 24.11.11-1
+- Update version to 24.11.11
+
+* Tue Nov 05 2024 Teddysun <i@teddysun.com> - 24.11.5-1
+- Update version to 24.11.5
+
+* Thu Oct 31 2024 Teddysun <i@teddysun.com> - 24.10.31-1
+- Update version to 24.10.31
+
+* Wed Oct 16 2024 Teddysun <i@teddysun.com> - 24.10.16-1
+- Update version to 24.10.16
+
+* Mon Sep 30 2024 Teddysun <i@teddysun.com> - 24.9.30-1
+- Update version to 24.9.30
+
+* Thu Sep 19 2024 Teddysun <i@teddysun.com> - 24.9.19-1
+- Update version to 24.9.19
+
+* Mon Sep 16 2024 Teddysun <i@teddysun.com> - 24.9.16-1
+- Update version to 24.9.16
+
+* Sat Sep 07 2024 Teddysun <i@teddysun.com> - 24.9.7-1
+- Update version to 24.9.7 (New version naming rule, based release date)
+
+* Fri Aug 30 2024 Teddysun <i@teddysun.com> - 1.8.24-1
+- Update version to 1.8.24
+
+* Sun Aug 04 2024 Teddysun <i@teddysun.com> - 1.8.23-1
+- Update to version 1.8.23
+
+* Wed Jul 17 2024 Teddysun <i@teddysun.com> - 1.8.19-1
+- Update to version 1.8.19
+
+* Mon Jul 15 2024 Teddysun <i@teddysun.com> - 1.8.18-1
+- Update to version 1.8.18
+
+* Fri Jul 12 2024 Teddysun <i@teddysun.com> - 1.8.17-1
+- Update to version 1.8.17
+
+* Fri Jun 21 2024 Teddysun <i@teddysun.com> - 1.8.16-1
+- Update to version 1.8.16
+
+* Tue Jun 18 2024 Teddysun <i@teddysun.com> - 1.8.15-1
+- Update to version 1.8.15
+
+* Thu May 23 2024 Teddysun <i@teddysun.com> - 1.8.13-1
+- Update to version 1.8.13
+
+* Wed May 22 2024 Teddysun <i@teddysun.com> - 1.8.12-1
+- Update to version 1.8.12
+
+* Fri Apr 26 2024 Teddysun <i@teddysun.com> - 1.8.11-1
+- Update to version 1.8.11
+
+* Sat Mar 30 2024 Teddysun <i@teddysun.com> - 1.8.10-1
+- Update to version 1.8.10
+
+* Mon Mar 11 2024 Teddysun <i@teddysun.com> - 1.8.9-1
+- Update to version 1.8.9
+
+* Mon Feb 26 2024 Teddysun <i@teddysun.com> - 1.8.8-1
+- Update to version 1.8.8
+
+* Mon Jan 08 2024 Teddysun <i@teddysun.com> - 1.8.7-1
+- Update to version 1.8.7
+
+* Sat Nov 18 2023 Teddysun <i@teddysun.com> - 1.8.6-1
+- Update to version 1.8.6
+
+* Tue Nov 14 2023 Teddysun <i@teddysun.com> - 1.8.5-1
+- Update to version 1.8.5
+
+* Wed Oct 18 2023 Teddysun <i@teddysun.com> - 1.8.4-1
+- Update to version 1.8.4
