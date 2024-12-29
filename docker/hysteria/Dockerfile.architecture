@@ -1,9 +1,9 @@
 # Dockerfile for hysteria based alpine
-# Copyright (C) 2023 Teddysun <i@teddysun.com>
+# Copyright (C) 2023 - 2024 Teddysun <i@teddysun.com>
 # Reference URL:
 # https://github.com/HyNetwork/hysteria
 
-FROM --platform=${TARGETPLATFORM} alpine:latest
+FROM alpine:latest
 LABEL maintainer="Teddysun <i@teddysun.com>"
 
 ARG TARGETPLATFORM

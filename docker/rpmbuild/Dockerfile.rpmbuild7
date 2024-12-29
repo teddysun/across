@@ -1,7 +1,7 @@
 # Dockerfile for build RPM packages.
 # Copyright (C) 2021 - 2022 Teddysun <i@teddysun.com>
 
-FROM --platform=${TARGETPLATFORM} centos:7
+FROM centos:7
 LABEL maintainer="Teddysun <i@teddysun.com>"
 
 RUN yum install -y yum-utils epel-release centos-release-scl-rh && \

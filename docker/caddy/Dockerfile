@@ -1,5 +1,5 @@
 # Dockerfile for caddy v1.0.5 based alpine
-# Copyright (C) 2021 Teddysun <i@teddysun.com>
+# Copyright (C) 2021 - 2024 Teddysun <i@teddysun.com>
 # Reference URL:
 # https://github.com/caddyserver/caddy
 # https://github.com/caddyserver/forwardproxy

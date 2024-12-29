@@ -40,9 +40,7 @@ A sample in JSON like below:
     "settings": {
       "clients": [
         {
-          "id": "1eb6e917-774b-4a84-aff6-b058577c60a5",
-          "level": 1,
-          "alterId": 64
+          "id": "1eb6e917-774b-4a84-aff6-b058577c60a5"
         }
       ]
     }

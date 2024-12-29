@@ -1,7 +1,7 @@
 # Dockerfile for build RPM packages.
-# Copyright (C) 2022 Teddysun <i@teddysun.com>
+# Copyright (C) 2022 - 2024 Teddysun <i@teddysun.com>
 
-FROM --platform=${TARGETPLATFORM} rockylinux:9
+FROM rockylinux:9
 LABEL maintainer="Teddysun <i@teddysun.com>"
 
 RUN yum install -y yum-utils epel-release && \

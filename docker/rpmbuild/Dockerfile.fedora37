@@ -1,7 +1,7 @@
 # Dockerfile for build RPM packages.
 # Copyright (C) 2023 Teddysun <i@teddysun.com>
 
-FROM --platform=${TARGETPLATFORM} fedora:37
+FROM fedora:37
 LABEL maintainer="Teddysun <i@teddysun.com>"
 
 RUN dnf install -y yum-utils && \

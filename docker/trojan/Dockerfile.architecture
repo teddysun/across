@@ -1,10 +1,10 @@
 # Dockerfile for trojan based alpine
-# Copyright (C) 2020 Teddysun <i@teddysun.com>
+# Copyright (C) 2020 - 2024 Teddysun <i@teddysun.com>
 # Reference URL:
 # https://github.com/trojan-gfw/trojan
 # https://trojan-gfw.github.io/trojan/
 
-FROM --platform=${TARGETPLATFORM} alpine:latest AS builder
+FROM alpine:latest AS builder
 WORKDIR /root
 RUN set -ex \
 	&& VERSION="$(wget --no-check-certificate -qO- https://api.github.com/repos/trojan-gfw/trojan/tags | grep 'name' | cut -d\" -f4 | head -1)" \
@@ -15,7 +15,7 @@ RUN set -ex \
 	&& make \
 	&& strip -s trojan
 
-FROM --platform=${TARGETPLATFORM} alpine:latest
+FROM alpine:latest
 LABEL maintainer="Teddysun <i@teddysun.com>"
 
 RUN set -ex \

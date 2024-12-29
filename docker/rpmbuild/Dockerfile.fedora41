@@ -1,7 +1,7 @@
 # Dockerfile for build RPM packages.
 # Copyright (C) 2024 Teddysun <i@teddysun.com>
 
-FROM fedora:40
+FROM fedora:41
 LABEL maintainer="Teddysun <i@teddysun.com>"
 
 RUN dnf install -y yum-utils && \
