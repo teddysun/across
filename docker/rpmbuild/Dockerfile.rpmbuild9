@@ -1,15 +1,16 @@
 # Dockerfile for build RPM packages.
-# Copyright (C) 2022 - 2024 Teddysun <i@teddysun.com>
+# Copyright (C) 2022 - 2025 Teddysun <i@teddysun.com>
 
 FROM rockylinux:9
 LABEL maintainer="Teddysun <i@teddysun.com>"
 
-RUN yum install -y yum-utils epel-release && \
-	yum-config-manager --enable epel && \
-	yum-config-manager --enable crb && \
+RUN dnf install -y yum-utils epel-release && \
+	dnf config-manager --enable epel && \
+	dnf config-manager --enable crb && \
+	dnf install -y https://dl.lamp.sh/linux/rhel/el8/x86_64/teddysun-release-1.0-1.el8.noarch.rpm && \
 	rpm -e --nodeps coreutils-single && \
-	yum install -y tar wget git tree gcc gcc-c++ \
-		sudo net-tools make cmake zstd libzstd chkconfig \
+	dnf install -y tar wget wget2 curl libcurl libcurl-devel git tree gcc gcc-c++ \
+		sudo net-tools make cmake zstd libzstd chkconfig pcre-devel pcre2-devel \
 		bash coreutils diffutils patch ca-certificates \
 		rpm-build rpm-devel rpmlint rpmdevtools ncurses which procps \
 		asciidoc audit-libs-devel binutils-devel flex jq gettext \
@@ -19,7 +20,7 @@ RUN yum install -y yum-utils epel-release && \
 		bpftool dwarves gcc-plugin-devel glibc-static hmaccalc kernel-rpm-macros \
 		libbabeltrace-devel libbpf-devel libcap-ng-devel libnl3-devel libtraceevent-devel \
 		elfutils-devel xz-devel perl-ExtUtils-Embed && \
-	yum clean all && rm -rf /var/cache/dnf /var/lib/rpm/__db*
+	dnf clean all && rm -rf /var/cache/dnf /var/lib/rpm/__db*
 
 RUN useradd builder -u 1000 -m -G users,wheel && \
 	echo "builder ALL=(ALL:ALL) NOPASSWD:ALL" >> /etc/sudoers && \
