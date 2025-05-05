@@ -9,6 +9,7 @@ RUN dnf install -y yum-utils epel-release && \
 	dnf config-manager --enable powertools && \
 	dnf install -y https://dl.lamp.sh/linux/rhel/el8/x86_64/teddysun-release-1.0-1.el8.noarch.rpm && \
 	rpm -e --nodeps coreutils-single && \
+	rpm -e --nodeps libcurl-minimal && \
 	dnf install -y tar wget wget2 curl libcurl libcurl-devel git tree gcc gcc-c++ \
 		sudo net-tools make cmake zstd libzstd chkconfig pcre-devel pcre2-devel \
 		bash coreutils diffutils patch ca-certificates \
