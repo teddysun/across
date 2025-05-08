@@ -2,7 +2,7 @@
 #
 # Description: A Bench Script by Teddysun
 #
-# Copyright (C) 2015 - 2024 Teddysun <i@teddysun.com>
+# Copyright (C) 2015 - 2025 Teddysun <i@teddysun.com>
 # Thanks: LookBack <admin@dwhd.org>
 # URL: https://teddysun.com/444.html
 # https://github.com/teddysun/across/blob/master/bench.sh
@@ -195,10 +195,10 @@ check_virt() {
 
 ipv4_info() {
     local org city country region
-    org="$(wget -q -T10 -O- ipinfo.io/org)"
-    city="$(wget -q -T10 -O- ipinfo.io/city)"
-    country="$(wget -q -T10 -O- ipinfo.io/country)"
-    region="$(wget -q -T10 -O- ipinfo.io/region)"
+    org="$(wget -q -T10 -O- http://ipinfo.io/org)"
+    city="$(wget -q -T10 -O- http://ipinfo.io/city)"
+    country="$(wget -q -T10 -O- http://ipinfo.io/country)"
+    region="$(wget -q -T10 -O- http://ipinfo.io/region)"
     if [[ -n "${org}" ]]; then
         echo " Organization       : $(_blue "${org}")"
     fi
@@ -252,7 +252,7 @@ install_speedtest() {
 
 print_intro() {
     echo "-------------------- A Bench.sh Script By Teddysun -------------------"
-    echo " Version            : $(_green v2024-11-11)"
+    echo " Version            : $(_green v2025-05-08)"
     echo " Usage              : $(_red "wget -qO- bench.sh | bash")"
 }
 
