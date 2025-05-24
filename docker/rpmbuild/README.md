@@ -1,4 +1,4 @@
-## CentOS RPM package building environment by Teddysun
+## RHEL RPM package building environment by Teddysun
 
 This docker image can be used to build RPM packages.
 
@@ -6,13 +6,14 @@ For more information on docker and containerization technologies, refer to [offi
 
 ## Supported tags and respective `Dockerfile` links
 
-- `latest`, `9` [*(Dockerfile)*][7]
+- `latest`, `10` [*(Dockerfile)*][8]
+- `9` [*(Dockerfile)*][7]
 - `8` [*(Dockerfile)*][2]
 - `7` [*(Dockerfile)*][3]
 
 ### Reference
 
-- Supported architectures ([*more info*][4]): `amd64`
+- Supported architectures ([*more info*][4]): `amd64`, `arm64`
 
 ## Integration
 
@@ -46,6 +47,12 @@ For CentOS 9 Stream / Rockylinux 9 / Almalinux 9
 $ docker pull teddysun/rpmbuild:9
 ```
 
+For CentOS 10 Stream / Rockylinux 10 / Almalinux 10
+
+```bash
+$ docker pull teddysun/rpmbuild:10
+```
+
 It can be found at [Docker Hub][6].
 
 ## Start a container
@@ -71,6 +78,12 @@ $ mkdir -m 777 -p /opt/builder9
 $ docker run -it --rm -h buildbot --name rpmbuild9 -v /opt/builder9:/home/builder/rpmbuild teddysun/rpmbuild:9
 ```
 
+There is an example to start a container for CentOS 10 Stream / Rockylinux 10 / Almalinux 10 like below:
+
+```bash
+$ mkdir -m 777 -p /opt/builder10
+$ docker run -it --rm -h buildbot --name rpmbuild10 -v /opt/builder10:/home/builder/rpmbuild teddysun/rpmbuild:10
+```
 
 [1]: https://docs.docker.com/
 [2]: https://github.com/teddysun/across/blob/master/docker/rpmbuild/Dockerfile.rpmbuild8
@@ -79,3 +92,4 @@ $ docker run -it --rm -h buildbot --name rpmbuild9 -v /opt/builder9:/home/builde
 [5]: https://docs.docker.com/install/
 [6]: https://hub.docker.com/r/teddysun/rpmbuild/
 [7]: https://github.com/teddysun/across/blob/master/docker/rpmbuild/Dockerfile.rpmbuild9
+[8]: https://github.com/teddysun/across/blob/master/docker/rpmbuild/Dockerfile.rpmbuild10
