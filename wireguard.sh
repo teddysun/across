@@ -2,7 +2,7 @@
 #
 # This is a Shell script for configure and start WireGuard VPN server.
 #
-# Copyright (C) 2019 - 2024 Teddysun <i@teddysun.com>
+# Copyright (C) 2019 - 2025 Teddysun <i@teddysun.com>
 #
 # Reference URL:
 # https://www.wireguard.com
@@ -740,7 +740,7 @@ list_clients() {
     local line="+-------------------------------------------------------------------------+\n"
     local string=%-35s
     printf "${line}|${string} |${string} |\n${line}" " Client Interface" " Client's IP"
-    client_files=($(find /etc/wireguard/ -name "*_client*" | sort))
+    client_files=($(find /etc/wireguard/ -name "*_client.conf" | sort))
     ips=($(grep -w "AllowedIPs" ${default_server_if} | awk '{print $3}'))
     [ ${#client_files[@]} -ne ${#ips[@]} ] && echo "One or more client interface file is missing in /etc/wireguard" && exit 1
     for ((i=0; i<${#ips[@]}; i++)); do
