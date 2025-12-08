@@ -10,7 +10,7 @@ RUN dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-10.
 	dnf install -y https://dl.lamp.sh/linux/rhel/el10/x86_64/teddysun-release-1.0-1.el10.noarch.rpm && \
 	rpm -e --nodeps coreutils-single && \
 	dnf install -y tar wget tree git gcc gcc-c++ coreutils bash diffutils patch ca-certificates \
-		sudo net-tools make cmake zstd libzstd chkconfig pcre2-devel \
+		vim nano ed sudo net-tools make cmake zstd libzstd chkconfig pcre2-devel \
 		rpm-build rpm-devel rpmlint rpmdevtools ncurses which procps \
 		asciidoc audit-libs-devel binutils-devel flex jq gettext \
 		libcap-devel newt-devel pciutils-devel perl-generators \
