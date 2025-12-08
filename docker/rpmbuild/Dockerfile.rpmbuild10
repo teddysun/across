@@ -1,7 +1,7 @@
 # Dockerfile for build RPM packages.
 # Copyright (C) 2025 Teddysun <i@teddysun.com>
 
-FROM rockylinux:10
+FROM almalinux:10
 LABEL maintainer="Teddysun <i@teddysun.com>"
 
 RUN dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-10.noarch.rpm && \
