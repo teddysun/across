@@ -15,8 +15,8 @@ _yellow() { printf '\033[0;31;33m%b\033[0m' "$1"; }
 _blue() { printf '\033[0;31;36m%b\033[0m' "$1"; }
 _purple() { printf '\033[0;35m%b\033[0m' "$1"; }
 
-# Global flag to stop speedtest on critical error
-STOP_SPEEDTEST=0
+stop_speedtest=0
+start_time=$(date +%s)
 
 _exit() {
     printf "\nCleaning up...\n"
@@ -109,11 +109,17 @@ get_system_info() {
     fi
 
     if _exists "free"; then
-        read -r tram uram swap uswap <<< $(free -k | awk '
+        local free_output
+        free_output=$(free -k | awk '
             /Mem/ {t=$2; u=$3}
             /Swap/ {st=$2; su=$3}
             END {print t, u, st, su}
         ')
+        read -r tram uram swap uswap <<< "$free_output"
+        
+        local swap_total_bytes=$(awk "BEGIN {print $swap * 1024}")
+        local swap_used_bytes=$(awk "BEGIN {print $uswap * 1024}")
+        
         tram=$(calc_size "$tram")
         uram=$(calc_size "$uram")
         swap=$(calc_size "$swap")
@@ -139,10 +145,21 @@ get_system_info() {
     kern=$(uname -r)
     tcpctrl=$(sysctl -n net.ipv4.tcp_congestion_control 2>/dev/null)
 
-    df_total=$(df -P . | awk 'NR==2 {print $2}')
-    df_used=$(df -P . | awk 'NR==2 {print $3}')
-    disk_total_size=$(calc_size "$df_total")
-    disk_used_size=$(calc_size "$df_used")
+    local disk_total_bytes=0
+    local disk_used_bytes=0
+    
+    while read -r line; do
+        local size=$(echo "$line" | awk '{print $2}')
+        local used=$(echo "$line" | awk '{print $3}')
+        disk_total_bytes=$(awk "BEGIN {print $disk_total_bytes + $size}")
+        disk_used_bytes=$(awk "BEGIN {print $disk_used_bytes + $used}")
+    done < <(df -P -B1 2>/dev/null | grep -vE 'tmpfs|devtmpfs|overlay|run|none|squashfs')
+
+    local total_system_bytes=$(awk "BEGIN {print $disk_total_bytes + $swap_total_bytes}")
+    local total_used_bytes=$(awk "BEGIN {print $disk_used_bytes + $swap_used_bytes}")
+    
+    disk_total_size=$(calc_size "$total_system_bytes")
+    disk_used_size=$(calc_size "$total_used_bytes")
 }
 
 check_virt() {
@@ -209,7 +226,21 @@ print_network_info() {
 
 io_test() {
     echo " $(_purple "[ I/O Speed Test ]")"
-    local count=1000
+    
+    local freespace=$(df -k . | awk 'NR==2 {print $4}')
+    local count=1024
+    
+    if [ "$freespace" -ge 2097152 ]; then
+        count=2048
+    elif [ "$freespace" -ge 1048576 ]; then
+        count=1024
+    elif [ "$freespace" -ge 524288 ]; then
+        count=512
+    else
+        echo " $(_red "Not enough space for I/O Test (Need > 512MB)")"
+        return
+    fi
+    
     local speed_sum=0
     for i in {1..3}; do
         local raw_output
@@ -232,7 +263,7 @@ io_test() {
         
         [[ -z "$result" ]] && result=0
         
-        echo " Run $i              : $(_yellow "$result MB/s")"
+        echo " Run $i ($count MB)   : $(_yellow "$result MB/s")"
         speed_sum=$(awk "BEGIN {print $speed_sum + $result}")
     done
     echo " Average            : $(_yellow "$(awk "BEGIN {printf \"%.1f\", $speed_sum / 3}") MB/s")"
@@ -248,13 +279,10 @@ speed_test() {
     
     if [[ "$json_out" =~ "Too many requests" ]] || [[ "$json_out" =~ "limit" ]]; then
         printf "\033[0;33m%-18s\033[0;31m%-20s\033[0m\n" " ${nodeName}" "Rate Limited (Skipping all)"
-        STOP_SPEEDTEST=1
+        stop_speedtest=1
         return
     elif [[ -z "$json_out" ]] || [[ "$json_out" =~ "error" ]]; then
         printf "\033[0;33m%-18s\033[0;31m%-20s\033[0m\n" " ${nodeName}" "Failed (Socket/Network Error)"
-        if [ -z "$1" ]; then
-             STOP_SPEEDTEST=1
-        fi
         return
     fi
     
@@ -281,7 +309,7 @@ run_speedtest() {
     case "$sysarch" in
         x86_64) sys_bit="x86_64" ;;
         i386|i686) sys_bit="i386" ;;
-        aarch64|armv8) sys_bit="aarch64" ;;
+        aarch64|armv8*) sys_bit="aarch64" ;;
         armv7*) sys_bit="armhf" ;;
         *) _red "Error: Unsupported architecture $sysarch\n" && exit 1 ;;
     esac
@@ -314,7 +342,7 @@ run_speedtest() {
     )
 
     for node in "${nodes[@]}"; do
-        if [[ $STOP_SPEEDTEST -eq 1 ]]; then
+        if [[ $stop_speedtest -eq 1 ]]; then
             echo " ... Skipping remaining tests due to errors/limits ..."
             break
         fi
@@ -329,7 +357,7 @@ run_speedtest() {
 main() {
     clear
     echo "-------------------- A Bench.sh Script By Teddysun -------------------"
-    echo " Version            : $(_green 2025-Optimized-Rev6)"
+    echo " Version            : $(_green 2025-Optimized-Rev7)"
     
     get_system_info
     check_virt
@@ -348,7 +376,16 @@ main() {
     run_speedtest
     next
     
-    echo " Finished in        : $(( $(date +%s) - $(date +%s -r /proc/1/cmdline 2>/dev/null || date +%s) )) sec (approx)"
+    local end_time=$(date +%s)
+    local duration=$((end_time - start_time))
+    
+    if [ $duration -gt 60 ]; then
+        local min=$((duration / 60))
+        local sec=$((duration % 60))
+        echo " Finished in        : ${min} min ${sec} sec"
+    else
+        echo " Finished in        : ${duration} sec"
+    fi
     echo " Timestamp          : $(date '+%Y-%m-%d %H:%M:%S %Z')"
 }
 
