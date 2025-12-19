@@ -3,8 +3,7 @@
 # Reference URL:
 # https://github.com/XTLS/Xray-core
 # https://github.com/v2fly/v2ray-core
-# https://github.com/v2fly/geoip
-# https://github.com/v2fly/domain-list-community
+# https://github.com/Loyalsoldier/v2ray-rules-dat
 
 FROM alpine:latest
 LABEL maintainer="Teddysun <i@teddysun.com>"
