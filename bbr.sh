@@ -4,7 +4,7 @@
 #
 # System Required:  CentOS 6+, Debian8+, Ubuntu16+
 #
-# Copyright (C) 2016-2021 Teddysun <i@teddysun.com>
+# Copyright (C) 2016-2026 Teddysun <i@teddysun.com>
 #
 # URL: https://teddysun.com/489.html
 #
@@ -254,8 +254,8 @@ check_os() {
 }
 
 sysctl_config() {
-    sed -i '/net.core.default_qdisc/d' /etc/sysctl.conf
-    sed -i '/net.ipv4.tcp_congestion_control/d' /etc/sysctl.conf
+    [ -f /etc/sysctl.conf ] && sed -i '/net.core.default_qdisc/d' /etc/sysctl.conf
+    [ -f /etc/sysctl.conf ] && sed -i '/net.ipv4.tcp_congestion_control/d' /etc/sysctl.conf
     echo "net.core.default_qdisc = fq" >> /etc/sysctl.conf
     echo "net.ipv4.tcp_congestion_control = bbr" >> /etc/sysctl.conf
     sysctl -p >/dev/null 2>&1
