@@ -56,21 +56,14 @@ _exit() {
     exit 1
 }
 
+# Check if a command exists
 _exists() {
-    local cmd="$1"
-    if eval type type > /dev/null 2>&1; then
-        eval type "$cmd" > /dev/null 2>&1
-    elif command > /dev/null 2>&1; then
-        command -v "$cmd" > /dev/null 2>&1
-    else
-        which "$cmd" > /dev/null 2>&1
-    fi
-    local rt=$?
-    return ${rt}
+    command -v "$1" &>/dev/null
 }
 
 _ipv4() {
-    local ipv4="$( ip addr | grep -E -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | \
+    local ipv4
+    ipv4="$( ip addr | grep -E -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | \
                    grep -E -v "^192\.168|^172\.1[6-9]\.|^172\.2[0-9]\.|^172\.3[0-2]\.|^10\.|^127\.|^255\.|^0\.|^169\.254\." | head -n 1 )"
     [[ -z "${ipv4}" ]] && ipv4="$( wget -qO- -t1 -T2 http://ipv4.icanhazip.com )"
     [[ -z "${ipv4}" ]] && ipv4="$( wget -qO- -t1 -T2 http://ipinfo.io/ip )"
@@ -90,7 +83,8 @@ _nic() {
 }
 
 _port() {
-    local port="$(shuf -i 1024-20480 -n 1)"
+    local port
+    port="$(shuf -i 1024-20480 -n 1)"
     while true; do
         if _exists "netstat" && netstat -tunlp | grep -w "${port}" > /dev/null 2>&1; then
             port="$(shuf -i 1024-20480 -n 1)"
@@ -109,21 +103,21 @@ _os() {
 }
 
 _os_full() {
-    [[ -f /etc/redhat-release ]] && awk '{print ($1,$3~/^[0-9]/?$3:$4)}' /etc/redhat-release && return
-    [[ -f /etc/os-release ]] && awk -F'[= "]' '/PRETTY_NAME/{print $3,$4,$5}' /etc/os-release && return
-    [[ -f /etc/lsb-release ]] && awk -F'[="]+' '/DESCRIPTION/{print $2}' /etc/lsb-release && return
+    [[ -f /etc/redhat-release ]] && cat /etc/redhat-release && return
+    [[ -f /etc/os-release ]] && awk -F= '/^PRETTY_NAME=/{gsub(/^"|"$/, "", $2); print $2}' /etc/os-release && return
+    [[ -f /etc/lsb-release ]] && awk -F= '/^DISTRIB_DESCRIPTION=/{gsub(/^"|"$/, "", $2); print $2}' /etc/lsb-release && return
 }
 
 _os_ver() {
-    local main_ver="$( echo $(_os_full) | grep -oE  "[0-9.]+")"
+    local main_ver
+    main_ver="$(_os_full | grep -oE "[0-9.]+")"
     printf -- "%s" "${main_ver%%.*}"
 }
 
 _error_detect() {
     local cmd="$1"
     _info "${cmd}"
-    eval ${cmd} 1> /dev/null
-    if [[ $? -ne 0 ]]; then
+    if ! eval "${cmd}" 1> /dev/null; then
         _error "Execution command (${cmd}) failed, please check it and try again."
     fi
 }
@@ -221,7 +215,7 @@ check_os() {
 # Check linux kernel version
 check_kernel_version() {
     kernel_version="$(uname -r | cut -d- -f1)"
-    if _version_ge ${kernel_version} 5.6.0; then
+    if _version_ge "${kernel_version}" 5.6.0; then
         return 0
     else
         return 1
@@ -231,9 +225,9 @@ check_kernel_version() {
 # Install wireguard module from source
 install_wg_module() {
     get_latest_module_ver
-    wireguard_name="wireguard-linux-compat-$(echo ${wireguard_ver} | grep -oE '[0-9.]+')"
+    wireguard_name="wireguard-linux-compat-$(echo "${wireguard_ver}" | grep -oE '[0-9.]+')"
     wireguard_url="https://github.com/WireGuard/wireguard-linux-compat/archive/${wireguard_ver}.tar.gz"
-    cd ${SCRIPT_DIR}
+    cd "${SCRIPT_DIR}" || exit
     _error_detect "wget --no-check-certificate -qO ${wireguard_name}.tar.gz ${wireguard_url}"
     _error_detect "tar zxf ${wireguard_name}.tar.gz"
     _error_detect "cd ${wireguard_name}/src"
@@ -245,9 +239,9 @@ install_wg_module() {
 # Install wireguard tools from source
 install_wg_tools() {
     get_latest_tools_ver
-    wireguard_tools_name="wireguard-tools-$(echo ${wireguard_tools_ver} | grep -oE '[0-9.]+')"
+    wireguard_tools_name="wireguard-tools-$(echo "${wireguard_tools_ver}" | grep -oE '[0-9.]+')"
     wireguard_tools_url="https://github.com/WireGuard/wireguard-tools/archive/${wireguard_tools_ver}.tar.gz"
-    cd ${SCRIPT_DIR}
+    cd "${SCRIPT_DIR}" || exit
     _error_detect "wget --no-check-certificate -qO ${wireguard_tools_name}.tar.gz ${wireguard_tools_url}"
     _error_detect "tar zxf ${wireguard_tools_name}.tar.gz"
     _error_detect "cd ${wireguard_tools_name}/src"
@@ -438,14 +432,14 @@ uninstall_wg() {
 # Create server interface
 create_server_if() {
     SERVER_PRIVATE_KEY="$(wg genkey)"
-    SERVER_PUBLIC_KEY="$(echo ${SERVER_PRIVATE_KEY} | wg pubkey)"
+    SERVER_PUBLIC_KEY="$(echo "${SERVER_PRIVATE_KEY}" | wg pubkey)"
     CLIENT_PRIVATE_KEY="$(wg genkey)"
-    CLIENT_PUBLIC_KEY="$(echo ${CLIENT_PRIVATE_KEY} | wg pubkey)"
+    CLIENT_PUBLIC_KEY="$(echo "${CLIENT_PRIVATE_KEY}" | wg pubkey)"
     CLIENT_PRE_SHARED_KEY="$( wg genpsk )"
     _info "Create server interface: /etc/wireguard/${SERVER_WG_NIC}.conf"
     [[ ! -d "/etc/wireguard" ]] && mkdir -p "/etc/wireguard"
     if [[ -n "${SERVER_PUB_IPV6}" ]]; then
-        cat > /etc/wireguard/${SERVER_WG_NIC}.conf <<EOF
+        cat > "/etc/wireguard/${SERVER_WG_NIC}.conf" <<EOF
 [Interface]
 Address = ${SERVER_WG_IPV4}/24,${SERVER_WG_IPV6}/64
 ListenPort = ${SERVER_WG_PORT}
@@ -458,7 +452,7 @@ PresharedKey = ${CLIENT_PRE_SHARED_KEY}
 PersistentKeepalive = 25
 EOF
     else
-        cat > /etc/wireguard/${SERVER_WG_NIC}.conf <<EOF
+        cat > "/etc/wireguard/${SERVER_WG_NIC}.conf" <<EOF
 [Interface]
 Address = ${SERVER_WG_IPV4}/24
 ListenPort = ${SERVER_WG_PORT}
@@ -471,14 +465,14 @@ PresharedKey = ${CLIENT_PRE_SHARED_KEY}
 PersistentKeepalive = 25
 EOF
     fi
-    chmod 600 /etc/wireguard/${SERVER_WG_NIC}.conf
+    chmod 600 "/etc/wireguard/${SERVER_WG_NIC}.conf"
 }
 
 # Create client interface
 create_client_if() {
     _info "Create client interface: /etc/wireguard/${SERVER_WG_NIC}_client.conf"
     if [[ -n "${SERVER_PUB_IPV6}" ]]; then
-        cat > /etc/wireguard/${SERVER_WG_NIC}_client.conf <<EOF
+        cat > "/etc/wireguard/${SERVER_WG_NIC}_client.conf" <<EOF
 [Interface]
 PrivateKey = ${CLIENT_PRIVATE_KEY}
 Address = ${CLIENT_WG_IPV4}/24,${CLIENT_WG_IPV6}/64
@@ -491,7 +485,7 @@ AllowedIPs = 0.0.0.0/0,::/0
 Endpoint = ${SERVER_PUB_IPV4}:${SERVER_WG_PORT}
 EOF
     else
-        cat > /etc/wireguard/${SERVER_WG_NIC}_client.conf <<EOF
+        cat > "/etc/wireguard/${SERVER_WG_NIC}_client.conf" <<EOF
 [Interface]
 PrivateKey = ${CLIENT_PRIVATE_KEY}
 Address = ${CLIENT_WG_IPV4}/24
@@ -504,7 +498,7 @@ AllowedIPs = 0.0.0.0/0
 Endpoint = ${SERVER_PUB_IPV4}:${SERVER_WG_PORT}
 EOF
     fi
-    chmod 600 /etc/wireguard/${SERVER_WG_NIC}_client.conf
+    chmod 600 "/etc/wireguard/${SERVER_WG_NIC}_client.conf"
 }
 
 # Generate a QR Code picture with default client interface
@@ -529,7 +523,7 @@ set_firewall() {
     if _exists "firewall-cmd"; then
         if firewall-cmd --state > /dev/null 2>&1; then
             default_zone="$(firewall-cmd --get-default-zone)"
-            if [[ "$(firewall-cmd --zone=${default_zone} --query-masquerade)" = "no" ]]; then
+            if [[ "$(firewall-cmd --zone="${default_zone}" --query-masquerade)" == "no" ]]; then
                 _error_detect "firewall-cmd --permanent --zone=${default_zone} --add-masquerade"
             fi
             if ! firewall-cmd --list-ports | grep -qw "${SERVER_WG_PORT}/udp"; then
@@ -546,9 +540,9 @@ set_firewall() {
         fi
     else
         if _exists "iptables"; then
-            iptables -A INPUT -p udp --dport ${SERVER_WG_PORT} -j ACCEPT
-            iptables -A FORWARD -i ${SERVER_WG_NIC} -j ACCEPT
-            iptables -t nat -A POSTROUTING -o ${SERVER_PUB_NIC} -j MASQUERADE
+            iptables -A INPUT -p udp --dport "${SERVER_WG_PORT}" -j ACCEPT
+            iptables -A FORWARD -i "${SERVER_WG_NIC}" -j ACCEPT
+            iptables -t nat -A POSTROUTING -o "${SERVER_PUB_NIC}" -j MASQUERADE
             iptables-save > /etc/iptables.rules
             if [[ -d "/etc/network/if-up.d" ]]; then
                 cat > /etc/network/if-up.d/iptables <<EOF
@@ -559,9 +553,9 @@ EOF
             fi
         fi
         if _exists "ip6tables"; then
-            ip6tables -A INPUT -p udp --dport ${SERVER_WG_PORT} -j ACCEPT
-            ip6tables -A FORWARD -i ${SERVER_WG_NIC} -j ACCEPT
-            ip6tables -t nat -A POSTROUTING -o ${SERVER_PUB_NIC} -j MASQUERADE
+            ip6tables -A INPUT -p udp --dport "${SERVER_WG_PORT}" -j ACCEPT
+            ip6tables -A FORWARD -i "${SERVER_WG_NIC}" -j ACCEPT
+            ip6tables -t nat -A POSTROUTING -o "${SERVER_PUB_NIC}" -j MASQUERADE
             ip6tables-save > /etc/ip6tables.rules
             if [[ -d "/etc/network/if-up.d" ]]; then
                 cat > /etc/network/if-up.d/ip6tables <<EOF
@@ -599,18 +593,18 @@ add_client() {
     fi
     default_server_if="/etc/wireguard/${SERVER_WG_NIC}.conf"
     default_client_if="/etc/wireguard/${SERVER_WG_NIC}_client.conf"
-    [[ ! -s "${default_server_if}" ]] && echo "The default server interface ($(_red ${default_server_if})) does not exists" && exit 1
-    [[ ! -s "${default_client_if}" ]] && echo "The default client interface ($(_red ${default_client_if})) does not exists" && exit 1
+    [[ ! -s "${default_server_if}" ]] && echo "The default server interface ($(_red "${default_server_if}")) does not exists" && exit 1
+    [[ ! -s "${default_client_if}" ]] && echo "The default client interface ($(_red "${default_client_if}")) does not exists" && exit 1
     while true; do
-        read -p "Please enter a client name (for example: wg1):" client
+        read -r -p "Please enter a client name (for example: wg1):" client
         if [[ -z "${client}" ]]; then
             _red "Client name can not be empty\n"
         else
             new_client_if="/etc/wireguard/${client}_client.conf"
             if [[ "${client}" = "${SERVER_WG_NIC}" ]]; then
-                echo "The default client ($(_yellow ${client})) already exists. Please re-enter it"
+                echo "The default client ($(_yellow "${client}")) already exists. Please re-enter it"
             elif [[ -s "${new_client_if}" ]]; then
-                echo "The client ($(_yellow ${client})) already exists. Please re-enter it"
+                echo "The client ($(_yellow "${client}")) already exists. Please re-enter it"
             else
                 break
             fi
@@ -621,29 +615,29 @@ add_client() {
     client_ipv4=()
     client_ipv6=()
     for ((i=0; i<${#client_files[@]}; i++)); do
-        tmp_ipv4="$(grep -w "Address" ${client_files[$i]} | awk '{print $3}' | cut -d\/ -f1 )"
-        tmp_ipv6="$(grep -w "Address" ${client_files[$i]} | awk '{print $3}' | awk -F, '{print $2}' | cut -d\/ -f1 )"
+        tmp_ipv4="$(grep -w "Address" "${client_files[$i]}" | awk '{print $3}' | cut -d'\/' -f1 )"
+        tmp_ipv6="$(grep -w "Address" "${client_files[$i]}" | awk '{print $3}' | awk -F, '{print $2}' | cut -d'\/' -f1 )"
         client_ipv4=(${client_ipv4[@]} ${tmp_ipv4})
         client_ipv6=(${client_ipv6[@]} ${tmp_ipv6})
     done
     # Sort array
     client_ipv4_sorted=($(printf '%s\n' "${client_ipv4[@]}" | sort -V))
-    index=$(expr ${#client_ipv4[@]} - 1)
-    last_ip=$(echo ${client_ipv4_sorted[$index]} | cut -d. -f4)
-    issue_ip_last=$(expr ${last_ip} + 1)
+    index=$((${#client_ipv4[@]} - 1))
+    last_ip=$(echo "${client_ipv4_sorted[$index]}" | cut -d. -f4)
+    issue_ip_last=$((last_ip + 1))
     [[ ${issue_ip_last} -gt 254 ]] && _red "Too many clients, IP addresses might be not enough\n" && exit 1
-    ipv4_comm=$(echo ${client_ipv4[$index]} | cut -d. -f1-3)
-    ipv6_comm=$(echo ${client_ipv6[$index]} | awk -F: '{print $1":"$2":"$3":"$4}')
+    ipv4_comm=$(echo "${client_ipv4[$index]}" | cut -d. -f1-3)
+    ipv6_comm=$(echo "${client_ipv6[$index]}" | awk -F: '{print $1":"$2":"$3":"$4}')
     CLIENT_PRIVATE_KEY="$(wg genkey)"
-    CLIENT_PUBLIC_KEY="$(echo ${CLIENT_PRIVATE_KEY} | wg pubkey)"
-    SERVER_PUBLIC_KEY="$(grep -w "PublicKey" ${default_client_if} | awk '{print $3}')"
-    CLIENT_ENDPOINT="$(grep -w "Endpoint" ${default_client_if} | awk '{print $3}')"
-    CLIENT_PRE_SHARED_KEY="$(grep -w "PresharedKey" ${default_client_if} | awk '{print $3}')"
+    CLIENT_PUBLIC_KEY="$(echo "${CLIENT_PRIVATE_KEY}" | wg pubkey)"
+    SERVER_PUBLIC_KEY="$(grep -w "PublicKey" "${default_client_if}" | awk '{print $3}')"
+    CLIENT_ENDPOINT="$(grep -w "Endpoint" "${default_client_if}" | awk '{print $3}')"
+    CLIENT_PRE_SHARED_KEY="$(grep -w "PresharedKey" "${default_client_if}" | awk '{print $3}')"
     CLIENT_WG_IPV4="${ipv4_comm}.${issue_ip_last}"
     CLIENT_WG_IPV6="${ipv6_comm}:${issue_ip_last}"
     # Create a new client interface
     if [[ -n "${SERVER_PUB_IPV6}" ]]; then
-        cat > ${new_client_if} <<EOF
+        cat > "${new_client_if}" <<EOF
 [Interface]
 PrivateKey = ${CLIENT_PRIVATE_KEY}
 Address = ${CLIENT_WG_IPV4}/24,${CLIENT_WG_IPV6}/64
@@ -656,7 +650,7 @@ AllowedIPs = 0.0.0.0/0,::/0
 Endpoint = ${CLIENT_ENDPOINT}
 EOF
         # Add a new client to default server interface
-        cat >> ${default_server_if} <<EOF
+        cat >> "${default_server_if}" <<EOF
 
 [Peer]
 PublicKey = ${CLIENT_PUBLIC_KEY}
@@ -665,7 +659,7 @@ PresharedKey = ${CLIENT_PRE_SHARED_KEY}
 PersistentKeepalive = 25
 EOF
     else
-        cat > ${new_client_if} <<EOF
+        cat > "${new_client_if}" <<EOF
 [Interface]
 PrivateKey = ${CLIENT_PRIVATE_KEY}
 Address = ${CLIENT_WG_IPV4}/24
@@ -677,7 +671,7 @@ PresharedKey = ${CLIENT_PRE_SHARED_KEY}
 AllowedIPs = 0.0.0.0/0
 Endpoint = ${CLIENT_ENDPOINT}
 EOF
-        cat >> ${default_server_if} <<EOF
+        cat >> "${default_server_if}" <<EOF
 
 [Peer]
 PublicKey = ${CLIENT_PUBLIC_KEY}
@@ -686,17 +680,17 @@ PresharedKey = ${CLIENT_PRE_SHARED_KEY}
 PersistentKeepalive = 25
 EOF
     fi
-    chmod 600 ${new_client_if}
-    echo "Add a WireGuard client ($(_green ${client})) completed"
-    systemctl restart wg-quick@${SERVER_WG_NIC}
+    chmod 600 "${new_client_if}"
+    echo "Add a WireGuard client ($(_green "${client}")) completed"
+    systemctl restart wg-quick@"${SERVER_WG_NIC}"
     # Generate a new QR Code picture
-    qrencode -s8 -o /etc/wireguard/${client}_client.png < ${new_client_if}
-    echo "Generate a QR Code picture with new client ($(_green ${client})) completed"
+    qrencode -s8 -o "/etc/wireguard/${client}_client.png" < "${new_client_if}"
+    echo "Generate a QR Code picture with new client ($(_green "${client}")) completed"
     echo
-    echo "WireGuard VPN new client ($(_green ${client})) file is below:"
+    echo "WireGuard VPN new client ($(_green "${client}")) file is below:"
     _green "/etc/wireguard/${client}_client.conf\n"
     echo
-    echo "WireGuard VPN new client ($(_green ${client})) QR Code is below:"
+    echo "WireGuard VPN new client ($(_green "${client}")) QR Code is below:"
     _green "/etc/wireguard/${client}_client.png\n"
     echo "Download and scan this QR Code with your device, enjoy it"
 }
@@ -706,28 +700,28 @@ remove_client() {
         _red "WireGuard was not installed, please install it and try again\n" && exit 1
     fi
     default_server_if="/etc/wireguard/${SERVER_WG_NIC}.conf"
-    [[ ! -s "${default_server_if}" ]] && echo "The default server interface ($(_red ${default_server_if})) does not exists" && exit 1
+    [[ ! -s "${default_server_if}" ]] && echo "The default server interface ($(_red "${default_server_if}")) does not exists" && exit 1
     while true; do
-        read -p "Please enter a client name you want to delete it (for example: wg1):" client
+        read -r -p "Please enter a client name you want to delete it (for example: wg1):" client
         if [[ -z "${client}" ]]; then
             _red "Client name can not be empty\n"
         else
             if [[ "${client}" = "${SERVER_WG_NIC}" ]]; then
-                echo "The default client ($(_yellow ${client})) can not be delete"
+                echo "The default client ($(_yellow "${client}")) can not be delete"
             else
                 break
             fi
         fi
     done
     client_if="/etc/wireguard/${client}_client.conf"
-    [[ ! -s "${client_if}" ]] && echo "The client file ($(_red ${client_if})) does not exists" && exit 1
-    tmp_tag="$(grep -w "Address" ${client_if} | awk '{print $3}' | cut -d\/ -f1 )"
-    [[ -n "${tmp_tag}" ]] && sed -i '/'"$tmp_tag"'/,+1d;:a;1,3!{P;$!N;D};N;ba' ${default_server_if}
+    [[ ! -s "${client_if}" ]] && echo "The client file ($(_red "${client_if}")) does not exists" && exit 1
+    tmp_tag="$(grep -w "Address" "${client_if}" | awk '{print $3}' | cut -d'\/' -f1 )"
+    [[ -n "${tmp_tag}" ]] && sed -i '/'"$tmp_tag"'/,+1d;:a;1,3!{P;$!N;D};N;ba' "${default_server_if}"
     # Delete client interface file
-    rm -f ${client_if}
-    [[ -s "/etc/wireguard/${client}_client.png" ]] && rm -f /etc/wireguard/${client}_client.png
-    systemctl restart wg-quick@${SERVER_WG_NIC}
-    echo "The client name ($(_green ${client})) has been deleted"
+    rm -f "${client_if}"
+    [[ -s "/etc/wireguard/${client}_client.png" ]] && rm -f "/etc/wireguard/${client}_client.png"
+    systemctl restart wg-quick@"${SERVER_WG_NIC}"
+    echo "The client name ($(_green "${client}")) has been deleted"
 }
 
 list_clients() {
@@ -735,15 +729,15 @@ list_clients() {
         _red "WireGuard was not installed, please install it and try again\n" && exit 1
     fi
     default_server_if="/etc/wireguard/${SERVER_WG_NIC}.conf"
-    [[ ! -s "${default_server_if}" ]] && echo "The default server interface ($(_red ${default_server_if})) does not exists" && exit 1
+    [[ ! -s "${default_server_if}" ]] && echo "The default server interface ($(_red "${default_server_if}")) does not exists" && exit 1
     local line="+-------------------------------------------------------------------------+\n"
     local string=%-35s
     printf "${line}|${string} |${string} |\n${line}" " Client Interface" " Client's IP"
     client_files=($(find /etc/wireguard/ -name "*_client.conf" | sort))
-    ips=($(grep -w "AllowedIPs" ${default_server_if} | awk '{print $3}'))
+    ips=($(grep -w "AllowedIPs" "${default_server_if}" | awk '{print $3}'))
     [[ ${#client_files[@]} -ne ${#ips[@]} ]] && echo "One or more client interface file is missing in /etc/wireguard" && exit 1
     for ((i=0; i<${#ips[@]}; i++)); do
-        tmp_ipv4="$(echo ${ips[$i]} | cut -d\/ -f1)"
+        tmp_ipv4="$(echo "${ips[$i]}" | cut -d'\/' -f1)"
         for ((j=0; j<${#client_files[@]}; j++)); do
             if grep -qw "${tmp_ipv4}" "${client_files[$j]}"; then
                 printf "|${string} |${string} |\n" " ${client_files[$j]}" " ${ips[$i]}"
@@ -759,9 +753,9 @@ check_version() {
     rt=$?
     if [[ ${rt} -eq 0 ]]; then
         _exists "modinfo" && installed_wg_ver="$(modinfo -F version wireguard)"
-        [[ -n "${installed_wg_ver}" ]] && echo "wireguard-dkms version : $(_green ${installed_wg_ver})"
+        [[ -n "${installed_wg_ver}" ]] && echo "wireguard-dkms version : $(_green "${installed_wg_ver}")"
         installed_wg_tools_ver="$(wg --version | awk '{print $2}' | grep -oE '[0-9.]+')"
-        [[ -n "${installed_wg_tools_ver}" ]] && echo "wireguard-tools version: $(_green ${installed_wg_tools_ver})"
+        [[ -n "${installed_wg_tools_ver}" ]] && echo "wireguard-tools version: $(_green "${installed_wg_tools_ver}")"
         return 0
     elif [[ ${rt} -eq 1 ]]; then
         _red "WireGuard tools is exist, but WireGuard module does not exists\n" && return 1
@@ -841,9 +835,9 @@ update_from_source() {
     if check_version > /dev/null 2>&1; then
         restart_flg=0
         get_latest_module_ver
-        wg_ver="$(echo ${wireguard_ver} | grep -oE '[0-9.]+')"
-        _info "wireguard-dkms version: $(_green ${installed_wg_ver})"
-        _info "wireguard-dkms latest version: $(_green ${wg_ver})"
+        wg_ver="$(echo "${wireguard_ver}" | grep -oE '[0-9.]+')"
+        _info "wireguard-dkms version: $(_green "${installed_wg_ver}")"
+        _info "wireguard-dkms latest version: $(_green "${wg_ver}")"
         if check_kernel_version; then
             _info "wireguard-dkms has been merged into Linux >= 5.6 and therefore this compatibility module is no longer required"
         else
@@ -857,9 +851,9 @@ update_from_source() {
             fi
         fi
         get_latest_tools_ver
-        wg_tools_ver="$(echo ${wireguard_tools_ver} | grep -oE '[0-9.]+')"
-        _info "wireguard-tools version: $(_green ${installed_wg_tools_ver})"
-        _info "wireguard-tools latest version: $(_green ${wg_tools_ver})"
+        wg_tools_ver="$(echo "${wireguard_tools_ver}" | grep -oE '[0-9.]+')"
+        _info "wireguard-tools version: $(_green "${installed_wg_tools_ver}")"
+        _info "wireguard-tools latest version: $(_green "${wg_tools_ver}")"
         if _version_gt "${wg_tools_ver}" "${installed_wg_tools_ver}"; then
             _info "Starting upgrade wireguard-tools"
             install_wg_tools
