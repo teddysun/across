@@ -97,6 +97,7 @@ _port() {
 
 _os() {
     local os=""
+    # shellcheck source=/dev/null
     [[ -f "/etc/debian_version" ]] && source /etc/os-release && os="${ID}" && printf -- "%s" "${os}" && return
     [[ -f "/etc/fedora-release" ]] && os="fedora" && printf -- "%s" "${os}" && return
     [[ -f "/etc/redhat-release" ]] && os="centos" && printf -- "%s" "${os}" && return
@@ -611,17 +612,17 @@ add_client() {
         fi
     done
     # Get information from default interface file
-    client_files=($(find /etc/wireguard/ -name "*_client*" | sort))
+    mapfile -t client_files < <(find /etc/wireguard/ -name "*_client.conf" | sort)
     client_ipv4=()
     client_ipv6=()
     for ((i=0; i<${#client_files[@]}; i++)); do
-        tmp_ipv4="$(grep -w "Address" "${client_files[$i]}" | awk '{print $3}' | cut -d'\/' -f1 )"
-        tmp_ipv6="$(grep -w "Address" "${client_files[$i]}" | awk '{print $3}' | awk -F, '{print $2}' | cut -d'\/' -f1 )"
-        client_ipv4=(${client_ipv4[@]} ${tmp_ipv4})
-        client_ipv6=(${client_ipv6[@]} ${tmp_ipv6})
+        tmp_ipv4="$(grep -w "Address" "${client_files[$i]}" | awk '{print $3}' | cut -d'/' -f1 )"
+        tmp_ipv6="$(grep -w "Address" "${client_files[$i]}" | awk '{print $3}' | awk -F, '{print $2}' | cut -d'/' -f1 )"
+        client_ipv4+=("${tmp_ipv4}")
+        client_ipv6+=("${tmp_ipv6}")
     done
     # Sort array
-    client_ipv4_sorted=($(printf '%s\n' "${client_ipv4[@]}" | sort -V))
+    mapfile -t client_ipv4_sorted < <(printf '%s\n' "${client_ipv4[@]}" | sort -V)
     index=$((${#client_ipv4[@]} - 1))
     last_ip=$(echo "${client_ipv4_sorted[$index]}" | cut -d. -f4)
     issue_ip_last=$((last_ip + 1))
@@ -706,7 +707,7 @@ remove_client() {
         if [[ -z "${client}" ]]; then
             _red "Client name can not be empty\n"
         else
-            if [[ "${client}" = "${SERVER_WG_NIC}" ]]; then
+            if [[ "${client}" == "${SERVER_WG_NIC}" ]]; then
                 echo "The default client ($(_yellow "${client}")) can not be delete"
             else
                 break
@@ -715,7 +716,7 @@ remove_client() {
     done
     client_if="/etc/wireguard/${client}_client.conf"
     [[ ! -s "${client_if}" ]] && echo "The client file ($(_red "${client_if}")) does not exists" && exit 1
-    tmp_tag="$(grep -w "Address" "${client_if}" | awk '{print $3}' | cut -d'\/' -f1 )"
+    tmp_tag="$(grep -w "Address" "${client_if}" | awk '{print $3}' | cut -d'/' -f1 )"
     [[ -n "${tmp_tag}" ]] && sed -i '/'"$tmp_tag"'/,+1d;:a;1,3!{P;$!N;D};N;ba' "${default_server_if}"
     # Delete client interface file
     rm -f "${client_if}"
@@ -732,20 +733,23 @@ list_clients() {
     [[ ! -s "${default_server_if}" ]] && echo "The default server interface ($(_red "${default_server_if}")) does not exists" && exit 1
     local line="+-------------------------------------------------------------------------+\n"
     local string=%-35s
+    # shellcheck disable=SC2059
     printf "${line}|${string} |${string} |\n${line}" " Client Interface" " Client's IP"
-    client_files=($(find /etc/wireguard/ -name "*_client.conf" | sort))
-    ips=($(grep -w "AllowedIPs" "${default_server_if}" | awk '{print $3}'))
+    mapfile -t client_files < <(find /etc/wireguard/ -name "*_client.conf" | sort)
+    mapfile -t ips < <(grep -w "AllowedIPs" "${default_server_if}" | awk '{print $3}')
     [[ ${#client_files[@]} -ne ${#ips[@]} ]] && echo "One or more client interface file is missing in /etc/wireguard" && exit 1
     for ((i=0; i<${#ips[@]}; i++)); do
-        tmp_ipv4="$(echo "${ips[$i]}" | cut -d'\/' -f1)"
+        tmp_ipv4="$(echo "${ips[$i]}" | cut -d'/' -f1)"
         for ((j=0; j<${#client_files[@]}; j++)); do
             if grep -qw "${tmp_ipv4}" "${client_files[$j]}"; then
+                # shellcheck disable=SC2059
                 printf "|${string} |${string} |\n" " ${client_files[$j]}" " ${ips[$i]}"
                 break
             fi
         done
     done
-    printf ${line}
+    # shellcheck disable=SC2059
+    printf "${line}"
 }
 
 check_version() {
@@ -767,20 +771,19 @@ check_version() {
 }
 
 show_help() {
-    printf "
-Usage  : $0 [Options]
-Options:
-        -h, --help       Print this help text and exit
-        -r, --repo       Install WireGuard from repository
-        -s, --source     Install WireGuard from source
-        -u, --update     Upgrade WireGuard from source
-        -v, --version    Print WireGuard version if installed
-        -a, --add        Add a WireGuard client
-        -d, --del        Delete a WireGuard client
-        -l, --list       List all WireGuard client's IP
-        -n, --uninstall  Uninstall WireGuard
-
-"
+    printf '%s\n' ""
+    printf 'Usage  : %s [Options]\n' "$0"
+    printf '%s\n' "Options:"
+    printf '        -h, --help       Print this help text and exit\n'
+    printf '        -r, --repo       Install WireGuard from repository\n'
+    printf '        -s, --source     Install WireGuard from source\n'
+    printf '        -u, --update     Upgrade WireGuard from source\n'
+    printf '        -v, --version    Print WireGuard version if installed\n'
+    printf '        -a, --add        Add a WireGuard client\n'
+    printf '        -d, --del        Delete a WireGuard client\n'
+    printf '        -l, --list       List all WireGuard client'"'"'s IP\n'
+    printf '        -n, --uninstall  Uninstall WireGuard\n'
+    printf '%s\n' ""
 }
 
 install_from_repo() {
