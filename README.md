@@ -25,7 +25,7 @@
 
 - You must modify the config before run it
 - Backup MySQL or MariaDB datebases, files and directories
-- Backup file is encrypted with AES256-cbc with SHA1 message-digest (Depends on `openssl` command) (option)
+- Backup file is encrypted with AES-256-CBC with sha256 message-digest (Depends on `openssl` command) (option)
 - Auto transfer backup file to Google Drive (Depends on [`rclone`](https://teddysun.com/469.html) command) (option)
 - Auto transfer backup file to FTP server (Depends on `ftp` command) (option)
 - Auto delete remote file from Google Drive or FTP server (option)

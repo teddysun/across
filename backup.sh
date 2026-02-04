@@ -17,7 +17,7 @@
 #
 # You must to modify the config before run it!!!
 # Backup MySQL/MariaDB datebases, files and directories
-# Backup file is encrypted with AES256-cbc with SHA1 message-digest (option)
+# Backup file is encrypted with AES-256-CBC with sha256 message-digest (option)
 # Auto transfer backup file to Google Drive (need install rclone command) (option)
 # Auto transfer backup file to FTP server (option)
 # Auto delete Google Drive's or FTP server's remote file (option)
